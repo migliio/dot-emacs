@@ -1,0 +1,15 @@
+;;;; Emacs Bookmark Format Version 1 ;;;; -*- coding: utf-8-emacs -*-
+;;; This format is meant to be slightly human-readable;
+;;; nevertheless, you probably don't want to edit it.
+;;; -*- End Of Bookmark File Format Version Stamp -*-
+(("org-capture-last-stored"
+ (filename . "~/Dropbox/org-files/roam/20210816114733-prova.org")
+ (front-context-string . "- *Lecturer*:: P")
+ (rear-context-string . "\n#+title: Prova\n")
+ (position . 83))
+("org-refile-last-stored"
+ (filename . "~/Dropbox/org-files/brain/Quaderni.org")
+ (front-context-string . "** Planning\n   :")
+ (rear-context-string . "C80C7A4\n  :END:\n")
+ (position . 422))
+)
