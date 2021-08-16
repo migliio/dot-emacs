@@ -112,7 +112,7 @@
         mac-option-modifier nil
         mac-command-modifier 'meta
         x-select-enable-clipboard t)
-;;  (exec-path-from-shell-initialize)
+  ;;(exec-path-from-shell-initialize)
   (when (fboundp 'mac-auto-operator-composition-mode)
     (mac-auto-operator-composition-mode 1)))
 
@@ -146,7 +146,6 @@
   (setq mac-pass-command-to-system nil))
 
 ;; Set some defaults globally
-
 
 (setq-default tab-width 4                       ; Smaller tabs
               split-width-threshold 160         ; Split verticly by default
@@ -211,6 +210,7 @@
 	   global-company-mode          ; Company mode for autocompletion
            global-diff-hl-mode          ; Highlight uncommitted changes
            counsel-projectile-mode      ; Manage and navigate projects
+		   global-emojify-mode          ; Enable emojify
            recentf-mode                 ; Recently opened files
            show-paren-mode              ; Highlight matching parentheses
            which-key-mode))             ; Available keybindings in popup
@@ -420,6 +420,7 @@
 (org-super-agenda-mode)
 
 ;; Enable and set org-crypt
+
 (require 'org-crypt)
 (org-crypt-use-before-save-magic)
 (setq org-tags-exclude-from-inheritance (quote ("crypt")))
@@ -469,7 +470,7 @@
 
 ;; Set the deft directory and file extensions
 
-(setq deft-directory "~/Dropbox/org-files/brain/")
+(setq deft-directory "~/Dropbox/org-files/roam/")
 (setq deft-extensions '("org" "md" "txt"))
 (add-to-list 'deft-extensions "tex")
 
@@ -497,31 +498,56 @@
 
 ;; Set up org-roam
 (setq org-roam-v2-ack t)
+(require 'org-roam)
 (setq org-roam-directory "~/Dropbox/org-files/roam")
 (setq org-roam-completion-everywhere t)
+(org-roam-setup)
 ;; org-roam templates
 (setq org-roam-capture-templates
       '(("d" "default" plain "%?"
-	 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			    "#+title: ${title}\n")
-	 :unnarrowed t)
-	("c" "course" plain
-	 "\n- *Lecturer*:: %^{Lecturer}\n- *University*:: %^{University}\n- *Academic Year*:: %^{Academic Year}\n- *Semester*:: %^{Semester}\n- *Keywords*:: %?\n\n"
-	 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			    "#+title: ${title}\n")
-	 :unarrowed t)
-	("b" "book" plain
-	 "\n- *Author*:: %^{Author}\n- *Status*:: %^{Status}\n- *Recommended by*:: %^{Recommended by}\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Keywords*:: %?\n\n"
-	 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			    "#+title: ${title}\n")
-	 :unarrowed t)
-	("a" "article" plain
-	 "\n- *Author*:: %^{Author}\n- *URL*:: %^{URL}\n- *Related*:: %^{Related}\n- *Recommended by*:: %^{Recommended by}\n- *Date*:: %^{Completed date}u\n- *Keywords*:: %?\n\n"
-	 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			    "#+title: ${title}\n")
-	 :unarrowed t)))
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unnarrowed t)
 
-;; Journaling in org-roam
+		("u" "university")
+		("uc" "course" plain
+		 "\n- *Lecturer*:: %?\n- *University*:: \n- *Academic Year*:: %^{Academic Year}\n- *Semester*:: %^{Semester}\n- *Keywords*::\n\n"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+		("ul" "lecture" plain
+		 "\n- *Course*:: %?\n- *Lecture #*:: %^{Lecture #}\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *Resources*::\n\n"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)		
+		
+		("p" "people" plain
+		 "\n- *Phone number*:: %^{Phone number}\n- *E-mail*:: %^{E-mail}\n- *Twitter*:: %^{Twitter}\n- *GitHub*:: %^{GitHub}\n- *Website*:: %^{Website}\n- *Company*:: %?\n- *Role*:: %^{Role}\n- *Location*::\n- *How we met*:: %^{How we met}\n- *Birthdate*:: %^{Birthdate}u\n- *Keywords*::\n\n"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+		("s" "software" plain
+		 "\n- *Developer(s)*:: %?\n- *Status*:: %^{Status}\n- *Repository*:: %^{Repository}\n- *Recommended by*::\n- *Keywords*::\n\n"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+		("b" "book" plain
+		 "\n- *Author*:: %?\n- *Status*:: %^{Status}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Keywords*::\n\n"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+		("a" "article" plain
+		 "\n- *Author*:: %?\n- *URL*:: %^{URL}\n- *Related*:: %^{Related}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+		("v" "video" plain
+		 "\n- *Creator*:: %?\n- *URL*:: %^{URL}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n\n"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+		))
+;; journaling in org-roam
 (setq org-roam-dailies-directory "journal/")
 (setq org-roam-dailies-capture-templates
       '(("d" "default" entry
@@ -609,20 +635,21 @@
 
 ;; Keybindings for org-roam
 
-(global-set-key (kbd "C-c r l") 'org-roam-buffer-toggle)
-(global-set-key (kbd "C-c r f") 'org-roam-node-find)
-(global-set-key (kbd "C-c r i") 'org-roam-node-insert)
+(global-set-key (kbd "C-x c r t") 'org-roam-buffer-toggle)
+(global-set-key (kbd "C-x c r f") 'org-roam-node-find)
+(global-set-key (kbd "C-x c r i") 'org-roam-node-insert)
+(global-set-key (kbd "C-x c r s") 'org-roam-protocol-store-links)
 (global-set-key (kbd "C-c i") 'completion-at-point)
 
 ;; Keybindings for org-roam-dailies
 
-(global-set-key (kbd "C-c r d t") 'org-roam-dailies-capture-today)
-(global-set-key (kbd "C-c r d T") 'org-roam-dailies-capture-tomorrow)
-(global-set-key (kbd "C-c r d y") 'org-roam-dailies-capture-yesterday)
-(global-set-key (kbd "C-c r d d") 'org-roam-dailies-capture-date)
-(global-set-key (kbd "C-c r d f t") 'org-roam-dailies-find-today)
-(global-set-key (kbd "C-c r d f y") 'org-roam-dailies-find-yesterday)
-(global-set-key (kbd "C-c r d f d") 'org-roam-dailies-find-date)
+(global-set-key (kbd "C-x c r d t") 'org-roam-dailies-capture-today)
+(global-set-key (kbd "C-x c r d T") 'org-roam-dailies-capture-tomorrow)
+(global-set-key (kbd "C-x c r d y") 'org-roam-dailies-capture-yesterday)
+(global-set-key (kbd "C-x c r d d") 'org-roam-dailies-capture-date)
+(global-set-key (kbd "C-x c r d f t") 'org-roam-dailies-find-today)
+(global-set-key (kbd "C-x c r d f y") 'org-roam-dailies-find-yesterday)
+(global-set-key (kbd "C-x c r d f d") 'org-roam-dailies-find-date)
 
 ;; Keybindings for olivetti
 
