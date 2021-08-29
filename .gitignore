@@ -15,7 +15,6 @@ init.shit.el
 emojis
 org-roam.db
 bookmarks
-site-lisp
 .lsp-session-v1
 
 # But not these files...
