@@ -53,6 +53,7 @@
 				emojify              ; Display emojis in Emacs
                 erlang               ; Erlang major mode
 				ein                  ; Jupyter Python notebooks inside Emacs
+				elfeed               ; RSS reader in Emacs
                 expand-region        ; Increase selected region by semantic units
 				flycheck             ; Modern on-the-fly syntax checking extension
                 focus                ; Dim color of text in surrounding sections
@@ -239,6 +240,7 @@
 (setq openwith-associations '(
                               ("\\.mp4\\'" "vlc" (file))
 							  ("\\.mkv\\'" "vlc" (file))
+							  ("\\.m4a\\'" "vlc" (file))
                               ("\\.ppt\\'" "libreoffice" (file))
                               ("\\.pptx\\'" "libreoffice" (file))
                               ("\\.doc\\'" "libreoffice" (file))
@@ -397,7 +399,7 @@
 
 ;; Set org agenda directory
 
-(setq org-agenda-files (list ""))
+(setq org-agenda-files (list"~/Dropbox/org-files/roam/journal"))
 
 ;; Enable org-super-agenda
 
@@ -412,10 +414,12 @@
 		       :tag "todo")
  		(:name ":bookmark-tabs:"
 		       :tag "rush")
+		(:name ":inbox_tray:"
+		       :tag "inputs")
 		(:name ":exclamation:"
                ;; Single arguments given alone
-               :tag "urgent"
-	       :tag "exam"
+			   :tag "urgent"
+			   :tag "exam"
                :priority "A")))
 (org-super-agenda-mode)
 
@@ -426,6 +430,19 @@
 (setq org-tags-exclude-from-inheritance (quote ("crypt")))
 ;; gpg key to use for encryption
 (setq org-crypt-key nil)
+
+;; Settings for elfeed
+(setq elfeed-feeds
+      '("https://awealthofcommonsense.com/feed"
+		"https://ofdollarsanddata.com/feed"
+		"https://www.smbc-comics.com/comic/rss"
+		"https://xkcd.com/rss.xml"
+		"https://fs.blog/blog/feed/"
+		"https://gwern.substack.com/feed"
+		"https://moretothat.com/feed/"
+		"https://putanumonit.com/feed/"
+		"https://www.ribbonfarm.com/feed/"
+		))
 
 ;; Set up notmuch e-mail client
 
@@ -468,6 +485,9 @@
              '("*offlineimap*" :dedicated t :position bottom :stick t
                :height 0.4 :noselect t))
 
+;; Use notmuch links in org-mode
+(require 'org-notmuch)
+
 ;; Set the deft directory and file extensions
 
 (setq deft-directory "~/Dropbox/org-files/roam/")
@@ -504,7 +524,7 @@
 (org-roam-setup)
 ;; org-roam templates
 (setq org-roam-capture-templates
-      '(("d" "default" plain "%?"
+      '(("d" "default" plain "\n- *Keywords*::\n\n%?"
 		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							"#+title: ${title}\n")
 		 :unnarrowed t)
@@ -522,7 +542,7 @@
 		 :unarrowed t)		
 		
 		("p" "people" plain
-		 "\n- *Phone number*:: %^{Phone number}\n- *E-mail*:: %^{E-mail}\n- *Twitter*:: %^{Twitter}\n- *GitHub*:: %^{GitHub}\n- *Website*:: %^{Website}\n- *Company*:: %?\n- *Role*:: %^{Role}\n- *Location*::\n- *How we met*:: %^{How we met}\n- *Birthdate*:: %^{Birthdate}u\n- *Keywords*::\n\n"
+		 "\n- *Phone number*:: %^{Phone number}\n- *E-mail*:: %^{E-mail}\n- *Twitter*:: %^{Twitter}\n- *GitHub*:: %^{GitHub}\n- *Website*:: %^{Website}\n- *Company*:: %?\n- *Role*:: %^{Role}\n- *Location*::\n- *How we met*:: %^{How we met}\n- *Birthdate*:: %^{Birthdate}u\n\n"
 		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							"#+title: ${title}\n")
 		 :unarrowed t)
@@ -531,17 +551,23 @@
 		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							"#+title: ${title}\n")
 		 :unarrowed t)
-		("b" "book" plain
+		("P" "place" plain
+		 "\n- *Address*:: %^{Address}\n- *City*::%?\n- *Why I know this place*:: %^{Why I know this place}\n- *First time I visited it*:: %^{First time I visited it}u\n- *Keywords*::\n\n"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+		("r" "resources")
+		("rb" "book" plain
 		 "\n- *Author*:: %?\n- *Status*:: %^{Status}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Keywords*::\n\n"
 		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							"#+title: ${title}\n")
 		 :unarrowed t)
-		("a" "article" plain
+		("ra" "article" plain
 		 "\n- *Author*:: %?\n- *URL*:: %^{URL}\n- *Related*:: %^{Related}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n"
 		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							"#+title: ${title}\n")
 		 :unarrowed t)
-		("v" "video" plain
+		("rv" "video" plain
 		 "\n- *Creator*:: %?\n- *URL*:: %^{URL}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n\n"
 		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							"#+title: ${title}\n")
@@ -617,6 +643,9 @@
 ;; +----- KEY BINDINGS ----- +
 ;;
 
+;; Keybindings for coding
+(global-set-key (kbd "C-c c") 'compile)
+
 ;; Keybindings for org
 
 (global-set-key (kbd "C-c l") 'org-store-link)
@@ -647,9 +676,9 @@
 (global-set-key (kbd "C-x c r d T") 'org-roam-dailies-capture-tomorrow)
 (global-set-key (kbd "C-x c r d y") 'org-roam-dailies-capture-yesterday)
 (global-set-key (kbd "C-x c r d d") 'org-roam-dailies-capture-date)
-(global-set-key (kbd "C-x c r d f t") 'org-roam-dailies-find-today)
-(global-set-key (kbd "C-x c r d f y") 'org-roam-dailies-find-yesterday)
-(global-set-key (kbd "C-x c r d f d") 'org-roam-dailies-find-date)
+(global-set-key (kbd "C-x c r d f t") 'org-roam-dailies-goto-today)
+(global-set-key (kbd "C-x c r d f y") 'org-roam-dailies-goto-yesterday)
+(global-set-key (kbd "C-x c r d f d") 'org-roam-dailies-goto-date)
 
 ;; Keybindings for olivetti
 
@@ -673,6 +702,9 @@
 ;; Keybindings for notmuch
 
 (global-set-key (kbd "C-x c n") 'notmuch)
+
+;; Keybindings for elfeed
+(global-set-key (kbd "C-x c w") 'elfeed)
 
 ;; Keybindings for term
 
