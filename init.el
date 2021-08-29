@@ -139,7 +139,6 @@
       ring-bell-function 'ignore        ; Quiet
       scroll-margin 1                   ; Space between cursor and top/bottom
       sentence-end-double-space nil     ; No double space
-      org-hide-emphasis-markers t       ; Show the formatting
       custom-file                       ; Customizations in a separate file
       (concat user-emacs-directory "custom.el"))
 ;; Some mac-bindings interfere with Emacs bindings.
@@ -563,7 +562,7 @@
 							"#+title: ${title}\n")
 		 :unarrowed t)
 		("ra" "article" plain
-		 "\n- *Author*:: %?\n- *URL*:: %^{URL}\n- *Related*:: %^{Related}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n"
+		 "\n- *Author*:: %?\n- *URL*:: %^{URL}\n- *Related*:: %^{Related}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n\n"
 		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							"#+title: ${title}\n")
 		 :unarrowed t)
@@ -643,7 +642,12 @@
 ;; +----- KEY BINDINGS ----- +
 ;;
 
+;; General keybindings
+
+(global-set-key (kbd "C-c f") 'toggle-frame-fullscreen)
+
 ;; Keybindings for coding
+
 (global-set-key (kbd "C-c c") 'compile)
 
 ;; Keybindings for org
