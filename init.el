@@ -38,12 +38,10 @@
 				all-the-icons        ; Nice icons
 				doom-modeline        ; A nice modeline taken from Doom Emacs
 				ccls                 ; ccls support in Emacs
-                company              ; Modular text completion framework
-                company-coq          ; A collection of extensions PG's Coq mode
                 org-brain            ; An incredibly powerful org mode wiki
                 counsel              ; Various completion functions using Ivy
                 deft                 ; Browse and filter plain text notes
-				company-lsp          ; Company integration for LSP
+				company              ; Better completion backend
 				counsel-gtags        ; Good integration between counsel and gtags
                 counsel-projectile   ; Ivy integration for Projectile
 				dashboard            ; A nice dashboard
@@ -63,7 +61,8 @@
                 jedi                 ; Python auto-completion for Emacs
                 js2-mode             ; Improved JavaScript editing mode
 				ledger-mode          ; Use ledger as my accounting system
-                lsp-java             ; Java support for lsp-mode				
+				lsp-ivy              ; Interactive ivy interface with lsp-mode
+                lsp-java             ; Java support for lsp-mode
                 lsp-mode             ; LSP mode
 				lsp-python-ms        ; Python support for lsp-mode
 				lsp-ui               ; UI for LSP mode
@@ -71,7 +70,6 @@
                 markdown-mode        ; Emacs Major mode for Markdown-formatted files
                 multiple-cursors     ; Multiple cursors for Emacs
 				notmuch              ; A fast and lightweight e-mail client
-				nyan-mode            ; Nyan cat for Emacs
                 undo-tree            ; A nice tree visualization of previous changes
                 olivetti             ; Minor mode for a nice writing environment
 				openwith             ; Open files with external applications
@@ -89,6 +87,7 @@
 				popwin               ; Popup window manager
                 projectile           ; Manage and navigate projects in Emacs easily
                 proof-general        ; A generic Emacs interface for proof assistants
+				quelpa               ; Install Emacs Lisp packages directly from source
                 slime                ; Superior Lisp Interaction Mode for Emacs
 				spacemacs-theme      ; A nice theme similar to spacemacs
 				tramp-term           ; A super powerful terminal emulator
@@ -137,6 +136,7 @@
       initial-scratch-message nil       ; Clean scratch buffer
       recentf-max-saved-items 100       ; Show more recent files
       ring-bell-function 'ignore        ; Quiet
+	  lsp-keymap-prefix "C-c l"         ; Change the lsp keymap
       scroll-margin 1                   ; Space between cursor and top/bottom
       sentence-end-double-space nil     ; No double space
       custom-file                       ; Customizations in a separate file
@@ -207,8 +207,8 @@
            column-number-mode           ; Show column number in mode line
            delete-selection-mode        ; Replace selected text
            dirtrack-mode                ; Directory tracking in *shell*
-	   global-company-mode          ; Company mode for autocompletion
            global-diff-hl-mode          ; Highlight uncommitted changes
+		   global-flycheck-mode         ; Enable on the fly syntax checking
            counsel-projectile-mode      ; Manage and navigate projects
 		   global-emojify-mode          ; Enable emojify
            recentf-mode                 ; Recently opened files
@@ -246,6 +246,10 @@
                               ("\\.docx\\'" "libreoffice" (file))
                               ))
 
+;; Install Nano theme
+
+(quelpa '(nano-theme :fetcher git :url "https://github.com/rougier/nano-theme.git"))
+
 ;; Change the color theme
 
 ;; (load-theme 'spacemacs-dark t)
@@ -254,13 +258,15 @@
 
 ;; Change font and size
 (set-frame-font "JetBrains Mono" nil t)
-(set-face-attribute 'default nil :height 140)
+
+(when (memq window-system '(mac ns))
+  ((set-face-attribute 'default nil :height 140)))
+(set-face-attribute 'default nil :height 125)
 
 ;; Enable doom-modeline
 
 (require 'doom-modeline)
 (doom-modeline-mode 1)
-(nyan-mode)
 
 ;; Customize doom-modeline
 
@@ -347,16 +353,6 @@
 (add-hook 'pdf-view-mode-hook
           (lambda () (setq header-line-format nil)))
 
-;; Let's use company-mode for completion
-
-(setq company-idle-delay 0
-      company-echo-delay 0
-      company-dabbrev-downcase nil
-      company-minimum-prefix-length 2
-      company-selection-wrap-around t
-      company-transformers '(company-sort-by-occurrence
-                             company-sort-by-backend-importance))
-
 ;; In org-mode, I want source blocks to be themed as they would in native mode
 
 (setq org-src-fontify-natively t
@@ -441,6 +437,7 @@
 		"https://moretothat.com/feed/"
 		"https://putanumonit.com/feed/"
 		"https://www.ribbonfarm.com/feed/"
+		"https://retireinprogress.com/feed/"
 		))
 
 ;; Set up notmuch e-mail client
@@ -484,14 +481,12 @@
              '("*offlineimap*" :dedicated t :position bottom :stick t
                :height 0.4 :noselect t))
 
-;; Use notmuch links in org-mode
-(require 'org-notmuch)
-
 ;; Set the deft directory and file extensions
 
 (setq deft-directory "~/Dropbox/org-files/roam/")
 (setq deft-extensions '("org" "md" "txt"))
 (add-to-list 'deft-extensions "tex")
+(setq deft-recursive t)
 
 ;; Set the org brain directory
 
@@ -521,6 +516,12 @@
 (setq org-roam-directory "~/Dropbox/org-files/roam")
 (setq org-roam-completion-everywhere t)
 (org-roam-setup)
+;; ;; Auto load org-roam buffer
+;; (add-hook 'find-file-hook
+;;           (lambda ()
+;;             (and (org-roam-file-p)
+;;                  (not (eq 'visible (org-roam-buffer--visibility)))
+;;                  (org-roam-buffer-toggle))))
 ;; org-roam templates
 (setq org-roam-capture-templates
       '(("d" "default" plain "\n- *Keywords*::\n\n%?"
@@ -538,15 +539,15 @@
 		 "\n- *Course*:: %?\n- *Lecture #*:: %^{Lecture #}\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *Resources*::\n\n"
 		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							"#+title: ${title}\n")
-		 :unarrowed t)		
-		
+		 :unarrowed t)
+
 		("p" "people" plain
 		 "\n- *Phone number*:: %^{Phone number}\n- *E-mail*:: %^{E-mail}\n- *Twitter*:: %^{Twitter}\n- *GitHub*:: %^{GitHub}\n- *Website*:: %^{Website}\n- *Company*:: %?\n- *Role*:: %^{Role}\n- *Location*::\n- *How we met*:: %^{How we met}\n- *Birthdate*:: %^{Birthdate}u\n\n"
 		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							"#+title: ${title}\n")
 		 :unarrowed t)
 		("s" "software" plain
-		 "\n- *Developer(s)*:: %?\n- *Status*:: %^{Status}\n- *Repository*:: %^{Repository}\n- *Recommended by*::\n- *Keywords*::\n\n"
+		 "\n- *Developer(s)*:: %?\n- *Status*:: %^{Status|@maintained|@unmaintained}\n- *Repository*:: %^{Repository}\n- *Recommended by*::\n- *Keywords*::\n\n"
 		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							"#+title: ${title}\n")
 		 :unarrowed t)
@@ -555,6 +556,7 @@
 		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							"#+title: ${title}\n")
 		 :unarrowed t)
+		
 		("r" "resources")
 		("rb" "book" plain
 		 "\n- *Author*:: %?\n- *Status*:: %^{Status}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Keywords*::\n\n"
@@ -568,6 +570,40 @@
 		 :unarrowed t)
 		("rv" "video" plain
 		 "\n- *Creator*:: %?\n- *URL*:: %^{URL}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n\n"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+
+		("j" "project")
+		("jo" "overview" plain
+		 "\n- *What*:: %^{What}\n- *Areas*:: %?\n- *Repository*:: %^{Repository}\n- *Status*:: %^{Status|@active|@ready|@abandoned}\n- *Date*:: %^{Date}u\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Date}u\n- *Success criteria*::\n- *Keywords*::\n\n* Details\n* Tasks\n* Resources\n* Artifacts"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+		("jt" "task" plain
+		 "\n- *Taken by*:: %?\n- *Status*:: %^{Status|@active|@picked|@abandoned}\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Date}u\n- *Success criteria*::\n\n* Details\n* Roadmap"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+		
+		("R" "plans")
+		("Ry" "year" plain
+		 "\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Values review and life physolophy\n* 5 Years Vision(s)\n* Goal definition\n* Financial review"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+		("Rq" "quarter" plain
+		 "\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Projects review\n* Financial review"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+		("Rm" "month" plain
+		 "\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Projects and task picking\n* Financial review"
+		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							"#+title: ${title}\n")
+		 :unarrowed t)
+		("Rw" "week" plain
+		 "\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Time blocking\n* Task picking"
 		 :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							"#+title: ${title}\n")
 		 :unarrowed t)
@@ -608,8 +644,7 @@
 
 ;; LSP mode works really well, enabling it
 
-(with-eval-after-load 'lsp-mode
-  (setq lsp-keymap-prefix "C-c l")
+(with-eval-after-load 'lsp
   (lsp-enable-which-key-integration t))
 
 ;; Enable ccls
@@ -621,10 +656,11 @@
 
 (require 'lsp-python-ms)
 (setq lsp-python-ms-auto-install-server t)
-(add-hook 'python-mode-hook #'lsp) ; or lsp-deferred
+(add-hook 'python-mode-hook #'lsp-deferred) ; or lsp
 
 ;; Enable Java support for lsp-mode
-(add-hook 'java-mode-hook 'lsp)
+
+(add-hook 'java-mode-hook 'lsp-deferred)
 
 ;; Setting up the LaTeX environment
 
@@ -652,7 +688,7 @@
 
 ;; Keybindings for org
 
-(global-set-key (kbd "C-c l") 'org-store-link)
+(global-set-key (kbd "C-c s") 'org-store-link)
 
 ;; Keybindings for org-agenda
 
@@ -725,13 +761,6 @@
 ;; Keybindings for magit
 
 (global-set-key (kbd "C-x g") 'magit)
-
-;; Keybindings for company-mode
-
-(define-key company-active-map (kbd "C-d") 'company-show-doc-buffer)
-(define-key company-active-map (kbd "C-n") 'company-select-next)
-(define-key company-active-map (kbd "C-p") 'company-select-previous)
-(define-key company-active-map (kbd "<tab>") 'company-complete)
 
 ;; Keybindings for focus-mode
 
