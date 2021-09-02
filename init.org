@@ -1,0 +1,57 @@
+#+TITLE: GNU Emacs configuration file
+#+AUTHOR: Claudio Migliorelli (@miglio)
+#+PROPERTY: header-args:emacs-lisp :tangle .emacs.d/init.new.el
+* Startup performance
+
+  I find myself closing and opening Emacs a plenty of times. I want it to be responsive and fast. I'm going to reduce the frequency of garbage collection and then I'll measure the startup time.
+
+  #+begin_src emacs-lisp
+
+  ;; The default is 800 kilobytes.  Measured in bytes.
+  (setq gc-cons-threshold (* 50 1000 1000))
+
+  ;; Profile emacs startup
+  (add-hook 'emacs-startup-hook
+			(lambda ()
+			  (message "*** Emacs loaded in %s with %d garbage collections."
+					   (format "%.2f seconds"
+							   (float-time
+								(time-subtract after-init-time before-init-time)))
+					   gcs-done)))
+
+  #+end_src
+* Package management
+
+  First of all, let's initialize the package management setting up ELPA, MELPA and org package repositories. After that, I want Emacs loading =use-package= to manage package configuration.
+
+  #+begin_src emacs-lisp
+
+  (require 'package)
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+						   ("melpa-stable" . "https://stable.melpa.org/packages/")
+						   ("org" . "https://orgmode.org/elpa/")
+						   ("elpa" . "https://elpa.gnu.org/packages/")))
+  (package-initialize)
+
+  #+end_src
+* Keep emacs.d clean
+
+  Thanks to @daviwil I finally found a way to get rid of all transient files that appear in my =dot-emacs= git repository. In this way I'll have a better organized folder, with relevant files only.
+
+  #+begin_src emacs-lisp
+
+  ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+  (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
+		url-history-file (expand-file-name "url/history" user-emacs-directory))
+
+  ;; Use no-littering to automatically set common paths to the new user-emacs-directory
+  (use-package no-littering)
+
+  ;; Keep customization settings in a temporary file (thanks Ambrevar!)
+  (setq custom-file
+		(if (boundp 'server-socket-dir)
+			(expand-file-name "custom.el" server-socket-dir)
+		  (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
+  (load custom-file t)
+
+  #+end_src
