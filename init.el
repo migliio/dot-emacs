@@ -41,7 +41,6 @@
                 org-brain            ; An incredibly powerful org mode wiki
                 counsel              ; Various completion functions using Ivy
                 deft                 ; Browse and filter plain text notes
-				company              ; Better completion backend
 				counsel-gtags        ; Good integration between counsel and gtags
                 counsel-projectile   ; Ivy integration for Projectile
 				dashboard            ; A nice dashboard
@@ -72,6 +71,7 @@
 				notmuch              ; A fast and lightweight e-mail client
                 undo-tree            ; A nice tree visualization of previous changes
                 olivetti             ; Minor mode for a nice writing environment
+				ol-notmuch           ; Enable linking to notmuch messages
 				openwith             ; Open files with external applications
                 org                  ; Outline-based notes management and organizer
 				org-board            ; Nice web archival system
@@ -257,11 +257,10 @@
 (load-theme 'doom-one t)
 
 ;; Change font and size
-(set-frame-font "JetBrains Mono" nil t)
 
+(set-frame-font "JetBrains Mono 14" nil t)
 (when (memq window-system '(mac ns))
-  ((set-face-attribute 'default nil :height 140)))
-(set-face-attribute 'default nil :height 125)
+  (set-frame-font "JetBrains Mono 16" nil t))
 
 ;; Enable doom-modeline
 
@@ -480,6 +479,10 @@
 (add-to-list 'popwin:special-display-config
              '("*offlineimap*" :dedicated t :position bottom :stick t
                :height 0.4 :noselect t))
+
+;; Link e-mails in org mode files
+
+(require 'ol-notmuch)
 
 ;; Set the deft directory and file extensions
 
