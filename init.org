@@ -447,7 +447,9 @@
 	   (setq org-latex-create-formula-image-program 'dvisvgm)
 	 
 	   ;; Set org agenda directory
-	   (setq org-agenda-files (list"~/Dropbox/org-files/roam/journal")))
+	   (setq org-agenda-files (list"~/org-files/roam/journal"))
+	   (when (memq window-system '(mac ns))
+	   (setq org-agenda-files (list"~/Dropbox/org-files/roam/journal"))))
 	 
 	 #+end_src
 **** Org bullets
@@ -546,7 +548,9 @@
 	   :init
 	   (setq org-roam-v2-ack t)
 	   :custom
-	   (org-roam-directory (file-truename "~/Dropbox/org-files/roam"))
+	   (org-roam-directory (file-truename "~/org-files/roam"))
+	   (when (memq window-system '(mac ns))
+	   (org-roam-directory (file-truename "~/Dropbox/org-files/roam")))
 	   :bind (("C-c n l" . org-roam-buffer-toggle)
 			  ("C-c n f" . org-roam-node-find)
 			  ("C-c n g" . org-roam-graph)
@@ -688,7 +692,9 @@
 	  :bind ("C-c d" . deft)
 	  :config
 	  ;; Set the deft directory and file extensions
-	  (setq deft-directory "~/Dropbox/org-files/roam/")
+	  (setq deft-directory "~/org-files/roam/"))
+	  (when (memq window-system '(mac ns))
+	  (setq deft-directory "~/Dropbox/org-files/roam/"))
 	  (setq deft-extensions '("org" "md" "txt"))
 	  (add-to-list 'deft-extensions "tex")
 	  (setq deft-recursive t))
