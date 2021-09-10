@@ -657,22 +657,23 @@
 				:if-new (file+head "%<%Y-%m-%d>.org"
 								   "#+title: %<%Y-%m-%d>\n")))))
 	 
-	 #+end_src	
+			   #+end_src	
 **** Org roam UI
 
 	 Isn't it cool to have a Roam-Research-like experience within Emacs?
 
 	 #+begin_src emacs-lisp
-	 (use-package websocket
-	   :ensure t
-	   :after org-roam)
+	 (when (memq window-system '(mac ns))
+	   (use-package websocket
+		 :ensure t
+		 :after org-roam)
 	 
-	 (use-package simple-httpd
-	   :ensure t
-	   :after org-roam)
+	   (use-package simple-httpd
+		 :ensure t
+		 :after org-roam)
 	 
-	 (add-to-list 'load-path "~/.emacs.d/site-lisp/org-roam-ui")
-	 (require 'org-roam-ui)
+	   (add-to-list 'load-path "~/.emacs.d/site-lisp/org-roam-ui")
+	   (require 'org-roam-ui))
 	 
 	 #+end_src
 	 
