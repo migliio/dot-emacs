@@ -46,6 +46,7 @@
   #+begin_src emacs-lisp
   
   (use-package auto-compile
+	:ensure t
 	:config
 	(when (version< emacs-version "24.4")
 	  '((auto-compile-on-save-mode 1))))
@@ -206,6 +207,7 @@
 	#+begin_src emacs-lisp
 	
 	(use-package which-key
+	  :ensure t
 	  :init (which-key-mode)
 	  :diminish which-key-mode
 	  :config
@@ -218,6 +220,7 @@
 	#+begin_src emacs-lisp
 	
 	(use-package winner
+	  :ensure t
 	  :config
 	  (winner-mode))
 	
@@ -270,6 +273,7 @@
 	
 	;; Install and customize doom-modeline
 	(use-package doom-modeline
+	  :ensure t
 	  :hook (after-init . doom-modeline-init)
 	  :custom-face
 	  :custom
@@ -299,11 +303,11 @@
 	#+end_src
 ** Files navigation
 
-   Using =ivy=, =counsel= and =swiper=. Copying the @daviwil's configuration.
+   I want to use =ivy=, =counsel= and =swiper=.
 
    #+begin_src emacs-lisp
    (use-package ivy
-	 :diminish
+	 :ensure t
 	 :bind (("C-s" . swiper)
 			("C-x b" . ivy-switch-buffer))
 	 :init
@@ -315,10 +319,12 @@
 	 (setq enable-recursive-minibuffers t))
    
    (use-package ivy-hydra
+	 :ensure t
 	 :defer t
 	 :after hydra)
    
    (use-package ivy-posframe
+	 :ensure t
 	 :disabled
 	 :custom
 	 (ivy-posframe-width      115)
@@ -333,7 +339,7 @@
 	 (ivy-posframe-mode 1))
    
    (use-package counsel
-	 :demand t
+	 :ensure t
 	 :bind (("M-x" . counsel-M-x)
 			("C-x C-f" . counsel-find-file)
 			("C-M-l" . counsel-imenu)
@@ -393,6 +399,7 @@
 
 	#+begin_src emacs-lisp
 	(use-package pdf-tools
+	  :ensure t
 	  :config
 	  (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-tools-install))
 	  (add-hook 'pdf-view-mode-hook
@@ -491,7 +498,9 @@
 	 #+begin_src emacs-lisp
 	 
 	 (use-package org-super-agenda
+	   :ensure t
 	   :after org
+	   :bind ("C-c a" . org-agenda)
 	   :config
 	   (setq org-super-agenda-groups
 			 '((:name ":timer:"
@@ -528,123 +537,145 @@
 	 #+end_src
 	 
 *** Org roam
+**** General configuration
+	 Using the Zettelkasten method really improves my note taking experience. The best package to do so is definitely =org-roam=. Installing/configuring it.
 
-	Using the Zettelkasten method really improves my note taking experience. The best package to do so is definitely =org-roam=. Installing/configuring it.
+	 #+begin_src emacs-lisp
+	 (use-package org-roam
+	   :ensure t
+	   :init
+	   (setq org-roam-v2-ack t)
+	   :custom
+	   (org-roam-directory (file-truename "~/Dropbox/org-files/roam"))
+	   :bind (("C-c n l" . org-roam-buffer-toggle)
+			  ("C-c n f" . org-roam-node-find)
+			  ("C-c n g" . org-roam-graph)
+			  ("C-c n i" . org-roam-node-insert)
+			  ("C-c n c" . org-roam-capture)
+			  ;; Dailies
+			  ("C-c n d t" . org-roam-dailies-capture-today)
+			  ("C-c n d y" . org-roam-dailies-capture-yesterday)
+			  ("C-c n d d" . org-roam-dailies-capture-date)
+			  ("C-c n d f t" . org-roam-dailies-goto-today)
+			  ("C-c n d f y" . org-roam-dailies-goto-yesterday)
+			  ("C-c n d f d" . org-roam-dailies-goto-date))
+	   :config
+	   (org-roam-db-autosync-mode)
+	 
+	   ;; org-roam templates
+	   (setq org-roam-capture-templates
+			 '(("d" "default" plain "\n- *Keywords*::\n\n%?"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unnarrowed t)
+	 
+			   ("u" "university")
+			   ("uc" "course" plain
+				"\n- *Lecturer*:: %?\n- *University*:: \n- *Academic Year*:: %^{Academic Year}\n- *Semester*:: %^{Semester}\n- *Keywords*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("ul" "lecture" plain
+				"\n- *Course*:: %?\n- *Lecture #*:: %^{Lecture #}\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *Resources*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+	 
+			   ("p" "people" plain
+				"\n- *Phone number*:: %^{Phone number}\n- *E-mail*:: %^{E-mail}\n- *Twitter*:: %^{Twitter}\n- *GitHub*:: %^{GitHub}\n- *Website*:: %^{Website}\n- *Company*:: %?\n- *Role*:: %^{Role}\n- *Location*::\n- *How we met*:: %^{How we met}\n- *Birthdate*:: %^{Birthdate}u\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("s" "software" plain
+				"\n- *Developer(s)*:: %?\n- *Status*:: %^{Status|@maintained|@unmaintained}\n- *Repository*:: %^{Repository}\n- *Recommended by*::\n- *Keywords*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("P" "place" plain
+				"\n- *Address*:: %^{Address}\n- *City*::%?\n- *Why I know this place*:: %^{Why I know this place}\n- *First time I visited it*:: %^{First time I visited it}u\n- *Keywords*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+	 
+			   ("r" "resources")
+			   ("rb" "book" plain
+				"\n- *Author*:: %?\n- *Status*:: %^{Status}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Keywords*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("ra" "article" plain
+				"\n- *Author*:: %?\n- *URL*:: %^{URL}\n- *Related*:: %^{Related}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("rv" "video" plain
+				"\n- *Creator*:: %?\n- *URL*:: %^{URL}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+	 
+			   ("j" "project")
+			   ("jo" "overview" plain
+				"\n- *What*:: %^{What}\n- *Areas*:: %?\n- *Repository*:: %^{Repository}\n- *Status*:: %^{Status|@active|@completed|@ready|@abandoned}\n- *Date*:: %^{Date}u\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Success criteria*::\n- *Keywords*::\n\n* Details\n* Tasks\n* Resources\n* Artifacts"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("jt" "task" plain
+				"\n- *Project*:: %^{Project}\n- *Taken by*:: %?\n- *Status*:: %^{Status|@active|@completed|@picked|@abandoned}\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Success criteria*::\n\n* Details\n* Roadmap"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+	 
+			   ("R" "plans")
+			   ("Ry" "year" plain
+				"\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Values review and life physolophy\n* 5 Years Vision(s)\n* Goal definition\n* Financial review\n* Time tracking review"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("Rq" "quarter" plain
+				"\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Projects review\n* Financial review\n* Time tracking review"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("Rm" "month" plain
+				"\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Projects and task picking\n* Financial review\n* Time tracking review"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("Rw" "week" plain
+				"\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Time blocking\n* Task picking"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ))
+	 
+	   ;; Journaling in org-roam
+	   (setq org-roam-dailies-directory "journal/")
+	   (setq org-roam-dailies-capture-templates
+			 '(("d" "default" entry
+				"* %?"
+				:if-new (file+head "%<%Y-%m-%d>.org"
+								   "#+title: %<%Y-%m-%d>\n")))))
+	 
+	 #+end_src	
+**** Org roam UI
 
-	#+begin_src emacs-lisp
-	(use-package org-roam
-	  :init
-	  (setq org-roam-v2-ack t)
-	  :ensure t
-	  :custom
-	  (org-roam-directory (file-truename "~/Dropbox/org-files/roam"))
-	  :bind (("C-c n l" . org-roam-buffer-toggle)
-			 ("C-c n f" . org-roam-node-find)
-			 ("C-c n g" . org-roam-graph)
-			 ("C-c n i" . org-roam-node-insert)
-			 ("C-c n c" . org-roam-capture)
-			 ;; Dailies
-			 ("C-c n j" . org-roam-dailies-capture-today))
-	  :config
-	  (org-roam-db-autosync-mode)
-	
-	  ;; org-roam templates
-	  (setq org-roam-capture-templates
-			'(("d" "default" plain "\n- *Keywords*::\n\n%?"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unnarrowed t)
-	
-			  ("u" "university")
-			  ("uc" "course" plain
-			   "\n- *Lecturer*:: %?\n- *University*:: \n- *Academic Year*:: %^{Academic Year}\n- *Semester*:: %^{Semester}\n- *Keywords*::\n\n"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-			  ("ul" "lecture" plain
-			   "\n- *Course*:: %?\n- *Lecture #*:: %^{Lecture #}\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *Resources*::\n\n"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-	
-			  ("p" "people" plain
-			   "\n- *Phone number*:: %^{Phone number}\n- *E-mail*:: %^{E-mail}\n- *Twitter*:: %^{Twitter}\n- *GitHub*:: %^{GitHub}\n- *Website*:: %^{Website}\n- *Company*:: %?\n- *Role*:: %^{Role}\n- *Location*::\n- *How we met*:: %^{How we met}\n- *Birthdate*:: %^{Birthdate}u\n\n"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-			  ("s" "software" plain
-			   "\n- *Developer(s)*:: %?\n- *Status*:: %^{Status|@maintained|@unmaintained}\n- *Repository*:: %^{Repository}\n- *Recommended by*::\n- *Keywords*::\n\n"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-			  ("P" "place" plain
-			   "\n- *Address*:: %^{Address}\n- *City*::%?\n- *Why I know this place*:: %^{Why I know this place}\n- *First time I visited it*:: %^{First time I visited it}u\n- *Keywords*::\n\n"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-	
-			  ("r" "resources")
-			  ("rb" "book" plain
-			   "\n- *Author*:: %?\n- *Status*:: %^{Status}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Keywords*::\n\n"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-			  ("ra" "article" plain
-			   "\n- *Author*:: %?\n- *URL*:: %^{URL}\n- *Related*:: %^{Related}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n\n"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-			  ("rv" "video" plain
-			   "\n- *Creator*:: %?\n- *URL*:: %^{URL}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n\n"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-	
-			  ("j" "project")
-			  ("jo" "overview" plain
-			   "\n- *What*:: %^{What}\n- *Areas*:: %?\n- *Repository*:: %^{Repository}\n- *Status*:: %^{Status|@active|@ready|@abandoned}\n- *Date*:: %^{Date}u\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Date}u\n- *Success criteria*::\n- *Keywords*::\n\n* Details\n* Tasks\n* Resources\n* Artifacts"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-			  ("jt" "task" plain
-			   "\n- *Taken by*:: %?\n- *Status*:: %^{Status|@active|@picked|@abandoned}\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Date}u\n- *Success criteria*::\n\n* Details\n* Roadmap"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-	
-			  ("R" "plans")
-			  ("Ry" "year" plain
-			   "\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Values review and life physolophy\n* 5 Years Vision(s)\n* Goal definition\n* Financial review\n* Time tracking review"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-			  ("Rq" "quarter" plain
-			   "\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Projects review\n* Financial review\n* Time tracking review"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-			  ("Rm" "month" plain
-			   "\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Projects and task picking\n* Financial review\n* Time tracking review"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-			  ("Rw" "week" plain
-			   "\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Time blocking\n* Task picking"
-			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-								  "#+title: ${title}\n")
-			   :unarrowed t)
-			  ))
-	
-	  ;; Journaling in org-roam
-	  (setq org-roam-dailies-directory "journal/")
-	  (setq org-roam-dailies-capture-templates
-			'(("d" "default" entry
-			   "* %?"
-			   :if-new (file+head "%<%Y-%m-%d>.org"
-								  "#+title: %<%Y-%m-%d>\n")))))
-	
-	#+end_src	
-	
+	 Isn't it cool to have a Roam-Research-like experience within Emacs?
+
+	 #+begin_src emacs-lisp
+	 (use-package websocket
+	   :ensure t
+	   :after org-roam)
+	 
+	 (use-package simple-httpd
+	   :ensure t
+	   :after org-roam)
+	 
+	 (add-to-list 'load-path "~/.emacs.d/site-lisp/org-roam-ui")
+	 (require 'org-roam-ui)
+	 
+	 #+end_src
+	 
 *** Deft
 
 	Searching through roam entries could be a painful experience. =deft= fix this.
@@ -653,12 +684,25 @@
 	
 	(use-package deft
 	  :ensure t
+	  :bind ("C-c d" . deft)
 	  :config
 	  ;; Set the deft directory and file extensions
 	  (setq deft-directory "~/Dropbox/org-files/roam/")
 	  (setq deft-extensions '("org" "md" "txt"))
 	  (add-to-list 'deft-extensions "tex")
 	  (setq deft-recursive t))
+	
+	#+end_src
+	
+*** Olivetti
+
+	I want a nice writing environment in Emacs.
+
+	#+begin_src emacs-lisp
+	
+	(use-package olivetti
+	  :bind ("C-c o" . olivetti-mode)
+	  :ensure t)
 	
 	#+end_src
 	
@@ -670,11 +714,14 @@
 	#+begin_src emacs-lisp
 	
 	(use-package vterm
+	  :ensure t
 	  :commands vterm
+	  :bind ("C-c v" . vterm)
 	  :config
 	  (setq vterm-max-scrollback 10000))
 	
 	#+end_src
+	
 *** VCS
 
 	I use git as my Version Control System of trust and =magit= to interact with it from inside Emacs.
@@ -699,63 +746,143 @@
 	#+end_src
 	
 *** LSP
+**** General setup
+	 Setting up Emacs as an IDE.
+
+	 #+begin_src emacs-lisp
+	 
+	 (use-package lsp-mode
+	   :ensure t
+	   :commands lsp
+	   :bind (:map lsp-mode-map
+				   ("TAB" . completion-at-point))
+	   :config
+	   (lsp-enable-which-key-integration t))
+	 
+	 (use-package lsp-ui
+	   :ensure t
+	   :after lsp
+	   :hook (lsp-mode . lsp-ui-mode)
+	   :config
+	   (setq lsp-ui-sideline-enable t)
+	   (setq lsp-ui-sideline-show-hover nil)
+	   (setq lsp-ui-doc-position 'bottom)
+	   (lsp-ui-doc-show))
+	 
+	 (use-package lsp-ivy
+	   :ensure t)
+	 
+	 #+end_src
+**** Python
+
+	 Installing Python LSP server.
+
+	 #+begin_src emacs-lisp
+	 
+	 (use-package lsp-python-ms
+	   :ensure t
+	   :init (setq lsp-python-ms-auto-install-server t)
+	   :hook (python-mode . (lambda ()
+							  (require 'lsp-python-ms)
+							  (lsp))))  ; or lsp-deferred
+	 
+	 #+end_src
+	 
+**** Java
+
+	 Installing Eclipse Java Server.
+
+	 #+begin_src emacs-lisp
+	 
+	 (use-package lsp-java
+	   :ensure t
+	   :config (add-hook 'java-mode-hook 'lsp))
+	 
+	 #+end_src
+	 
+**** C/C++
+*** Autocompletion
+
+	I use Company as my default autocompletion framework.
+
+	#+begin_src emacs-lisp
+	
+	(use-package company
+	  :ensure t
+	  :config
+	  (global-company-mode t))
+	
+	#+end_src
+	
 ** E-mail
+*** General configuration
+	I use =notmuch= as my default e-mail client. It's easy to use, fast and lightweight.
 
-   I use =notmuch= as my default e-mail client. It's easy to use, fast and lightweight.
+	#+begin_src emacs-lisp
+	
+	(use-package notmuch
+	  :ensure t
+	  :bind ("C-c m" . notmuch)
+	  :config
+	  ;; Setup the mail address and use name
+	  (setq mail-user-agent 'message-user-agent)
+	  (setq user-mail-address "migliorelliclaudio@gmail.com"
+			user-full-name "Claudio Migliorelli")
+	  ;; smtp config
+	  (setq smtpmail-smtp-server "smtp.gmail.com"
+			message-send-mail-function 'message-smtpmail-send-it)
+	
+	  ;; Report problems with the smtp server
+	  (setq smtpmail-debug-info t)
+	
+	  ;; Add Cc and Bcc headers to the message buffer
+	  (setq message-default-mail-headers "Cc: \nBcc: \n")
+	
+	  ;; Postponed message is put in the following draft directory
+	  (setq message-auto-save-directory "~/Repositories/Maildir/Gmail/[Gmail].Bozze")
+	  (setq message-kill-buffer-on-exit t)
+	
+	  ;; Change the directory to store the sent mail
+	  (setq message-directory "~/Repositories/Maildir/Gmail/"))
+	
+	(use-package popwin
+	  :ensure t
+	  :after notmuch
+	  :config
+	
+	  ;; Exec offline-imap
+	  (defun notmuch-exec-offlineimap ()
+		"execute offlineimap"
+		(interactive)
+		(set-process-sentinel
+		 (start-process-shell-command "offlineimap"
+									  "*offlineimap*"
+									  "offlineimap -o")
+		 '(lambda (process event)
+			(notmuch-refresh-all-buffers)
+			(let ((w (get-buffer-window "*offlineimap*")))
+			  (when w
+				(with-selected-window w (recenter (window-end)))))))
+		(popwin:display-buffer "*offlineimap*"))
+	
+	  (add-to-list 'popwin:special-display-config
+				   '("*offlineimap*" :dedicated t :position bottom :stick t
+					 :height 0.4 :noselect t)))
+	
+	#+end_src
+*** Links to notmuch messages within org-mode
 
-   #+begin_src emacs-lisp
-   
-   (use-package notmuch
-	 :ensure t
-	 :bind ("C-c m" . notmuch)
-	 :config
-	 ;; Setup the mail address and use name
-	 (setq mail-user-agent 'message-user-agent)
-	 (setq user-mail-address "migliorelliclaudio@gmail.com"
-		   user-full-name "Claudio Migliorelli")
-	 ;; smtp config
-	 (setq smtpmail-smtp-server "smtp.gmail.com"
-		   message-send-mail-function 'message-smtpmail-send-it)
-   
-	 ;; Report problems with the smtp server
-	 (setq smtpmail-debug-info t)
-   
-	 ;; Add Cc and Bcc headers to the message buffer
-	 (setq message-default-mail-headers "Cc: \nBcc: \n")
-   
-	 ;; Postponed message is put in the following draft directory
-	 (setq message-auto-save-directory "~/Repositories/Maildir/Gmail/[Gmail].Bozze")
-	 (setq message-kill-buffer-on-exit t)
-   
-	 ;; Change the directory to store the sent mail
-	 (setq message-directory "~/Repositories/Maildir/Gmail/"))
-   
-   (use-package popwin
-	 :ensure t
-	 :after notmuch
-	 :config
-   
-	 ;; Exec offline-imap
-	 (defun notmuch-exec-offlineimap ()
-	   "execute offlineimap"
-	   (interactive)
-	   (set-process-sentinel
-		(start-process-shell-command "offlineimap"
-									 "*offlineimap*"
-									 "offlineimap -o")
-		'(lambda (process event)
-		   (notmuch-refresh-all-buffers)
-		   (let ((w (get-buffer-window "*offlineimap*")))
-			 (when w
-			   (with-selected-window w (recenter (window-end)))))))
-	   (popwin:display-buffer "*offlineimap*"))
-   
-	 (add-to-list 'popwin:special-display-config
-				  '("*offlineimap*" :dedicated t :position bottom :stick t
-					:height 0.4 :noselect t)))
-   
-   #+end_src
-   
+	I want to link e-mails in org files to improve my tracking experience.
+
+	#+begin_src emacs-lisp
+	
+	(use-package ol-notmuch
+	  :ensure t
+	  :bind
+	  ("C-c l" . org-store-link))
+	
+	#+end_src
+	
 ** RSS feed
 
    I really like RSS readers and I use =elfeed= as my favorite one in Emacs.
