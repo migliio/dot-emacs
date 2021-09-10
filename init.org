@@ -692,7 +692,7 @@
 	  :bind ("C-c d" . deft)
 	  :config
 	  ;; Set the deft directory and file extensions
-	  (setq deft-directory "~/org-files/roam/"))
+	  (setq deft-directory "~/org-files/roam/")
 	  (when (memq window-system '(mac ns))
 	  (setq deft-directory "~/Dropbox/org-files/roam/"))
 	  (setq deft-extensions '("org" "md" "txt"))
