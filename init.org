@@ -446,10 +446,13 @@
 	   ;; View LaTeX previews in better quality
 	   (setq org-latex-create-formula-image-program 'dvisvgm)
 	 
-	   ;; Set org agenda directory
-	   (setq org-agenda-files (list"~/org-files/roam/journal"))
-	   (when (memq window-system '(mac ns))
-	   (setq org-agenda-files (list"~/Dropbox/org-files/roam/journal"))))
+	   (cond
+		((string-equal system-type "gnu/linux")
+		 ;; Set org agenda directory
+		 (setq org-agenda-files (list"~/org-files/roam/journal"))
+		 ((string-equal system-type "darwin")	 	 
+		  ;; Set org agenda directory
+		  (setq org-agenda-files (list"~/Dropbox/org-files/roam/journal"))))))
 	 
 	 #+end_src
 **** Org bullets
@@ -548,9 +551,11 @@
 	   :init
 	   (setq org-roam-v2-ack t)
 	   :custom
-	   (org-roam-directory (file-truename "~/org-files/roam"))
-	   (when (memq window-system '(mac ns))
-	   (org-roam-directory (file-truename "~/Dropbox/org-files/roam")))
+	   (cond
+		((string-equal system-type "gnu/linux")
+		 (org-roam-directory (file-truename "~/Dropbox/org-files/roam")))
+		((string-equal system-type "darwin")
+		 (org-roam-directory (file-truename "~/Dropbox/org-files/roam"))))
 	   :bind (("C-c n l" . org-roam-buffer-toggle)
 			  ("C-c n f" . org-roam-node-find)
 			  ("C-c n g" . org-roam-graph)
@@ -564,7 +569,6 @@
 			  ("C-c n d f y" . org-roam-dailies-goto-yesterday)
 			  ("C-c n d f d" . org-roam-dailies-goto-date))
 	   :config
-	   (org-roam-db-autosync-mode)
 	 
 	   ;; org-roam templates
 	   (setq org-roam-capture-templates
@@ -661,23 +665,25 @@
 				:if-new (file+head "%<%Y-%m-%d>.org"
 								   "#+title: %<%Y-%m-%d>\n")))))
 	 
-			   #+end_src	
+	 #+end_src	
 **** Org roam UI
 
 	 Isn't it cool to have a Roam-Research-like experience within Emacs?
 
 	 #+begin_src emacs-lisp
-	 (when (memq window-system '(mac ns))
-	   (use-package websocket
-		 :ensure t
-		 :after org-roam)
+	 (use-package websocket
+	   :ensure t
+	   :after org-roam)
 	 
-	   (use-package simple-httpd
-		 :ensure t
-		 :after org-roam)
+	 (use-package simple-httpd
+	   :ensure t
+	   :after org-roam)
 	 
+	 (cond
+	  ((string-equal system-type "gnu/linux"))
+	  ((string-equal system-type "darwin")
 	   (add-to-list 'load-path "~/.emacs.d/site-lisp/org-roam-ui")
-	   (require 'org-roam-ui))
+	   (require 'org-roam-ui)))
 	 
 	 #+end_src
 	 
@@ -691,10 +697,14 @@
 	  :ensure t
 	  :bind ("C-c d" . deft)
 	  :config
-	  ;; Set the deft directory and file extensions
-	  (setq deft-directory "~/org-files/roam/")
-	  (when (memq window-system '(mac ns))
-	  (setq deft-directory "~/Dropbox/org-files/roam/"))
+	  (cond
+	   ((string-equal system-type "gnu/linux")
+		;; Set the deft directory and file extensions
+		(setq deft-directory "~/org-files/roam/"))
+	   ((string-equal system-type "darwin")
+		;; Set the deft directory and file extensions
+		(setq deft-directory "~/Dropbox/org-files/roam/")))
+	
 	  (setq deft-extensions '("org" "md" "txt"))
 	  (add-to-list 'deft-extensions "tex")
 	  (setq deft-recursive t))
@@ -914,5 +924,3 @@
 			 )))
    
    #+end_src
-   
-** Keybindings
