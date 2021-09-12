@@ -426,29 +426,30 @@
 	 Well, I think that =org-mode= doesn't need any introduction or explanation. In the last two years ([2021-09-03 Fri]) it changed my life for the best.
 
 	 #+begin_src emacs-lisp
-	 (use-package org
-	   :defer t
-	   :config
-	 
-	   ;; In org-mode, I want source blocks to be themed as they would in native mode
-	   (setq org-src-fontify-natively t
-			 org-src-tab-acts-natively t
-			 org-confirm-babel-evaluate nil
-			 org-edit-src-content-indentation 0)
-	 
-	   ;; Set org-mode TODO keywords
-	   (setq org-todo-keywords
-			 (quote ((sequence "TODO(t)" "DOING(i)" "|" "DONE(d)"))))
-	 
-	   ;; Enable DONE logging in org-mode
-	   (setq org-log-done 'time)
-	 
-	   ;; View LaTeX previews in better quality
-	   (setq org-latex-create-formula-image-program 'dvisvgm)
-	 
-	   ;; Set org agenda directory
-	   (setq org-agenda-files (list"~/Dropbox/org-files/roam/journal")))
-	 
+		  (use-package org
+			:defer t
+			:config
+		  
+			;; In org-mode, I want source blocks to be themed as they would in native mode
+			(setq org-src-fontify-natively t
+				  org-src-tab-acts-natively t
+				  org-confirm-babel-evaluate nil
+				  org-edit-src-content-indentation 0)
+		  
+			;; Set org-mode TODO keywords
+			(setq org-todo-keywords
+				  (quote ((sequence "TODO(t)" "DOING(i)" "|" "DONE(d)"))))
+		  
+			;; Enable DONE logging in org-mode
+			(setq org-log-done 'time)
+		  
+			;; View LaTeX previews in better quality
+			(setq org-latex-create-formula-image-program 'dvisvgm)
+		  
+			;; Set org agenda directory
+			(setq org-agenda-files (list "~/Dropbox/org-files/roam/journal"
+										 "~/Dropbox/org-files/roam/20210910164514-personal_university.org")))
+		  
 	 #+end_src
 **** Org bullets
 
@@ -672,10 +673,10 @@
 	   :after org-roam)
 	 
 	 (cond
-	  ((string-equal system-type "gnu/linux")
+	  ((string-equal system-type "gnu/linux"))
 	   ((string-equal system-type "darwin")
 		(add-to-list 'load-path "~/.emacs.d/site-lisp/org-roam-ui")
-		(require 'org-roam-ui))))
+		(require 'org-roam-ui)))
 	 
 	 #+end_src
 	 
