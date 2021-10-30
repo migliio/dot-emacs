@@ -44,28 +44,22 @@
   Use =auto-compile= for compiling .el file automatically on save.
 
   #+begin_src emacs-lisp
-
+  
   (use-package auto-compile
 	:ensure t
 	:config
 	(when (version< emacs-version "24.4")
 	  '((auto-compile-on-save-mode 1))))
-
+  
   #+end_src
 
   Install also =quelpa= for package management.
 
   #+begin_src emacs-lisp
-
+  
   (use-package quelpa
 	:ensure t)
-
-  (quelpa
-   '(quelpa-use-package
-	 :fetcher git
-	 :url "https://github.com/quelpa/quelpa-use-package.git"))
-  (require 'quelpa-use-package)
-
+  
   #+end_src
 
 * Keep emacs.d clean
@@ -178,6 +172,7 @@
 	#+begin_src emacs-lisp
 	
 	(setq auto-revert-interval 1              ; Refresh buffers fast
+		  initial-scratch-message nil         ; Clean scratch buffer
 		  recentf-max-saved-items 100         ; Show more recent files
 		  scroll-margin 1                     ; Space between cursor and top/bottom
 		  custom-file                         ; Customizations in a separate file
@@ -214,17 +209,6 @@
 	(setq ls-lisp-dirs-first t)
 	
 	#+end_src
-*** Font
-
-	I want the JetbrainsMono font, but on the Retina Display I need a bigger size.
-
-	#+begin_src emacs-lisp
-			
-	;; Change font and size
-	(set-frame-font "Jetbrains Mono 16" nil t)
-			
-	#+end_src
-	
 *** Which Key
 
 	Inspect a buffer with all assigned keybindings with =which-key= is really useful.
@@ -240,6 +224,19 @@
 	
 	#+end_src
 	 
+*** Font
+
+	I want the JetbrainsMono font, but on the Retina Display I need a bigger size.
+
+	#+begin_src emacs-lisp
+	
+	;; Change font and size
+	(set-frame-font "JetBrains Mono 14" nil t)
+	(when (memq window-system '(mac ns))
+	  (set-frame-font "JetBrains Mono 16" nil t))
+	
+	#+end_src
+	 
 *** Theme
 
 	I keep other themes commented in case I want to switch between them.
@@ -252,17 +249,43 @@
 	  ;; Global settings (defaults)
 	  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
 			doom-themes-enable-italic t) ; if nil, italics is universally disabled
-	  ;; (load-theme 'doom-one t)
-	  (load-theme 'doom-homage-white t)
+	  (load-theme 'doom-one t)
 	
 	  ;; Enable flashing mode-line on errors
 	  (doom-themes-visual-bell-config)
 	  ;; Enable custom neotree theme (all-the-icons must be installed!)
 	  (doom-themes-neotree-config)
+	  ;; or for treemacs users
+	  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+	  (doom-themes-treemacs-config)
 	  ;; Corrects (and improves) org-mode's native fontification.
 	  (doom-themes-org-config))
 	
 	#+end_src
+	 
+*** Modeline
+
+	I really love Doom Modeline. I'll customize it in the best way for fitting my needs (also for programming/writing).
+
+	#+begin_src emacs-lisp
+	
+	;; Install and customize doom-modeline
+	(use-package doom-modeline
+	  :ensure t
+	  :hook (after-init . doom-modeline-init)
+	  :custom-face
+	  :custom
+	  (doom-modeline-height 25)
+	  (doom-modeline-bar-width 3)
+	  (doom-modeline-lsp t)
+	  (doom-modeline-project-detection 'project)
+	  (doom-modeline-icon (display-graphic-p))
+	  (doom-modeline-major-mode-color-icon t)
+	  (doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode))
+	  (doom-modeline-buffer-state-icon t))
+	
+	#+end_src
+	 
 *** Dashboard
 
 	I really like to have a dashboard at startup, it feels like I'm inside a commond IDE.
@@ -466,28 +489,51 @@
 	 (setq org-crypt-key nil)
 	 
 	 #+end_src
-	 	 
+	 
+**** Org agenda
+
+	 Org super agenda is a great improvement to the standard Org agenda. Let's install and confgure it!
+
+	 #+begin_src emacs-lisp
+	 
+	 (use-package org-super-agenda
+	   :ensure t
+	   :after org
+	   :bind ("C-c a" . org-agenda)
+	   :config
+	   (setq org-super-agenda-groups
+			 '((:name ":timer:"
+					  :time-grid t
+					  :tag "timeblocking")
+			   (:name ":boy_tone1:"
+					  :tag "personal")
+			   (:name ":heavy-check-mark:"
+					  :tag "todo")
+			   (:name ":bookmark-tabs:"
+					  :tag "rush")
+			   (:name ":inbox_tray:"
+					  :tag "inputs")
+			   (:name ":exclamation:"
+					  ;; Single arguments given alone
+					  :tag "urgent"
+					  :tag "exam"
+					  :priority "A")))
+	   (org-super-agenda-mode))
+	 
+	 #+end_src
+	 
 **** Emojify
 
 	 Emojis are fun.
 
 	 #+begin_src emacs-lisp
-
+	 
 	 (use-package emojify
 	   :ensure t
 	   :config
 	   (global-emojify-mode t))
-
+	 
 	 #+end_src
-**** Org-board
-
-	 Link rot is real. I want to archive useful websites.
-
-	 #+begin_src emacs-lisp
-	 (use-package org-board
-	   :ensure t)
-	 #+end_src
-
 *** Org logseq
 
 	I use =logseq= as my PKM system so I want it also on Emacs.
@@ -501,6 +547,149 @@
 		
 	#+end_src
 	
+*** Org roam
+**** General configuration
+	 Using the Zettelkasten method really improves my note taking experience. The best package to do so is definitely =org-roam=. Installing/configuring it.
+
+	 #+begin_src emacs-lisp
+	 (use-package org-roam
+	   :ensure t
+	   :init
+	   (setq org-roam-v2-ack t)
+	   :custom
+	   (org-roam-directory (file-truename "~/Dropbox/org-files/roam"))
+	   :bind (("C-c n l" . org-roam-buffer-toggle)
+			  ("C-c n f" . org-roam-node-find)
+			  ("C-c n g" . org-roam-graph)
+			  ("C-c n i" . org-roam-node-insert)
+			  ("C-c n c" . org-roam-capture)
+			  ;; Dailies
+			  ("C-c n d t" . org-roam-dailies-capture-today)
+			  ("C-c n d y" . org-roam-dailies-capture-yesterday)
+			  ("C-c n d d" . org-roam-dailies-capture-date)
+			  ("C-c n d f t" . org-roam-dailies-goto-today)
+			  ("C-c n d f y" . org-roam-dailies-goto-yesterday)
+			  ("C-c n d f d" . org-roam-dailies-goto-date))
+	   :config
+	   (org-roam-db-autosync-mode)
+	 
+	   ;; org-roam templates
+	   (setq org-roam-capture-templates
+			 '(("d" "default" plain "\n- *Keywords*::\n\n%?"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unnarrowed t)
+	 
+			   ("u" "university")
+			   ("uc" "course" plain
+				"\n- *Lecturer*:: %?\n- *University*:: \n- *Academic Year*:: %^{Academic Year}\n- *Semester*:: %^{Semester}\n- *Keywords*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("ul" "lecture" plain
+				"\n- *Course*:: %?\n- *Lecture #*:: %^{Lecture #}\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *Resources*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+	 
+			   ("p" "people" plain
+				"\n- *Phone number*:: %^{Phone number}\n- *E-mail*:: %^{E-mail}\n- *Twitter*:: %^{Twitter}\n- *GitHub*:: %^{GitHub}\n- *Website*:: %^{Website}\n- *Company*:: %?\n- *Role*:: %^{Role}\n- *Location*::\n- *How we met*:: %^{How we met}\n- *Birthdate*:: %^{Birthdate}u\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("s" "software" plain
+				"\n- *Developer(s)*:: %?\n- *Status*:: %^{Status|@maintained|@unmaintained}\n- *Repository*:: %^{Repository}\n- *Recommended by*::\n- *Keywords*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("P" "place" plain
+				"\n- *Address*:: %^{Address}\n- *City*::%?\n- *Why I know this place*:: %^{Why I know this place}\n- *First time I visited it*:: %^{First time I visited it}u\n- *Keywords*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+	 
+			   ("r" "resources")
+			   ("rb" "book" plain
+				"\n- *Author*:: %?\n- *Status*:: %^{Status}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Keywords*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("ra" "article" plain
+				"\n- *Author*:: %?\n- *URL*:: %^{URL}\n- *Related*:: %^{Related}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("rv" "video" plain
+				"\n- *Creator*:: %?\n- *URL*:: %^{URL}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n\n"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+	 
+			   ("j" "project")
+			   ("jo" "overview" plain
+				"\n- *What*:: %^{What}\n- *Areas*:: %?\n- *Repository*:: %^{Repository}\n- *Status*:: %^{Status|@active|@completed|@ready|@abandoned}\n- *Date*:: %^{Date}u\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Success criteria*::\n- *Keywords*::\n\n* Details\n* Tasks\n* Resources\n* Artifacts"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("jt" "task" plain
+				"\n- *Project*:: %^{Project}\n- *Taken by*:: %?\n- *Status*:: %^{Status|@active|@completed|@picked|@abandoned}\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Success criteria*::\n\n* Details\n* Roadmap"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+	 
+			   ("R" "plans")
+			   ("Ry" "year" plain
+				"\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Values review and life physolophy\n* 5 Years Vision(s)\n* Goal definition\n* Financial review\n* Time tracking review"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("Rq" "quarter" plain
+				"\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Projects review\n* Financial review\n* Time tracking review"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("Rm" "month" plain
+				"\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Projects and task picking\n* Financial review\n* Time tracking review"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ("Rw" "week" plain
+				"\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n\n* Overview\n* Time blocking\n* Task picking"
+				:if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								   "#+title: ${title}\n")
+				:unarrowed t)
+			   ))
+	 
+	   ;; Journaling in org-roam
+	   (setq org-roam-dailies-directory "journal/")
+	   (setq org-roam-dailies-capture-templates
+			 '(("d" "default" entry
+				"* %?"
+				:if-new (file+head "%<%Y-%m-%d>.org"
+								   "#+title: %<%Y-%m-%d>\n")))))
+	 
+	 #+end_src	
+**** Org roam UI
+
+	 Isn't it cool to have a Roam-Research-like experience within Emacs?
+
+	 #+begin_src emacs-lisp
+	 (use-package websocket
+	   :ensure t
+	   :after org-roam)
+	 
+	 (use-package simple-httpd
+	   :ensure t
+	   :after org-roam)
+	 
+	 (cond
+	  ((string-equal system-type "gnu/linux")
+	   ((string-equal system-type "darwin")
+		(add-to-list 'load-path "~/.emacs.d/site-lisp/org-roam-ui")
+		(require 'org-roam-ui))))
+	 
+	 #+end_src
+	 
 *** Deft
 
 	Searching through roam entries could be a painful experience. =deft= fix this.
@@ -512,7 +701,7 @@
 	  :bind ("C-c d" . deft)
 	  :config
 	  ;; Set the deft directory and file extensions
-	  (setq deft-directory "~/Dropbox/logseq/")
+	  (setq deft-directory "~/Dropbox/org-files/roam/")
 	  (setq deft-extensions '("org" "md" "txt"))
 	  (add-to-list 'deft-extensions "tex")
 	  (setq deft-recursive t))
@@ -625,7 +814,7 @@
 	 
 	 #+end_src
 	 
-**** R
+**** C/C++
 *** Autocompletion
 
 	I use Company as my default autocompletion framework.
@@ -639,3 +828,27 @@
 	
 	#+end_src
 		
+** RSS feed
+
+   I really like RSS readers and I use =elfeed= as my favorite one in Emacs.
+
+   #+begin_src emacs-lisp
+   
+   (use-package elfeed
+	 :ensure t
+	 :config
+	 ;; Settings for elfeed
+	 (setq elfeed-feeds
+		   '("https://awealthofcommonsense.com/feed"
+			 "https://ofdollarsanddata.com/feed"
+			 "https://www.smbc-comics.com/comic/rss"
+			 "https://xkcd.com/rss.xml"
+			 "https://fs.blog/blog/feed/"
+			 "https://gwern.substack.com/feed"
+			 "https://moretothat.com/feed/"
+			 "https://putanumonit.com/feed/"
+			 "https://www.ribbonfarm.com/feed/"
+			 "https://retireinprogress.com/feed/"
+			 )))
+   
+   #+end_src
