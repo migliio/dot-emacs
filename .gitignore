@@ -1,28 +1,6 @@
-# Ignore everything
-.org-id-locations
-auto-save-list/
-autosaves/
-custom.el
-elpa/
-network-security.data
-projectile-bookmarks.eld
-recentf
-smex-items
-tramp
-transient/
-url/
-init.shit.el
-emojis
-org-roam.db
-bookmarks
-.lsp-session-v1
-
-# But not these files...
-# !.gitignore
-# !LICENSE.md
-# !README.md
-# !init.el
-# !init.org
-# !site-lisp
 /.cache/
-/ccls/
+/.org-id-locations
+/auto-save-list/
+/elpa/
+/quelpa/
+init.el
