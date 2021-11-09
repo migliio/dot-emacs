@@ -176,31 +176,32 @@
 	Clean the Emacs interface making it as minimal as possible, without getting rid of useful improvements.
 
 	#+begin_src emacs-lisp
-	
+
 	(setq auto-revert-interval 1              ; Refresh buffers fast
 		  recentf-max-saved-items 100         ; Show more recent files
 		  scroll-margin 1                     ; Space between cursor and top/bottom
 		  custom-file                         ; Customizations in a separate file
 		  (concat user-emacs-directory "custom.el"))
-	
+
 	(setq-default tab-width 4                 ; Smaller tabs
 				  split-width-threshold 160   ; Split verticly by default
 				  split-height-threshold nil  ; Split verticly by default
 				  frame-resize-pixelwise t)   ; Fine-grained frame resize
-	
+
 	;; Answering 'yes' and 'no' is tedious
 	(fset 'yes-or-no-p 'y-or-n-p)
-	
+
 	;; Enable some useful modes
 	(dolist (mode
 			 '(column-number-mode           ; Show column number in mode line
 			   delete-selection-mode        ; Replace selected text
 			   show-paren-mode              ; Highlight matching parentheses
 			   recentf-mode                 ; Show recently opened files
+			   winner-mode                  ; Go back and forth with windows
 			   global-visual-line-mode      ; Avoid new line problems
 			   ))
 	  (funcall mode 1))
-	
+
 	;; Disable some boring modes
 	(dolist (mode
 			 '(tool-bar-mode                  ; No toolbars, more room for text
@@ -208,21 +209,21 @@
 			   menu-bar-mode                  ; Menu bar is useless
 			   blink-cursor-mode))            ; The blinking cursor gets old
 	  (funcall mode 0))
-	
+
 	;; Show directories first in dired
 	(setq ls-lisp-use-insert-directory-program nil)
 	(setq ls-lisp-dirs-first t)
-	
+
 	#+end_src
 *** Font
 
 	I want the JetbrainsMono font, but on the Retina Display I need a bigger size.
 
 	#+begin_src emacs-lisp
-			
+
 	;; Change font and size
-	(set-frame-font "Jetbrains Mono 16" nil t)
-			
+	(set-frame-font "Jetbrains Mono 17" nil t)
+
 	#+end_src
 	
 *** Which Key
@@ -230,14 +231,14 @@
 	Inspect a buffer with all assigned keybindings with =which-key= is really useful.
 
 	#+begin_src emacs-lisp
-	
+
 	(use-package which-key
 	  :ensure t
 	  :init (which-key-mode)
 	  :diminish which-key-mode
 	  :config
 	  (setq which-key-idle-delay 0.3))
-	
+
 	#+end_src
 	 
 *** Theme
@@ -245,7 +246,7 @@
 	I keep other themes commented in case I want to switch between them.
 
 	#+begin_src emacs-lisp
-	
+
 	(use-package doom-themes
 	  :ensure t
 	  :config
@@ -254,27 +255,27 @@
 			doom-themes-enable-italic t) ; if nil, italics is universally disabled
 	  ;; (load-theme 'doom-one t)
 	  (load-theme 'doom-homage-white t)
-	
+
 	  ;; Enable flashing mode-line on errors
 	  (doom-themes-visual-bell-config)
 	  ;; Enable custom neotree theme (all-the-icons must be installed!)
 	  (doom-themes-neotree-config)
 	  ;; Corrects (and improves) org-mode's native fontification.
 	  (doom-themes-org-config))
-	
+
 	#+end_src
 *** Dashboard
 
 	I really like to have a dashboard at startup, it feels like I'm inside a commond IDE.
 
 	#+begin_src emacs-lisp
-	
+
 	(use-package dashboard
 	  :ensure t
 	  :config
 	  (setq dashboard-startup-banner 'logo)
 	  (dashboard-setup-startup-hook))
-	
+
 	#+end_src
 ** Files navigation
 
@@ -292,12 +293,12 @@
 	 (setq ivy-wrap t)
 	 (setq ivy-count-format "(%d/%d) ")
 	 (setq enable-recursive-minibuffers t))
-   
+
    (use-package ivy-hydra
 	 :ensure t
 	 :defer t
 	 :after hydra)
-   
+
    (use-package ivy-posframe
 	 :ensure t
 	 :disabled
@@ -312,7 +313,7 @@
 									 (left-fringe . 8)
 									 (right-fringe . 8)))
 	 (ivy-posframe-mode 1))
-   
+
    (use-package counsel
 	 :ensure t
 	 :bind (("M-x" . counsel-M-x)
@@ -324,7 +325,8 @@
 	 (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
 	 :config
 	 (setq ivy-initial-inputs-alist nil)) ;; Don't start searches with ^
-   
+     (global-set-key (kbd "M-x") 'counsel-M-x)
+
    #+end_src
 
    I really like to see directories first and then files in =dired=, so I will enable this feature.
@@ -401,57 +403,30 @@
 	 Well, I think that =org-mode= doesn't need any introduction or explanation. In the last two years ([2021-09-03 Fri]) it changed my life for the best.
 
 	 #+begin_src emacs-lisp
-<<<<<<< HEAD
 	 (use-package org
 	   :defer t
 	   :config
-	 
+
 	   ;; In org-mode, I want source blocks to be themed as they would in native mode
 	   (setq org-src-fontify-natively t
 			 org-src-tab-acts-natively t
 			 org-confirm-babel-evaluate nil
 			 org-edit-src-content-indentation 0)
-	 
+
 	   ;; Set org-mode TODO keywords
 	   (setq org-todo-keywords
 			 (quote ((sequence "TODO(t)" "DOING(i)" "|" "DONE(d)"))))
-	 
+
 	   ;; Enable DONE logging in org-mode
 	   (setq org-log-done 'time)
-	 
+
 	   ;; View LaTeX previews in better quality
 	   (setq org-latex-create-formula-image-program 'dvisvgm)
-	 
+
 	   ;; Set org agenda directory
 	   (setq org-agenda-files (list "~/Dropbox/org-files/roam/journal"
 									"~/Dropbox/org-files/roam/20210910164514-personal_university.org")))
-	 
-=======
-		  (use-package org
-			:defer t
-			:config
-		  
-			;; In org-mode, I want source blocks to be themed as they would in native mode
-			(setq org-src-fontify-natively t
-				  org-src-tab-acts-natively t
-				  org-confirm-babel-evaluate nil
-				  org-edit-src-content-indentation 0)
-		  
-			;; Set org-mode TODO keywords
-			(setq org-todo-keywords
-				  (quote ((sequence "TODO(t)" "DOING(i)" "|" "DONE(d)"))))
-		  
-			;; Enable DONE logging in org-mode
-			(setq org-log-done 'time)
-		  
-			;; View LaTeX previews in better quality
-			(setq org-latex-create-formula-image-program 'dvisvgm)
-		  
-			;; Set org agenda directory
-			(setq org-agenda-files (list "~/Dropbox/org-files/roam/journal"
-										 "~/Dropbox/org-files/roam/20210910164514-personal_university.org")))
-		  
->>>>>>> 2ce3b43987462f6a468755cafb278519a930022e
+
 	 #+end_src
 **** Org bullets
 
@@ -471,12 +446,12 @@
 	 I'm going to set several =org-mode= export backends.
 	 
 	 #+begin_src emacs-lisp
-	 
+
 	 ;; Assuming that these export backends are installed in the site-lisp folder
 	 (require 'ox-twbs)
 	 (require 'ox-reveal)
 	 (setq org-export-backends '(html latex ox-twbs ox-reveal))
-	 
+
 	 #+end_src
 	 
 **** Encrypting
@@ -484,14 +459,14 @@
 	 Enabling =org-crypt= support as it is automatically installed with =org-mode= itself.
 
 	 #+begin_src emacs-lisp
-	 
+
 	 ;; Enable and set org-crypt
 	 (require 'org-crypt)
 	 (org-crypt-use-before-save-magic)
 	 (setq org-tags-exclude-from-inheritance (quote ("crypt")))
 	 ;; gpg key to use for encryption
 	 (setq org-crypt-key nil)
-	 
+
 	 #+end_src
 	 	 
 **** Emojify
@@ -511,25 +486,18 @@
 	 Link rot is real. I want to archive useful websites.
 
 	 #+begin_src emacs-lisp
-<<<<<<< HEAD
+
 	 (use-package org-board
 	   :ensure t)
-=======
+
 	 (use-package websocket
 	   :ensure t
 	   :after org-roam)
-	 
+
 	 (use-package simple-httpd
 	   :ensure t
 	   :after org-roam)
-	 
-	 (cond
-	  ((string-equal system-type "gnu/linux"))
-	   ((string-equal system-type "darwin")
-		(add-to-list 'load-path "~/.emacs.d/site-lisp/org-roam-ui")
-		(require 'org-roam-ui)))
-	 
->>>>>>> 2ce3b43987462f6a468755cafb278519a930022e
+
 	 #+end_src
 
 *** Org logseq
@@ -537,12 +505,12 @@
 	I use =logseq= as my PKM system so I want it also on Emacs.
 
 	#+begin_src elisp
-		
-		(use-package org-logseq
-		  :quelpa (org-logseq :fetcher github :repo "llcc/org-logseq" :files ("*"))
-		  :custom (org-logseq-dir "~/Dropox/logseq")
-		  :config ((org-mode . ((eval org-logseq-mode 1)))))
-		
+
+	(use-package org-logseq
+	  :quelpa (org-logseq :fetcher github :repo "llcc/org-logseq" :files ("*"))
+	  :custom (org-logseq-dir "~/Dropox/logseq")
+	  :config ((org-mode . ((eval org-logseq-mode 1)))))
+
 	#+end_src
 	
 *** Deft
@@ -550,7 +518,7 @@
 	Searching through roam entries could be a painful experience. =deft= fix this.
 
 	#+begin_src emacs-lisp
-	
+
 	(use-package deft
 	  :ensure t
 	  :bind ("C-c d" . deft)
@@ -560,7 +528,7 @@
 	  (setq deft-extensions '("org" "md" "txt"))
 	  (add-to-list 'deft-extensions "tex")
 	  (setq deft-recursive t))
-	
+
 	#+end_src
 	
 *** Olivetti
@@ -568,27 +536,44 @@
 	I want a nice writing environment in Emacs.
 
 	#+begin_src emacs-lisp
-	
+
 	(use-package olivetti
 	  :bind ("C-c o" . olivetti-mode)
 	  :ensure t)
-	
+
 	#+end_src
 	
 ** Programming modes
+*** Project management
+**** Projectile
+
+	 I want to use [[https://docs.projectile.mx/][Projectile]] for project management stuff.
+
+	 #+begin_src emacs-lisp
+
+	 (use-package projectile
+	   :ensure t
+	   :init
+	   (projectile-mode +1)
+	   :bind (:map projectile-mode-map
+				   ("s-p" . projectile-command-map)
+				   ("C-c p" . projectile-command-map)))
+
+	 #+end_src
+
 *** Terminal
 
 	I want to use =vterm= as my default terminal emulator. It has a fully coloured interface and it integrates perfectly with MacOS.
 
 	#+begin_src emacs-lisp
-	
+
 	(use-package vterm
 	  :ensure t
 	  :commands vterm
 	  :bind ("C-c v" . vterm)
 	  :config
 	  (setq vterm-max-scrollback 10000))
-	
+
 	#+end_src
 	
 *** VCS
