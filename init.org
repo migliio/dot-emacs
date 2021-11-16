@@ -44,28 +44,22 @@
   Use =auto-compile= for compiling .el file automatically on save.
 
   #+begin_src emacs-lisp
-
+  
   (use-package auto-compile
 	:ensure t
 	:config
 	(when (version< emacs-version "24.4")
 	  '((auto-compile-on-save-mode 1))))
-
+  
   #+end_src
 
   Install also =quelpa= for package management.
 
   #+begin_src emacs-lisp
-
+  
   (use-package quelpa
 	:ensure t)
-
-  (quelpa
-   '(quelpa-use-package
-	 :fetcher git
-	 :url "https://github.com/quelpa/quelpa-use-package.git"))
-  (require 'quelpa-use-package)
-
+  
   #+end_src
 
 * Keep emacs.d clean
@@ -176,21 +170,22 @@
 	Clean the Emacs interface making it as minimal as possible, without getting rid of useful improvements.
 
 	#+begin_src emacs-lisp
-
+	
 	(setq auto-revert-interval 1              ; Refresh buffers fast
+		  initial-scratch-message nil         ; Clean scratch buffer
 		  recentf-max-saved-items 100         ; Show more recent files
 		  scroll-margin 1                     ; Space between cursor and top/bottom
 		  custom-file                         ; Customizations in a separate file
 		  (concat user-emacs-directory "custom.el"))
-
+	
 	(setq-default tab-width 4                 ; Smaller tabs
 				  split-width-threshold 160   ; Split verticly by default
 				  split-height-threshold nil  ; Split verticly by default
 				  frame-resize-pixelwise t)   ; Fine-grained frame resize
-
+	
 	;; Answering 'yes' and 'no' is tedious
 	(fset 'yes-or-no-p 'y-or-n-p)
-
+	
 	;; Enable some useful modes
 	(dolist (mode
 			 '(column-number-mode           ; Show column number in mode line
@@ -201,7 +196,7 @@
 			   global-visual-line-mode      ; Avoid new line problems
 			   ))
 	  (funcall mode 1))
-
+	
 	;; Disable some boring modes
 	(dolist (mode
 			 '(tool-bar-mode                  ; No toolbars, more room for text
@@ -209,44 +204,43 @@
 			   menu-bar-mode                  ; Menu bar is useless
 			   blink-cursor-mode))            ; The blinking cursor gets old
 	  (funcall mode 0))
-
+	
 	;; Show directories first in dired
 	(setq ls-lisp-use-insert-directory-program nil)
 	(setq ls-lisp-dirs-first t)
-
-	#+end_src
-*** Font
-
-	I want the JetbrainsMono font, but on the Retina Display I need a bigger size.
-
-	#+begin_src emacs-lisp
-
-	;; Change font and size
-	(set-frame-font "Jetbrains Mono 17" nil t)
-
-	#+end_src
 	
+	#+end_src
 *** Which Key
 
 	Inspect a buffer with all assigned keybindings with =which-key= is really useful.
 
 	#+begin_src emacs-lisp
-
+	
 	(use-package which-key
 	  :ensure t
 	  :init (which-key-mode)
 	  :diminish which-key-mode
 	  :config
 	  (setq which-key-idle-delay 0.3))
-
+	
 	#+end_src
 	 
+*** Font
+
+	I want the JetbrainsMono font, but on the Retina Display I need a bigger size.
+
+	#+begin_src emacs-lisp
+	
+	;; Change font and size
+	(set-frame-font "Jetbrains Mono 17" nil t)
+	
+	#+end_src
 *** Theme
 
 	I keep other themes commented in case I want to switch between them.
 
 	#+begin_src emacs-lisp
-
+	
 	(use-package doom-themes
 	  :ensure t
 	  :config
@@ -255,27 +249,41 @@
 			doom-themes-enable-italic t) ; if nil, italics is universally disabled
 	  ;; (load-theme 'doom-one t)
 	  (load-theme 'doom-homage-white t)
-
+	
 	  ;; Enable flashing mode-line on errors
 	  (doom-themes-visual-bell-config)
 	  ;; Enable custom neotree theme (all-the-icons must be installed!)
 	  (doom-themes-neotree-config)
 	  ;; Corrects (and improves) org-mode's native fontification.
 	  (doom-themes-org-config))
-
+	
 	#+end_src
+	
 *** Dashboard
 
 	I really like to have a dashboard at startup, it feels like I'm inside a commond IDE.
 
 	#+begin_src emacs-lisp
-
+	
 	(use-package dashboard
 	  :ensure t
 	  :config
 	  (setq dashboard-startup-banner 'logo)
 	  (dashboard-setup-startup-hook))
+	
+	#+end_src
+*** Moody (tabs)
 
+	I want to try Moody for managing tabs in Emacs.
+
+	#+begin_src emacs-lisp
+	(use-package moody
+	  :ensure t
+	  :config
+	  (setq x-underline-at-descent-line t)
+	  (moody-replace-mode-line-buffer-identification)
+	  (moody-replace-vc-mode)
+	  (moody-replace-eldoc-minibuffer-message-function))
 	#+end_src
 ** Files navigation
 
@@ -293,12 +301,12 @@
 	 (setq ivy-wrap t)
 	 (setq ivy-count-format "(%d/%d) ")
 	 (setq enable-recursive-minibuffers t))
-
+   
    (use-package ivy-hydra
 	 :ensure t
 	 :defer t
 	 :after hydra)
-
+   
    (use-package ivy-posframe
 	 :ensure t
 	 :disabled
@@ -313,7 +321,7 @@
 									 (left-fringe . 8)
 									 (right-fringe . 8)))
 	 (ivy-posframe-mode 1))
-
+   
    (use-package counsel
 	 :ensure t
 	 :bind (("M-x" . counsel-M-x)
@@ -325,8 +333,7 @@
 	 (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
 	 :config
 	 (setq ivy-initial-inputs-alist nil)) ;; Don't start searches with ^
-     (global-set-key (kbd "M-x") 'counsel-M-x)
-
+   
    #+end_src
 
    I really like to see directories first and then files in =dired=, so I will enable this feature.
@@ -404,29 +411,30 @@
 
 	 #+begin_src emacs-lisp
 	 (use-package org
+	   :ensure t
 	   :defer t
+	   :bind ("C-c a" . org-agenda)
 	   :config
-
+	 
 	   ;; In org-mode, I want source blocks to be themed as they would in native mode
 	   (setq org-src-fontify-natively t
 			 org-src-tab-acts-natively t
 			 org-confirm-babel-evaluate nil
 			 org-edit-src-content-indentation 0)
-
+	 
 	   ;; Set org-mode TODO keywords
 	   (setq org-todo-keywords
 			 (quote ((sequence "TODO(t)" "DOING(i)" "|" "DONE(d)"))))
-
+	 
 	   ;; Enable DONE logging in org-mode
 	   (setq org-log-done 'time)
-
+	 
 	   ;; View LaTeX previews in better quality
 	   (setq org-latex-create-formula-image-program 'dvisvgm)
-
+	 
 	   ;; Set org agenda directory
-	   (setq org-agenda-files (list "~/Dropbox/org-files/roam/journal"
-									"~/Dropbox/org-files/roam/20210910164514-personal_university.org")))
-
+	   (setq org-agenda-files (list "~/Dropbox/pkm/journal")))
+	 
 	 #+end_src
 **** Org bullets
 
@@ -446,12 +454,12 @@
 	 I'm going to set several =org-mode= export backends.
 	 
 	 #+begin_src emacs-lisp
-
+	 
 	 ;; Assuming that these export backends are installed in the site-lisp folder
 	 (require 'ox-twbs)
 	 (require 'ox-reveal)
 	 (setq org-export-backends '(html latex ox-twbs ox-reveal))
-
+	 
 	 #+end_src
 	 
 **** Encrypting
@@ -459,58 +467,193 @@
 	 Enabling =org-crypt= support as it is automatically installed with =org-mode= itself.
 
 	 #+begin_src emacs-lisp
-
+	 
 	 ;; Enable and set org-crypt
 	 (require 'org-crypt)
 	 (org-crypt-use-before-save-magic)
 	 (setq org-tags-exclude-from-inheritance (quote ("crypt")))
 	 ;; gpg key to use for encryption
 	 (setq org-crypt-key nil)
-
+	 
 	 #+end_src
-	 	 
+	 
 **** Emojify
 
 	 Emojis are fun.
 
 	 #+begin_src emacs-lisp
-
+	 
 	 (use-package emojify
 	   :ensure t
 	   :config
 	   (global-emojify-mode t))
-
+	 
 	 #+end_src
+
+
+	 I want a nice writing environment in Emacs.
+
+	 #+begin_src emacs-lisp
+	 
+	 (use-package olivetti
+	   :bind ("C-c o" . olivetti-mode)
+	   :ensure t)
+	 
+	 #+end_src
+
 **** Org-board
 
 	 Link rot is real. I want to archive useful websites.
 
 	 #+begin_src emacs-lisp
-
+	 
 	 (use-package org-board
 	   :ensure t)
-
+	 
 	 (use-package websocket
 	   :ensure t
 	   :after org-roam)
-
+	 
 	 (use-package simple-httpd
 	   :ensure t
 	   :after org-roam)
-
+	 
 	 #+end_src
+*** Org-roam
+	The best package to manage my PKM is definitely =org-roam=. Installing/configuring it.
 
-*** Org logseq
+	#+begin_src emacs-lisp
+	(use-package org-roam
+	  :ensure t
+	  :init
+	  (setq org-roam-v2-ack t)
+	  :custom
+	  (org-roam-directory (file-truename "~/Dropbox/pkm/pages"))
+	  :bind (("C-c n l" . org-roam-buffer-toggle)
+			 ("C-c n f" . org-roam-node-find)
+			 ("C-c n g" . org-roam-graph)
+			 ("C-c n i" . org-roam-node-insert)
+			 ("C-c n c" . org-roam-capture)
+			 ;; Dailies
+			 ("C-c n d t" . org-roam-dailies-capture-today)
+			 ("C-c n d y" . org-roam-dailies-capture-yesterday)
+			 ("C-c n d d" . org-roam-dailies-capture-date)
+			 ("C-c n d f t" . org-roam-dailies-goto-today)
+			 ("C-c n d f y" . org-roam-dailies-goto-yesterday)
+			 ("C-c n d f d" . org-roam-dailies-goto-date))
+	  :config
+	  (org-roam-db-autosync-mode)
+	  (setq org-roam-dailies-directory "~/Dropbox/pkm/journal")
+	  ;; org-roam templates
+	  (setq org-roam-capture-templates
+			'(("d" "default" plain "\n#+BEGIN_COMMENT\n- *Resources*::%?\n- *Keywords*::\n#+END_COMMENT\n\n"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unnarrowed t)
+			  ("u" "university")
+			  ("uc" "course" plain	"\n#+BEGIN_COMMENT\n- *Lecturer*:: %?\n- *University*:: \n- *Academic Year*:: %^{Academic Year}\n- *Semester*:: %^{Semester}\n- *Keywords*::\n#+END_COMMENT\n\n"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("ul" "lecture" plain
+			   "\n#+BEGIN_COMMENT\n- *Course*:: %?\n- *Lecture #*:: %^{Lecture #}\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *Resources*::\n#+END_COMMENT\n\n"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("p" "personal")
+			  ("pp" "people" plain
+			   "\n#+BEGIN_COMMENT\n- *Phone number*:: %^{Phone number}\n- *E-mail*:: %^{E-mail}\n- *Twitter*:: %^{Twitter}\n- *GitHub*:: %^{GitHub}\n- *Website*:: %^{Website}\n- *Company*:: %?\n- *Role*:: %^{Role}\n- *Location*::\n- *How we met*:: %^{How we met}\n- *Birthdate*:: %^{Birthdate}u\n#+END_COMMENT\n\n"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("pP" "place" plain
+			   "\n#+BEGIN_COMMENT\n- *Address*:: %^{Address}\n- *City*::%?\n- *Why I know this place*:: %^{Why I know this place}\n- *First time I visited it*:: %^{First time I visited it}u\n- *Keywords*::\n#+END_COMMENT\n\n"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("ps" "software" plain
+			   "\n#+BEGIN_COMMENT\n- *Developer(s)*:: %?\n- *Status*:: %^{Status|@maintained|@unmaintained}\n- *Repository*:: %^{Repository}\n- *Recommended by*::\n- *Keywords*::\n#+END_COMMENT\n\n"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("r" "resources")
+			  ("rb" "book" plain
+			   "\n#+BEGIN_COMMENT\n- *Author*:: %?\n- *Status*:: %^{Status|@buyed|@reading|@read}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Keywords*::\n#+END_COMMENT\n\n"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("rm" "manual" plain
+			   "\n#+BEGIN_COMMENT\n- *Author*:: %?\n- *Areas*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Zotero Entry*::\n- *Resources*::\n- *Keywords*::\n#+END_COMMENT\n\n"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("ra" "article" plain
+			   "\n#+BEGIN_COMMENT\n- *Author*:: %?\n- *URL*:: %^{URL}\n- *Related*:: %^{Related}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n#+END_COMMENT\n\n"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("rv" "video" plain
+			   "\n#+BEGIN_COMMENT\n- *Creator*:: %?\n- *URL*:: %^{URL}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n#+END_COMMENT\n\n"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("rc" "conference" plain
+			   "\n#+BEGIN_COMMENT\n- *Speaker(s)*:: %?\n- *Where*::\n- *What*:: %^{What}\n- *Date*:: %^{Date}u\n- *Related*::\n- *Resources*::\n- *Keywords*::\n#+END_COMMENT\n\n"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+	
+			  ("j" "project")
+			  ("jo" "overview" plain
+			   "\n#+BEGIN_COMMENT\n- *What*:: %^{What}\n- *Areas*:: %?\n- *Repository*:: %^{Repository}\n- *Status*:: %^{Status|@active|@completed|@ready|@abandoned}\n- *Date*:: %^{Date}u\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Success criteria*::\n- *Keywords*::\n#+END_COMMENT\n* Details\n* Tasks\n* Resources\n* Artifacts"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("jt" "task" plain
+			   "\n#+BEGIN_COMMENT\n- *Project*:: %^{Project}\n- *Taken by*:: %?\n- *Status*:: %^{Status|@active|@completed|@picked|@abandoned}\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Success criteria*::\n#+END_COMMENT\n* Details\n* Sub-tasks\n* Roadmap"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+	
+			  ("R" "plans")
+			  ("Ry" "year" plain
+			   "\n#+BEGIN_COMMENT\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n#+END_COMMENT\n* Overview\n* Values review and life physolophy\n* 5 Years Vision(s)\n* Goal definition\n* Financial review\n* Time tracking review"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("Rq" "quarter" plain
+			   "\n#+BEGIN_COMMENT\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n#+END_COMMENT\n* Overview\n* Projects review\n* Financial review\n* Time tracking review"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("Rm" "month" plain
+			   "\n#+BEGIN_COMMENT\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n#+END_COMMENT\n* Overview\n* Projects and task picking\n* Financial review\n* Time tracking review"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ("Rw" "week" plain
+			   "\n#+BEGIN_COMMENT\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %^{Related}\n- *Date*:: %^{Date}u\n- *Keywords*:: %?\n#+END_COMMENT\n* Overview\n* Time blocking\n* Task picking"
+			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+								  "#+TITLE: ${title}\n")
+			   :unarrowed t)
+			  ))
+	
+	  (setq org-roam-dailies-capture-templates
+			'(("d" "default" entry
+			   "* %?"
+			   :if-new (file+head "%<%Y-%m-%d>.org"
+								  "#+TITLE: %<%Y-%m-%d>\n")))))
+	
+	#+end_src
+	
+*** Org-noter
 
-	I use =logseq= as my PKM system so I want it also on Emacs.
-
-	#+begin_src elisp
-
-	(use-package org-logseq
-	  :quelpa (org-logseq :fetcher github :repo "llcc/org-logseq" :files ("*"))
-	  :custom (org-logseq-dir "~/Dropox/logseq")
-	  :config ((org-mode . ((eval org-logseq-mode 1)))))
-
+	Install org-noter to deal with PDF notes.
+	#+begin_src emacs-lisp
+	
+	(use-package org-noter
+	  :ensure t)
+	
 	#+end_src
 	
 *** Deft
@@ -518,17 +661,32 @@
 	Searching through roam entries could be a painful experience. =deft= fix this.
 
 	#+begin_src emacs-lisp
-
+	
 	(use-package deft
 	  :ensure t
 	  :bind ("C-c d" . deft)
 	  :config
 	  ;; Set the deft directory and file extensions
-	  (setq deft-directory "~/Dropbox/logseq/")
+	  (setq deft-directory "~/Dropbox/pkm/pages/")
 	  (setq deft-extensions '("org" "md" "txt"))
 	  (add-to-list 'deft-extensions "tex")
+	  (setq deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n")
 	  (setq deft-recursive t))
+	
+	#+end_src
 
+*** Zotxt
+
+	Linking Zotero to org-roam.
+	
+	#+begin_src emacs-lisp
+	
+	(use-package zotxt
+	  :ensure t
+	  :config
+	  (add-hook 'org-mode-hook (lambda () (org-zotxt-mode 1)))
+	  (setq zotxt-default-bibliography-style "ieee"))
+	
 	#+end_src
 	
 *** Olivetti
@@ -536,11 +694,11 @@
 	I want a nice writing environment in Emacs.
 
 	#+begin_src emacs-lisp
-
+	
 	(use-package olivetti
 	  :bind ("C-c o" . olivetti-mode)
 	  :ensure t)
-
+	
 	#+end_src
 	
 ** Programming modes
@@ -550,7 +708,7 @@
 	 I want to use [[https://docs.projectile.mx/][Projectile]] for project management stuff.
 
 	 #+begin_src emacs-lisp
-
+	 
 	 (use-package projectile
 	   :ensure t
 	   :init
@@ -558,24 +716,32 @@
 	   :bind (:map projectile-mode-map
 				   ("s-p" . projectile-command-map)
 				   ("C-c p" . projectile-command-map)))
-
+	 
 	 #+end_src
-
 *** Terminal
 
 	I want to use =vterm= as my default terminal emulator. It has a fully coloured interface and it integrates perfectly with MacOS.
 
 	#+begin_src emacs-lisp
-
+	
 	(use-package vterm
 	  :ensure t
 	  :commands vterm
 	  :bind ("C-c v" . vterm)
 	  :config
 	  (setq vterm-max-scrollback 10000))
-
+	
 	#+end_src
 	
+	# *** Flycheck
+
+	# 	Enable on-the-fly spellcheck.
+
+	# 	#+begin_src emacs-lisp
+	# 	(use-package flycheck
+	# 	  :ensure t
+	# 	  :init (global-flycheck-mode))
+	# 	#+end_src
 *** VCS
 
 	I use git as my Version Control System of trust and =magit= to interact with it from inside Emacs.
@@ -601,6 +767,7 @@
 	
 *** LSP
 **** General setup
+	 
 	 Setting up Emacs as an IDE.
 
 	 #+begin_src emacs-lisp
@@ -627,6 +794,17 @@
 	   :ensure t)
 	 
 	 #+end_src
+**** Yasnippet
+
+	 Install snippets.
+
+	 #+begin_src emacs-lisp
+	 
+	 (use-package yasnippet
+	   :ensure t)
+	 
+	 #+end_src
+	 
 **** Python
 
 	 Installing Python LSP server.
@@ -655,6 +833,33 @@
 	 #+end_src
 	 
 **** R
+
+	 Installing R support for LSP.
+
+	 #+begin_src emacs-lisp
+	 (use-package ess
+	   :ensure t
+	   )
+	 #+end_src
+
+**** SQL
+
+	 Installing SQL support for LSP.
+
+	 #+begin_src emacs-lisp
+	 (setq exec-path (append exec-path '("/Users/claudio/go/bin/")))
+	 #+end_src
+
+**** Docker
+
+	 Installing Docker support for LSP.
+
+	 #+begin_src emacs-lisp
+	 (use-package dockerfile-mode
+	   :ensure t)
+	 
+	 (setq exec-path (append exec-path '("/usr/local/lib/node_modules/dockerfile-language-server-nodejs/bin/")))
+	 #+end_src
 *** Autocompletion
 
 	I use Company as my default autocompletion framework.
@@ -668,3 +873,27 @@
 	
 	#+end_src
 		
+** RSS feed
+
+   I really like RSS readers and I use =elfeed= as my favorite one in Emacs.
+
+   #+begin_src emacs-lisp
+   
+   (use-package elfeed
+	 :ensure t
+	 :config
+	 ;; Settings for elfeed
+	 (setq elfeed-feeds
+		   '("https://awealthofcommonsense.com/feed"
+			 "https://ofdollarsanddata.com/feed"
+			 "https://www.smbc-comics.com/comic/rss"
+			 "https://xkcd.com/rss.xml"
+			 "https://fs.blog/blog/feed/"
+			 "https://gwern.substack.com/feed"
+			 "https://moretothat.com/feed/"
+			 "https://putanumonit.com/feed/"
+			 "https://www.ribbonfarm.com/feed/"
+			 "https://retireinprogress.com/feed/"
+			 )))
+   
+   #+end_src
