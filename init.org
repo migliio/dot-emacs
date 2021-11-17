@@ -413,7 +413,8 @@
 	 (use-package org
 	   :ensure t
 	   :defer t
-	   :bind ("C-c a" . org-agenda)
+	   :bind (("C-c a" . org-agenda)
+			  ("C-c l" . org-store-link))
 	   :config
 	 
 	   ;; In org-mode, I want source blocks to be themed as they would in native mode
@@ -610,7 +611,7 @@
 								  "#+TITLE: ${title}\n")
 			   :unarrowed t)
 			  ("jt" "task" plain
-			   "\n#+BEGIN_COMMENT\n- *Project*:: %^{Project}\n- *Taken by*:: %?\n- *Status*:: %^{Status|@active|@completed|@picked|@abandoned}\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Success criteria*::\n#+END_COMMENT\n* Details\n* Sub-tasks\n* Roadmap"
+			   "\n#+BEGIN_COMMENT\n- *Project*:: %^{Project}\n- *Taken by*:: %?\n- *Status*:: %^{Status|@active|@completed|@picked|@abandoned}\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Resources*::\n- *Success criteria*::\n#+END_COMMENT\n* Details\n* Sub-tasks\n* Roadmap"
 			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 								  "#+TITLE: ${title}\n")
 			   :unarrowed t)
@@ -652,7 +653,10 @@
 	#+begin_src emacs-lisp
 	
 	(use-package org-noter
-	  :ensure t)
+	  :bind ("C-c r" . org-noter)
+	  :ensure t
+	  :config
+	  (setq org-noter-auto-save-last-location t))
 	
 	#+end_src
 	
