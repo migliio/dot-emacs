@@ -26,11 +26,11 @@
   First of all, let's initialize the package management setting up ELPA, MELPA and org package repositories. After that, I want Emacs loading =use-package= to manage package configuration.
 
   #+begin_src emacs-lisp
-  
+
   (require 'package)
   (setq package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
 						   ("melpa-stable" . "https://stable.melpa.org/packages/")
-						   ("org" . "https://orgmode.org/elpa/")
+						   ("nongnu" . "https://elpa.nongnu.org/nongnu/")
 						   ("melpa" . "https://melpa.org/packages/")))
   (package-initialize)
   (unless (package-installed-p 'use-package)
@@ -38,7 +38,7 @@
 	(package-refresh-contents)
 	(package-install 'use-package))
   (require 'use-package)
-  
+
   #+end_src
 
   Use =auto-compile= for compiling .el file automatically on save.
@@ -170,46 +170,48 @@
 	Clean the Emacs interface making it as minimal as possible, without getting rid of useful improvements.
 
 	#+begin_src emacs-lisp
-	
+
 	(setq auto-revert-interval 1              ; Refresh buffers fast
 		  initial-scratch-message nil         ; Clean scratch buffer
 		  recentf-max-saved-items 100         ; Show more recent files
 		  scroll-margin 1                     ; Space between cursor and top/bottom
-		  custom-file                         ; Customizations in a separate file
-		  (concat user-emacs-directory "custom.el"))
-	
+		  )
+
 	(setq-default tab-width 4                 ; Smaller tabs
 				  split-width-threshold 160   ; Split verticly by default
 				  split-height-threshold nil  ; Split verticly by default
 				  frame-resize-pixelwise t)   ; Fine-grained frame resize
-	
+
 	;; Answering 'yes' and 'no' is tedious
 	(fset 'yes-or-no-p 'y-or-n-p)
-	
+
 	;; Enable some useful modes
 	(dolist (mode
 			 '(column-number-mode           ; Show column number in mode line
-			   delete-selection-mode        ; Replace selected text
 			   show-paren-mode              ; Highlight matching parentheses
 			   recentf-mode                 ; Show recently opened files
 			   winner-mode                  ; Go back and forth with windows
 			   global-visual-line-mode      ; Avoid new line problems
 			   ))
 	  (funcall mode 1))
-	
+
 	;; Disable some boring modes
 	(dolist (mode
 			 '(tool-bar-mode                  ; No toolbars, more room for text
-			   scroll-bar-mode                ; No scroll bars either
+			   ;;scroll-bar-mode                ; No scroll bars either
 			   menu-bar-mode                  ; Menu bar is useless
 			   blink-cursor-mode))            ; The blinking cursor gets old
 	  (funcall mode 0))
-	
+
 	;; Show directories first in dired
 	(setq ls-lisp-use-insert-directory-program nil)
 	(setq ls-lisp-dirs-first t)
-	
+
+	;; Inhibit startup screen
+	(setq inhibit-startup-screen t)
+
 	#+end_src
+	
 *** Which Key
 
 	Inspect a buffer with all assigned keybindings with =which-key= is really useful.
@@ -227,14 +229,15 @@
 	 
 *** Font
 
-	I want the JetbrainsMono font, but on the Retina Display I need a bigger size.
+	Selecting the font.
 
 	#+begin_src emacs-lisp
 	
 	;; Change font and size
-	(set-frame-font "Jetbrains Mono 17" nil t)
+	(set-frame-font "Inconsolata 20" nil t)
 	
 	#+end_src
+	
 *** Theme
 
 	I keep other themes commented in case I want to switch between them.
@@ -264,75 +267,117 @@
 	I really like to have a dashboard at startup, it feels like I'm inside a commond IDE.
 
 	#+begin_src emacs-lisp
-	
-	(use-package dashboard
-	  :ensure t
-	  :config
-	  (setq dashboard-startup-banner 'logo)
-	  (dashboard-setup-startup-hook))
-	
+
+	;; (use-package dashboard
+	;;   :ensure t
+	;;   :config
+	;;   (setq dashboard-startup-banner 'logo)
+	;;   (dashboard-setup-startup-hook))
+
 	#+end_src
+	
 *** Moody (tabs)
 
 	I want to try Moody for managing tabs in Emacs.
 
 	#+begin_src emacs-lisp
-	(use-package moody
-	  :ensure t
-	  :config
-	  (setq x-underline-at-descent-line t)
-	  (moody-replace-mode-line-buffer-identification)
-	  (moody-replace-vc-mode)
-	  (moody-replace-eldoc-minibuffer-message-function))
+	;; (use-package moody
+	;;   :ensure t
+	;;   :config
+	;;   (setq x-underline-at-descent-line t)
+	;;   (moody-replace-mode-line-buffer-identification)
+	;;   (moody-replace-vc-mode)
+	;;   (moody-replace-eldoc-minibuffer-message-function))
 	#+end_src
+	
 ** Files navigation
+
+   #+begin_src emacs-lisp
+   (use-package helm
+	 :ensure t
+	 :bind
+	 (("M-x"     . 'helm-M-x))
+	 (("C-x C-f" . 'helm-find-files))
+	 (("C-x C-b" . 'helm-buffers-list))
+	 (:map helm-map
+		   ("TAB"   . helm-execute-persistent-action)
+		   ("<tab>" . helm-execute-persistent-action)
+		   ("C-z"   . helm-selection-action))
+	 :config
+	 (use-package helm-flyspell :ensure t :after (helm flyspell))
+	 (use-package helm-xref :ensure t :after helm)
+	 (if (< emacs-major-version 27)
+		 (setq xref-show-xrefs-function 'helm-xref-show-xrefs)
+	   (setq xref-show-xrefs-function 'helm-xref-show-xrefs-27))
+	 (use-package helm-rg :ensure t :after helm)
+	 (require 'helm-config)
+	 (use-package helm-projectile
+	   :ensure t
+	   :after (helm projectile)
+	   :config
+	   (helm-projectile-on))
+	 (helm-mode 1))
+
+   (use-package projectile
+	 :ensure t
+	 :commands projectile-mode projectile-project-name
+	 :init
+	 (add-hook 'after-init-hook 'projectile-mode)
+	 (setq projectile-indexing-method 'alien)
+	 (setq projectile-project-search-path '("~/Repositories"))
+	 (setq projectile-use-git-grep t)
+	 (setq projectile-mode-line-prefix " Proj")
+	 (setq projectile-completion-system 'helm)
+	 :config
+	 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+   #+end_src
 
    I want to use =ivy=, =counsel= and =swiper=.
 
    #+begin_src emacs-lisp
-   (use-package ivy
-	 :ensure t
-	 :bind (("C-s" . swiper)
-			("C-x b" . ivy-switch-buffer))
-	 :init
-	 (ivy-mode 1)
-	 :config
-	 (setq ivy-use-virtual-buffers t)
-	 (setq ivy-wrap t)
-	 (setq ivy-count-format "(%d/%d) ")
-	 (setq enable-recursive-minibuffers t))
+   ;; (use-package ivy
+   ;;   :ensure t
+   ;;   :bind (("C-s" . swiper)
+   ;; 		 ("C-x b" . ivy-switch-buffer))
+   ;;   :init
+   ;;   (ivy-mode 1)
+   ;;   :config
+   ;;   (setq ivy-use-virtual-buffers t)
+   ;;   (setq ivy-wrap t)
+   ;;   (setq ivy-count-format "(%d/%d) ")
+   ;;   (setq enable-recursive-minibuffers t))
    
-   (use-package ivy-hydra
-	 :ensure t
-	 :defer t
-	 :after hydra)
+   ;; (use-package ivy-hydra
+   ;;   :ensure t
+   ;;   :defer t
+   ;;   :after hydra)
    
-   (use-package ivy-posframe
-	 :ensure t
-	 :disabled
-	 :custom
-	 (ivy-posframe-width      115)
-	 (ivy-posframe-min-width  115)
-	 (ivy-posframe-height     10)
-	 (ivy-posframe-min-height 10)
-	 :config
-	 (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-center)))
-	 (setq ivy-posframe-parameters '((parent-frame . nil)
-									 (left-fringe . 8)
-									 (right-fringe . 8)))
-	 (ivy-posframe-mode 1))
+   ;; (use-package ivy-posframe
+   ;;   :ensure t
+   ;;   :disabled
+   ;;   :custom
+   ;;   (ivy-posframe-width      115)
+   ;;   (ivy-posframe-min-width  115)
+   ;;   (ivy-posframe-height     10)
+   ;;   (ivy-posframe-min-height 10)
+   ;;   :config
+   ;;   (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-center)))
+   ;;   (setq ivy-posframe-parameters '((parent-frame . nil)
+   ;; 								  (left-fringe . 8)
+   ;; 								  (right-fringe . 8)))
+   ;;   (ivy-posframe-mode 1))
    
-   (use-package counsel
-	 :ensure t
-	 :bind (("M-x" . counsel-M-x)
-			("C-x C-f" . counsel-find-file)
-			("C-M-l" . counsel-imenu)
-			:map minibuffer-local-map
-			("C-r" . 'counsel-minibuffer-history))
-	 :custom
-	 (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
-	 :config
-	 (setq ivy-initial-inputs-alist nil)) ;; Don't start searches with ^
+   ;; (use-package counsel
+   ;;   :ensure t
+   ;;   :bind (("M-x" . counsel-M-x)
+   ;; 		 ("C-x C-f" . counsel-find-file)
+   ;; 		 ("C-M-l" . counsel-imenu)
+   ;; 		 :map minibuffer-local-map
+   ;; 		 ("C-r" . 'counsel-minibuffer-history))
+   ;;   :custom
+   ;;   (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+   ;;   :config
+   ;;   (setq ivy-initial-inputs-alist nil)) ;; Don't start searches with ^
    
    #+end_src
 
@@ -362,19 +407,19 @@
 
 	#+begin_src emacs-lisp
 	
-	(use-package openwith
-	  :ensure t
-	  :config
-	  (setq openwith-associations '(
-									("\\.mp4\\'" "vlc" (file))
-									("\\.mkv\\'" "vlc" (file))
-									("\\.m4a\\'" "vlc" (file))
-									("\\.ppt\\'" "libreoffice" (file))
-									("\\.pptx\\'" "libreoffice" (file))
-									("\\.doc\\'" "libreoffice" (file))
-									("\\.docx\\'" "libreoffice" (file))
-									))
-	  (openwith-mode t))
+	 (use-package openwith
+	   :ensure t
+	   :config
+	   (setq openwith-associations '(
+	 								("\\.mp4\\'" "vlc" (file))
+	 								("\\.mkv\\'" "vlc" (file))
+	 								("\\.m4a\\'" "vlc" (file))
+	 								("\\.ppt\\'" "libreoffice" (file))
+	 								("\\.pptx\\'" "libreoffice" (file))
+	 								("\\.doc\\'" "libreoffice" (file))
+	 								("\\.docx\\'" "libreoffice" (file))
+	 								))
+	   (openwith-mode t))
 	
 	#+end_src
 	
@@ -410,32 +455,33 @@
 	 Well, I think that =org-mode= doesn't need any introduction or explanation. In the last two years ([2021-09-03 Fri]) it changed my life for the best.
 
 	 #+begin_src emacs-lisp
-	 (use-package org
-	   :ensure t
-	   :defer t
-	   :bind (("C-c a" . org-agenda)
-			  ("C-c l" . org-store-link))
-	   :config
-	 
-	   ;; In org-mode, I want source blocks to be themed as they would in native mode
-	   (setq org-src-fontify-natively t
-			 org-src-tab-acts-natively t
-			 org-confirm-babel-evaluate nil
-			 org-edit-src-content-indentation 0)
-	 
-	   ;; Set org-mode TODO keywords
-	   (setq org-todo-keywords
-			 (quote ((sequence "TODO(t)" "DOING(i)" "|" "DONE(d)"))))
-	 
-	   ;; Enable DONE logging in org-mode
-	   (setq org-log-done 'time)
-	 
-	   ;; View LaTeX previews in better quality
-	   (setq org-latex-create-formula-image-program 'dvisvgm)
-	 
-	   ;; Set org agenda directory
-	   (setq org-agenda-files (list "~/Dropbox/pkm/journal")))
-	 
+		  (use-package org
+			:ensure t
+			:defer t
+			:bind (("C-c a" . org-agenda)
+				   ("C-c l" . org-store-link))
+			:config
+		  
+			;; In org-mode, I want source blocks to be themed as they would in native mode
+			(setq org-src-fontify-natively t
+				  org-src-tab-acts-natively t
+				  org-confirm-babel-evaluate nil
+				  org-edit-src-content-indentation 0)
+		  
+			;; Set org-mode TODO keywords
+			(setq org-todo-keywords
+				  (quote ((sequence "TODO" "DOING" "INBOX" "|" "DONE" "ARCHIVED"))))
+		  
+			;; Enable DONE logging in org-mode
+			(setq org-log-done 'time)
+		  
+			;; View LaTeX previews in better quality
+			(setq org-latex-create-formula-image-program 'dvisvgm)
+		  
+			;; Set org agenda directory
+			(setq org-agenda-files (list "~/Vault/pkm/journal"
+										 "~/Vault/pkm/pages")))
+		  
 	 #+end_src
 **** Org bullets
 
@@ -456,11 +502,22 @@
 	 
 	 #+begin_src emacs-lisp
 	 
-	 ;; Assuming that these export backends are installed in the site-lisp folder
+	 ;; Assuming that these export backends are located in the site-lisp folder
 	 (require 'ox-twbs)
+	 
 	 (require 'ox-reveal)
+	 (setq org-reveal-root "file:///Users/claudio/Repositories/reveal.js")
+	 
 	 (setq org-export-backends '(html latex ox-twbs ox-reveal))
 	 
+	 #+end_src
+
+**** Org-Make-Toc
+
+	 I want to generate TOCs inside org-mode files.
+	 #+begin_src emacs-lisp
+	 (use-package org-make-toc
+	   :ensure t)
 	 #+end_src
 	 
 **** Encrypting
@@ -529,7 +586,7 @@
 	  :init
 	  (setq org-roam-v2-ack t)
 	  :custom
-	  (org-roam-directory (file-truename "~/Dropbox/pkm/pages"))
+	  (org-roam-directory (file-truename "~/Vault/pkm/pages"))
 	  :bind (("C-c n l" . org-roam-buffer-toggle)
 			 ("C-c n f" . org-roam-node-find)
 			 ("C-c n g" . org-roam-graph)
@@ -544,7 +601,7 @@
 			 ("C-c n d f d" . org-roam-dailies-goto-date))
 	  :config
 	  (org-roam-db-autosync-mode)
-	  (setq org-roam-dailies-directory "~/Dropbox/pkm/journal")
+	  (setq org-roam-dailies-directory "~/Vault/pkm/journal")
 	  ;; org-roam templates
 	  (setq org-roam-capture-templates
 			'(("d" "default" plain "\n#+BEGIN_COMMENT\n- *Resources*::%?\n- *Keywords*::\n#+END_COMMENT\n\n"
@@ -584,7 +641,7 @@
 								  "#+TITLE: ${title}\n")
 			   :unarrowed t)
 			  ("rm" "manual" plain
-			   "\n#+BEGIN_COMMENT\n- *Author*:: %?\n- *Areas*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Zotero Entry*::\n- *Resources*::\n- *Keywords*::\n#+END_COMMENT\n\n"
+			   "\n#+BEGIN_COMMENT\n- *Author*:: %?\n- *Areas*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Zotero Entry*::\n- *Resources*::\n- *Keywords*::\n#+END_COMMENT\n* Notes\n* Mindmap\n\n"
 			   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 								  "#+TITLE: ${title}\n")
 			   :unarrowed t)
@@ -671,7 +728,7 @@
 	  :bind ("C-c d" . deft)
 	  :config
 	  ;; Set the deft directory and file extensions
-	  (setq deft-directory "~/Dropbox/pkm/pages/")
+	  (setq deft-directory "~/Vault/pkm/pages/")
 	  (setq deft-extensions '("org" "md" "txt"))
 	  (add-to-list 'deft-extensions "tex")
 	  (setq deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n")
@@ -769,6 +826,28 @@
 	
 	#+end_src
 	
+*** Yasnippet
+	
+	Install snippets.
+
+	#+begin_src emacs-lisp
+	 
+	(use-package yasnippet
+	  :ensure t)
+	 
+	#+end_src
+
+*** Jupyter Notebooks
+
+	Install =ein= for managing Jupyter Notebooks technology.
+
+	#+begin_src emacs-lisp
+	
+	(use-package ein
+	  :ensure t)
+	
+	#+end_src
+	
 *** LSP
 **** General setup
 	 
@@ -798,17 +877,6 @@
 	   :ensure t)
 	 
 	 #+end_src
-**** Yasnippet
-
-	 Install snippets.
-
-	 #+begin_src emacs-lisp
-	 
-	 (use-package yasnippet
-	   :ensure t)
-	 
-	 #+end_src
-	 
 **** Python
 
 	 Installing Python LSP server.
@@ -844,6 +912,18 @@
 	 (use-package ess
 	   :ensure t
 	   )
+	 #+end_src
+
+**** Haskell
+
+	 Installing Haskell support for LSP.
+	 
+	 #+begin_src emacs-lisp
+	 (use-package lsp-haskell
+	   :ensure t
+	   :config
+	   (add-hook 'haskell-mode-hook #'lsp)
+	   (add-hook 'haskell-literate-mode-hook #'lsp))
 	 #+end_src
 
 **** SQL

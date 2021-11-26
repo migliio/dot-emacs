@@ -100,7 +100,7 @@ default fragment style, otherwise return \"fragment style\"."
     (template . org-reveal-template))
 
   :filters-alist '((:filter-parse-tree . org-reveal-filter-parse-tree))
-  ;; :export-block '("REVEAL" "NOTES")
+  ; :export-block '("REVEAL" "NOTES")
   )
 
 (defcustom org-reveal-root "./reveal.js"
