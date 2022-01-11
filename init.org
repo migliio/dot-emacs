@@ -164,6 +164,26 @@ My preferred coding system is UTF-8. Setting it.
 #+end_src
   
 * General configuration
+** Keybinds
+
+Use evil mode.
+
+#+begin_src emacs-lisp
+(use-package evil
+  :ensure t
+  :init
+  (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
+  (setq evil-want-keybinding nil)
+  :config
+  (evil-mode 1))
+
+(use-package evil-collection
+  :after evil
+  :ensure t
+  :config
+  (evil-collection-init))
+#+end_src
+
 ** User interface
 *** Misc
 
@@ -195,13 +215,28 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 		   ))
   (funcall mode 1))
 
-;; Disable some boring modes
-(dolist (mode
-		 '(tool-bar-mode                  ; No toolbars, more room for text
-		   scroll-bar-mode                ; No scroll bars either
-		   menu-bar-mode                  ; Menu bar is useless
-		   blink-cursor-mode))            ; The blinking cursor gets old
-  (funcall mode 0))
+(when (display-graphic-p) 
+  ;; Do any keybindings and theme setup here
+  ;; Disable some boring modes
+  (dolist (mode
+		   '(tool-bar-mode                  ; No toolbars, more room for text
+			 scroll-bar-mode                ; No scroll bars either
+			 menu-bar-mode                  ; Menu bar is useless
+			 blink-cursor-mode))            ; The blinking cursor gets old
+	(funcall mode 0))
+  )
+
+(unless (display-graphic-p) 
+  ;; Remove any keybindings and theme setup here
+  (dolist (mode
+		   '(tool-bar-mode                  ; No toolbars, more room for text
+			 menu-bar-mode                  ; Menu bar is useless
+			 blink-cursor-mode))            ; The blinking cursor gets old
+	(funcall mode 0))
+  )
+
+;; Require dired extra 
+(require 'dired-x)
 
 ;; Show directories first in dired
 (setq ls-lisp-use-insert-directory-program nil)
@@ -211,7 +246,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 (setq inhibit-startup-screen t)
 
 #+end_src
-	
+
 *** Which Key
 
 Inspect a buffer with all assigned keybindings with =which-key= is really useful.
@@ -250,8 +285,8 @@ I keep other themes commented in case I want to switch between them.
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
 		doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  ;; (load-theme 'doom-one t)
-  (load-theme 'doom-homage-white t)
+  (load-theme 'doom-solarized-light t)
+  ;;(load-theme 'doom-homage-white t)
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
@@ -262,34 +297,19 @@ I keep other themes commented in case I want to switch between them.
 
 #+end_src
 	
-*** Dashboard
+*** Doom Modeline
 
-I really like to have a dashboard at startup, it feels like I'm inside a commond IDE.
-
-#+begin_src emacs-lisp
-
-;; (use-package dashboard
-;;   :ensure t
-;;   :config
-;;   (setq dashboard-startup-banner 'logo)
-;;   (dashboard-setup-startup-hook))
-
-#+end_src
-	
-*** Moody (tabs)
-
-I want to try Moody for managing tabs in Emacs.
+Installing and setting Doom Modeline.
 
 #+begin_src emacs-lisp
-;; (use-package moody
-;;   :ensure t
-;;   :config
-;;   (setq x-underline-at-descent-line t)
-;;   (moody-replace-mode-line-buffer-identification)
-;;   (moody-replace-vc-mode)
-;;   (moody-replace-eldoc-minibuffer-message-function))
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1)
+  :config
+  (set-face-attribute 'mode-line nil :height 180)
+  (set-face-attribute 'mode-line-inactive nil :height 180))
 #+end_src
-	
+
 ** Files navigation
 
 #+begin_src emacs-lisp
@@ -299,10 +319,10 @@ I want to try Moody for managing tabs in Emacs.
   (("M-x"     . 'helm-M-x))
   (("C-x C-f" . 'helm-find-files))
   (("C-x C-b" . 'helm-buffers-list))
-  (:map helm-map
-		("TAB"   . helm-execute-persistent-action)
-		("<tab>" . helm-execute-persistent-action)
-		("C-z"   . helm-selection-action))
+  ;; (:map helm-map
+  ;; 		("TAB"   . helm-execute-persistent-action)
+  ;; 		("<tab>" . helm-execute-persistent-action)
+  ;; 		("C-z"   . helm-selection-action))
   :config
   (use-package helm-flyspell :ensure t :after (helm flyspell))
   (use-package helm-xref :ensure t :after helm)
@@ -409,19 +429,19 @@ I want to open some files with external programs and =open-with= addresses this 
 
 #+begin_src emacs-lisp
 
-(use-package openwith
-  :ensure t
-  :config
-  (setq openwith-associations '(
-	 							("\\.mp4\\'" "vlc" (file))
-	 							("\\.mkv\\'" "vlc" (file))
-	 							("\\.m4a\\'" "vlc" (file))
-	 							("\\.ppt\\'" "libreoffice" (file))
-	 							("\\.pptx\\'" "libreoffice" (file))
-	 							("\\.doc\\'" "libreoffice" (file))
-	 							("\\.docx\\'" "libreoffice" (file))
-	 							))
-  (openwith-mode t))
+;; (use-package openwith
+;;   :ensure t
+;;   :config
+;;   (setq openwith-associations '(
+;; 	 							("\\.mp4\\'" "vlc" (file))
+;; 	 							("\\.mkv\\'" "vlc" (file))
+;; 	 							("\\.m4a\\'" "vlc" (file))
+;; 	 							("\\.ppt\\'" "libreoffice" (file))
+;; 	 							("\\.pptx\\'" "libreoffice" (file))
+;; 	 							("\\.doc\\'" "libreoffice" (file))
+;; 	 							("\\.docx\\'" "libreoffice" (file))
+;; 	 							))
+;;   (openwith-mode t))
 
 #+end_src
 	
@@ -492,8 +512,7 @@ Well, I think that =org-mode= doesn't need any introduction or explanation. In t
 							   (R . t)))
 
   ;; Set org agenda directory
-  (setq org-agenda-files (list "~/Vault/pkm/journal"
-							   "~/Vault/pkm/pages/20211126144021-personal_agenda.org")))
+  (setq org-agenda-files (list "~/Vault/pkm/pages/20211126144021-personal_agenda.org")))
 
 #+end_src
 **** Org bullets
@@ -880,10 +899,11 @@ Setting up Emacs as an IDE.
 (use-package lsp-mode
   :ensure t
   :commands lsp
-  :bind (:map lsp-mode-map
-			  ("TAB" . completion-at-point))
+  ;; :bind (:map lsp-mode-map
+  ;; 			  ("TAB" . completion-at-point))
   :config
-  (lsp-enable-which-key-integration t))
+  (lsp-enable-which-key-integration t)
+  (setq lsp-auto-configure t))
 
 (use-package lsp-ui
   :ensure t
@@ -899,6 +919,7 @@ Setting up Emacs as an IDE.
   :ensure t)
 
 #+end_src
+
 **** Python
 
 Installing Python LSP server.
@@ -920,9 +941,9 @@ Installing Eclipse Java Server.
 
 #+begin_src emacs-lisp
 
-(use-package lsp-java
-  :ensure t
-  :config (add-hook 'java-mode-hook 'lsp))
+(use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
+(use-package dap-mode :after lsp-mode :config (dap-auto-configure-mode))
+(use-package dap-java :ensure nil)
 
 #+end_src
 	 
@@ -944,6 +965,7 @@ Installing Haskell support for LSP.
 (use-package lsp-haskell
   :ensure t
   :config
+  (setq exec-path (append exec-path '("/usr/local/Cellar/haskell-language-server/1.5.1/bin/")))
   (add-hook 'haskell-mode-hook #'lsp)
   (add-hook 'haskell-literate-mode-hook #'lsp))
 #+end_src
@@ -953,7 +975,8 @@ Installing Haskell support for LSP.
 Installing SQL support for LSP.
 
 #+begin_src emacs-lisp
-(setq exec-path (append exec-path '("/Users/claudio/go/bin/")))
+(setq exec-path (append exec-path '("/usr/local/bin")))
+(setq exec-path (append exec-path '("/Users/claudio/go/bin")))
 #+end_src
 
 **** Docker
@@ -963,9 +986,9 @@ Installing Docker support for LSP.
 #+begin_src emacs-lisp
 (use-package dockerfile-mode
   :ensure t)
-
 (setq exec-path (append exec-path '("/usr/local/lib/node_modules/dockerfile-language-server-nodejs/bin/")))
 #+end_src
+
 *** Autocompletion
 
 I use Company as my default autocompletion framework.
@@ -979,78 +1002,20 @@ I use Company as my default autocompletion framework.
 
 #+end_src
 		
-** E-Mail
+** Bookmarks with ebuku
 
-I use notmuch as my default e-mail client.
+I use buku as my bookmarks manager.
 
 #+begin_src emacs-lisp
-(use-package notmuch
-  :ensure t
-  :bind ("C-c e" . notmuch) 
-  :preface (setq-default notmuch-command (executable-find "notmuch"))
-  :if (executable-find "notmuch")
-  :config
-  ;; setup the mail address and use name
-  (setq mail-user-agent 'message-user-agent)
-  (setq user-mail-address "migliorelliclaudio@gmail.com"
-		user-full-name "Claudio Migliorelli")
-  ;; smtp config
-  (setq smtpmail-smtp-server "smtp.gmail.com"
-		message-send-mail-function 'message-smtpmail-send-it)
-
-  ;; report problems with the smtp server
-  (setq smtpmail-debug-info t)
-  ;; add Cc and Bcc headers to the message buffer
-  (setq message-default-mail-headers "Cc: \nBcc: \n")
-  ;; postponed message is put in the following draft directory
-  (setq message-auto-save-directory "~/Repositories/Maildir/Gmail/[Gmail].Bozze")
-  (setq message-kill-buffer-on-exit t)
-  ;; change the directory to store the sent mail
-  (setq message-directory "~/Repositories/Maildir/Gmail/"))
-
-(use-package popwin
-  :ensure t
-  :config
-  (defun notmuch-exec-offlineimap ()
-	"execute offlineimap"
-	(interactive)
-	(set-process-sentinel
-	 (start-process-shell-command "offlineimap"
-                                  "*offlineimap*"
-                                  "offlineimap -o")
-	 '(lambda (process event)
-		(notmuch-refresh-all-buffers)
-		(let ((w (get-buffer-window "*offlineimap*")))
-          (when w
-			(with-selected-window w (recenter (window-end)))))))
-	(popwin:display-buffer "*offlineimap*"))
-
-  (add-to-list 'popwin:special-display-config
-               '("*offlineimap*" :dedicated t :position bottom :stick t
-				 :height 0.4 :noselect t)))
+(use-package ebuku
+  :ensure t)
 #+end_src
 
-** RSS feed
+** Finance
 
-   I really like RSS readers and I use =elfeed= as my favorite one in Emacs.
+I use ledger to track my finances.
 
-   #+begin_src emacs-lisp
-   
-   (use-package elfeed
-	 :ensure t
-	 :config
-	 ;; Settings for elfeed
-	 (setq elfeed-feeds
-		   '("https://awealthofcommonsense.com/feed"
-			 "https://ofdollarsanddata.com/feed"
-			 "https://www.smbc-comics.com/comic/rss"
-			 "https://xkcd.com/rss.xml"
-			 "https://fs.blog/blog/feed/"
-			 "https://gwern.substack.com/feed"
-			 "https://moretothat.com/feed/"
-			 "https://putanumonit.com/feed/"
-			 "https://www.ribbonfarm.com/feed/"
-			 "https://retireinprogress.com/feed/"
-			 )))
-   
-   #+end_src
+#+begin_src emacs-lisp
+(use-package ledger-mode
+  :ensure t)
+#+end_src
