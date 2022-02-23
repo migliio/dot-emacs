@@ -206,6 +206,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 (setq auto-revert-interval 1              ; Refresh buffers fast
 	  recentf-max-saved-items 100         ; Show more recent files
 	  scroll-margin 1                     ; Space between cursor and top/bottom
+      search-invisible t                  ; Search also in metadata
 	  )
 
 (setq-default tab-width 4                 ; Smaller tabs
@@ -279,8 +280,7 @@ Inspect a buffer with all assigned keybindings with =which-key= is really useful
 Selecting the font.
 
 #+begin_src emacs-lisp
-
-
+(set-frame-font "Inconsolata 18" nil t)
 #+end_src
 	
 *** Theme
@@ -288,45 +288,24 @@ Selecting the font.
 I keep other themes commented in case I want to switch between them.
 
 #+begin_src emacs-lisp
-(setq warning-minimum-level :emergency)
-(straight-use-package
-  '(nano-emacs :type git :host github :repo "rougier/nano-emacs"))
-(setq nano-font-family-monospaced "Roboto Mono")
-(setq nano-font-size 18)
-(require 'nano)
-(require 'nano-writer)
-(setq org-hide-emphasis-markers nil)
-;; (use-package doom-themes
-;;   :ensure t
-;;   :config
-;;   ;; Global settings (defaults)
-;;   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-;; 		doom-themes-enable-italic t) ; if nil, italics is universally disabled
-;;   (load-theme 'doom-solarized-light t)
-;;   ;;(load-theme 'doom-homage-white t)
+(use-package doom-themes
+  :ensure t
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+		doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  ;;(load-theme 'doom-solarized-light t)
+  (load-theme 'doom-homage-white t)
 
-;;   ;; Enable flashing mode-line on errors
-;;   (doom-themes-visual-bell-config)
-;;   ;; Enable custom neotree theme (all-the-icons must be installed!)
-;;   (doom-themes-neotree-config)
-;;   ;; Corrects (and improves) org-mode's native fontification.
-;;   (doom-themes-org-config))
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (all-the-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 
 #+end_src
 	
-*** Doom Modeline
-
-Installing and setting Doom Modeline.
-
-#+begin_src emacs-lisp
-;; (use-package doom-modeline
-;;   :ensure t
-;;   :init (doom-modeline-mode 1)
-;;   :config
-;;   (set-face-attribute 'mode-line nil :height 180)
-;;   (set-face-attribute 'mode-line-inactive nil :height 180))
-#+end_src
-
 ** Files navigation
 
 #+begin_src emacs-lisp
@@ -507,6 +486,9 @@ Well, I think that =org-mode= doesn't need any introduction or explanation. In t
 		org-confirm-babel-evaluate nil
 		org-edit-src-content-indentation 0)
 
+;; Set latex preview size
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+
   ;; Set org-mode TODO keywords
   (setq org-todo-keywords
 		(quote ((sequence "TODO" "DOING" "|" "DONE"))))
@@ -537,12 +519,12 @@ Well, I think that =org-mode= doesn't need any introduction or explanation. In t
 I want to have nice bullets and not asterisks.
 
 #+begin_src emacs-lisp
-;; (use-package org-bullets
-;;   :ensure t
-;;   :after org
-;;   :config
-;;   ;; Enable org-bullets when opening org-files
-;;   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+(use-package org-bullets
+  :ensure t
+  :after org
+  :config
+  ;; Enable org-bullets when opening org-files
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 #+end_src
 	 
 **** Org export backends
@@ -584,20 +566,6 @@ Enabling =org-crypt= support as it is automatically installed with =org-mode= it
 
 #+end_src
 	 
-**** Emojify
-
-Emojis are fun.
-
-#+begin_src emacs-lisp
-
-(use-package emojify
-  :ensure t
-  :config
-  (global-emojify-mode t))
-
-#+end_src
-
-
 I want a nice writing environment in Emacs.
 
 #+begin_src emacs-lisp
