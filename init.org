@@ -1,4 +1,4 @@
-+TITLE: GNU Emacs configuration file
+#+TITLE: GNU Emacs configuration file
 #+AUTHOR: Claudio Migliorelli (@miglio)
 #+PROPERTY: header-args:emacs-lisp :tangle init.el
 * Startup performance
@@ -27,30 +27,30 @@ First of all, let's initialize the package management setting up ELPA, MELPA and
 
 #+begin_src emacs-lisp
 
-  (require 'package)
-  (setq package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
-						   ("melpa-stable" . "https://stable.melpa.org/packages/")
-						   ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-						   ("melpa" . "https://melpa.org/packages/")))
-  (package-initialize)
-  (unless (package-installed-p 'use-package)
-	;; only fetch the archives if you don't have use-package installed
-	(package-refresh-contents)
-	(package-install 'use-package))
-  (require 'use-package)
+(require 'package)
+(setq package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
+						 ("melpa-stable" . "https://stable.melpa.org/packages/")
+						 ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+						 ("melpa" . "https://melpa.org/packages/")))
+(package-initialize)
+(unless (package-installed-p 'use-package)
+  ;; only fetch the archives if you don't have use-package installed
+  (package-refresh-contents)
+  (package-install 'use-package))
+(require 'use-package)
 
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-		 (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-		(bootstrap-version 5))
-	(unless (file-exists-p bootstrap-file)
-	  (with-current-buffer
-		  (url-retrieve-synchronously
-		   "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-		   'silent 'inhibit-cookies)
-		(goto-char (point-max))
-		(eval-print-last-sexp)))
-	(load bootstrap-file nil 'nomessage))
+(defvar bootstrap-version)
+(let ((bootstrap-file
+	   (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+	  (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+	(with-current-buffer
+		(url-retrieve-synchronously
+		 "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+		 'silent 'inhibit-cookies)
+	  (goto-char (point-max))
+	  (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 #+end_src
 
 Use =auto-compile= for compiling .el file automatically on save.
@@ -176,6 +176,33 @@ My preferred coding system is UTF-8. Setting it.
 #+end_src
   
 * General configuration
+** Custom functions
+
+Copy a file in the current Dired directory.
+
+#+begin_src emacs-lisp
+(defun dired-copy-file-here (file)
+  (interactive "fCopy file: ")
+  (copy-file file default-directory))
+(eval-after-load "dired"
+  '(define-key dired-mode-map "\M-c" 'dired-copy-file-here))
+(global-set-key (kbd "C-c f c") 'copy-file)
+#+end_src
+
+Copy file name to clipboard.
+
+#+begin_src emacs-lisp
+(defun er-copy-file-name-to-clipboard ()
+  "Copy the current buffer file name to the clipboard."
+  (interactive)
+  (let ((filename (if (equal major-mode 'dired-mode)
+                      default-directory
+					(buffer-file-name))))
+	(when filename
+      (kill-new filename)
+      (message "Copied buffer file name '%s' to the clipboard." filename))))
+#+end_src
+   
 ** Keybinds
 
 Use evil mode.
@@ -193,7 +220,18 @@ Use evil mode.
   :after evil
   :ensure t
   :config
-  (evil-collection-init))
+  (evil-collection-init)
+  (evil-collection-init 'vterm))
+
+(use-package evil-terminal-cursor-changer
+  :after evil
+  :ensure t
+  :config
+  (unless (display-graphic-p)
+    (require 'evil-terminal-cursor-changer)
+    (evil-terminal-cursor-changer-activate) ; or (etcc-on)
+    )
+  (advice-add 'etcc--make-tmux-seq :override #'identity))
 #+end_src
 
 ** User interface
@@ -206,7 +244,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 (setq auto-revert-interval 1              ; Refresh buffers fast
 	  recentf-max-saved-items 100         ; Show more recent files
 	  scroll-margin 1                     ; Space between cursor and top/bottom
-      search-invisible t                  ; Search also in metadata
+	  search-invisible t                  ; Search also in metadata
 	  )
 
 (setq-default tab-width 4                 ; Smaller tabs
@@ -227,6 +265,10 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 		   global-visual-line-mode      ; Avoid new line problems
 		   ))
   (funcall mode 1))
+
+;; Set winner keybinds
+(global-set-key (kbd "C-c h") 'winner-undo)
+(global-set-key (kbd "C-c l") 'winner-redo)
 
 (when (display-graphic-p) 
   ;; Do any keybindings and theme setup here
@@ -258,6 +300,18 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 ;; Inhibit startup screen
 (setq inhibit-startup-screen t)
 
+;; Solves a bug with xdg-open
+(setq process-connection-type nil)
+
+;; Italic doesn't work
+(set-face-attribute 'italic nil :font "Hack" :slant 'italic)
+
+;; Diminish modeline
+(use-package minions
+  :ensure t
+  :config
+  (setq-default mode-line-end-spaces nil)
+  (minions-mode 1))
 #+end_src
 
 *** Which Key
@@ -280,7 +334,9 @@ Inspect a buffer with all assigned keybindings with =which-key= is really useful
 Selecting the font.
 
 #+begin_src emacs-lisp
-(set-frame-font "Inconsolata 18" nil t)
+;;(set-frame-font "Noto Sans Mono 16" nil t)
+;;(set-frame-font "Inconsolata Nerd Font 18" nil t)
+(set-frame-font "Iosevka 18" nil t)
 #+end_src
 	
 *** Theme
@@ -294,8 +350,8 @@ I keep other themes commented in case I want to switch between them.
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
 		doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  ;;(load-theme 'doom-solarized-light t)
-  (load-theme 'doom-homage-white t)
+  (load-theme 'doom-one-light t)
+  ;;(load-theme 'doom-gruvbox t)
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
@@ -304,11 +360,25 @@ I keep other themes commented in case I want to switch between them.
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
+;; (use-package doom-modeline
+;;   :ensure t
+;;   :hook (after-init . doom-modeline-mode)
+;;   :config
+;;   (setq doom-modeline-height 32))
+
 #+end_src
 	
 ** Files navigation
 
 #+begin_src emacs-lisp
+(use-package fzf
+  :ensure t
+  :bind
+  ("C-c f f" . fzf)
+  ("C-c f g" . fzf-grep)
+  ("C-c f d" . fzf-find-file-in-dir)
+  ("C-c f r" . fzf-recentf))
+
 (use-package helm
   :ensure t
   :bind
@@ -429,14 +499,15 @@ I want to open some files with external programs and =open-with= addresses this 
   :ensure t
   :config
   (setq openwith-associations '(
-	 							("\\.mp4\\'" "vlc" (file))
-	 							("\\.mkv\\'" "vlc" (file))
-	 							("\\.m4a\\'" "vlc" (file))
-	 							("\\.ppt\\'" "libreoffice" (file))
-	 							("\\.pptx\\'" "libreoffice" (file))
-	 							("\\.doc\\'" "libreoffice" (file))
-	 							("\\.docx\\'" "libreoffice" (file))
-	 							))
+								("\\.mp4\\'" "mpv" (file))
+								("\\.mkv\\'" "mpv" (file))
+								("\\.m4a\\'" "mpv" (file))
+								("\\.pdf\\'" "okular" (file))
+								("\\.ppt\\'" "libreoffice" (file))
+								("\\.pptx\\'" "libreoffice" (file))
+								("\\.doc\\'" "libreoffice" (file))
+								("\\.docx\\'" "libreoffice" (file))
+								))
   (openwith-mode t))
 
 #+end_src
@@ -458,12 +529,11 @@ I want to use =pdf-tools= to view and edit PDFs in a much better way.
 I really love the =undo-tree= mode visualization, so I'm going to enable it.
 
 #+begin_src emacs-lisp
-
 (use-package undo-tree
   :ensure t
   :config
+  (setq undo-tree-auto-save-history nil)
   (global-undo-tree-mode 1))
-
 #+end_src
 	
 ** Personal knowledge management
@@ -477,6 +547,7 @@ Well, I think that =org-mode= doesn't need any introduction or explanation. In t
   :ensure t
   :defer t
   :bind (("C-c a" . org-agenda)
+		 ("C-c t" . org-insert-structure-template)
 		 ("C-c l" . org-store-link))
   :config
 
@@ -486,18 +557,101 @@ Well, I think that =org-mode= doesn't need any introduction or explanation. In t
 		org-confirm-babel-evaluate nil
 		org-edit-src-content-indentation 0)
 
-;; Set latex preview size
-(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+  ;; Set latex preview size
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+
+  ;; Not export drawers
+  (setq org-export-with-drawers nil)
 
   ;; Set org-mode TODO keywords
   (setq org-todo-keywords
-		(quote ((sequence "TODO" "DOING" "|" "DONE"))))
+		(quote ((sequence "TODO" "DOING" "INBOX" "|" "DONE" "ARCHIVED"))))
 
   ;; Enable DONE logging in org-mode
   (setq org-log-done 'time)
 
   ;; View LaTeX previews in better quality
   (setq org-latex-create-formula-image-program 'dvisvgm)
+
+  ;; org-export-latex
+  (require 'ox-latex)
+  (add-to-list 'org-latex-classes
+			   '("tuftebook"
+				 "\\documentclass{tufte-book}\n
+\\usepackage{color}
+\\usepackage{amssymb}
+\\usepackage{gensymb}
+\\usepackage{nicefrac}
+\\usepackage{units}"
+				 ("\\section{%s}" . "\\section*{%s}")
+				 ("\\subsection{%s}" . "\\subsection*{%s}")
+				 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+				 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+  (add-to-list 'org-latex-classes
+			   '("tuftehandout"
+				 "\\documentclass{tufte-handout}
+\\usepackage{color}
+\\usepackage{amssymb}
+\\usepackage{amsmath}
+\\usepackage{gensymb}
+\\usepackage{nicefrac}
+\\usepackage{units}"
+				 ("\\section{%s}" . "\\section*{%s}")
+				 ("\\subsection{%s}" . "\\subsection*{%s}")
+				 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+				 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+  (add-to-list 'org-latex-classes
+			   '("tufnotes"
+				 "\\documentclass{tufte-handout}
+				   \\usepackage{xcolor}
+					 \\usepackage{graphicx} %% allow embedded images
+					 \\setkeys{Gin}{width=\\linewidth,totalheight=\\textheight,keepaspectratio}
+					 \\usepackage{amsmath}  %% extended mathematics
+					 \\usepackage{booktabs} %% book-quality tables
+					 \\usepackage{units}    %% non-stacked fractions and better unit spacing
+					 \\usepackage{multicol} %% multiple column layout facilities
+					 \\RequirePackage[many]{tcolorbox}
+					 \\usepackage{fancyvrb} %% extended verbatim environments
+					   \\fvset{fontsize=\\normalsize}%% default font size for fancy-verbatim environments
+
+			  \\definecolor{g1}{HTML}{077358}
+			  \\definecolor{g2}{HTML}{00b096}
+
+			  %%section format
+			  \\titleformat{\\section}
+			  {\\normalfont\\Large\\itshape\\color{g1}}%% format applied to label+text
+			  {\\llap{\\colorbox{g1}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesection}}}}%% label
+			  {1em}%% horizontal separation between label and title body
+			  {}%% before the title body
+			  []%% after the title body
+
+			  %% subsection format
+			  \\titleformat{\\subsection}%%
+			  {\\normalfont\\large\\itshape\\color{g2}}%% format applied to label+text
+			  {\\llap{\\colorbox{g2}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesubsection}}}}%% label
+			  {1em}%% horizontal separation between label and title body
+			  {}%% before the title body
+			  []%% after the title body
+
+							\\newtheorem{note}{Note}[section]
+
+							\\tcolorboxenvironment{note}{
+							 boxrule=0pt,
+							 boxsep=2pt,
+							 colback={green!10},
+							 enhanced jigsaw, 
+							 borderline west={2pt}{0pt}{Green},
+							 sharp corners,
+							 before skip=10pt,
+							 after skip=10pt,
+							 breakable,
+						  }"
+
+				 ("\\section{%s}" . "\\section*{%s}")
+				 ("\\subsection{%s}" . "\\subsection*{%s}")
+				 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+				 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+				 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
   ;; Set up org-babel
   (org-babel-do-load-languages
@@ -511,9 +665,10 @@ Well, I think that =org-mode= doesn't need any introduction or explanation. In t
 							   (R . t)))
 
   ;; Set org agenda directory
-  (setq org-agenda-files (list "~/Vault/pkm/pages/20211126144021-personal_agenda.org")))
-
+  (setq org-agenda-files (list "~/Vault/pkm/pages/20211126144021-personal_agenda.org"
+							   "~/Vault/pkm/journal")))
 #+end_src
+	 
 **** Org bullets
 
 I want to have nice bullets and not asterisks.
@@ -535,11 +690,16 @@ I'm going to set several =org-mode= export backends.
 
 ;; Assuming that these export backends are located in the site-lisp folder
 (require 'ox-twbs)
-
 (require 'ox-reveal)
+(require 'ox-md)
+(require 'ox-beamer)
+
+(use-package ox-pandoc
+  :ensure t)
+
 (setq org-reveal-root "file:///Users/claudio/Repositories/reveal.js")
 
-(setq org-export-backends '(html latex ox-twbs ox-reveal))
+(setq org-export-backends '(pandoc md beamer html latex ox-twbs ox-reveal))
 
 #+end_src
 
@@ -598,7 +758,28 @@ Link rot is real. I want to archive useful websites. I want to visualize my know
 
 #+end_src
 
-*** Org-roam
+**** Org-download
+
+Ok, this feature will probably save my life. Directly inserting screenshots into org-mode files.
+#+begin_src emacs-lisp
+(use-package org-download
+  :ensure t
+  :after org
+  :bind
+  (:map org-mode-map
+		(("s-Y" . org-download-screenshot)
+		 ("s-y" . org-download-yank))))
+:config
+(require 'org-download)
+
+(setq-default org-download-image-dir "~/Vault/pkm/assets")
+(setq-default org-download-screenshot-method "scrot -s")
+
+;; Drag-and-drop to `dired`
+(add-hook 'dired-mode-hook 'org-download-enable)
+#+end_src
+	 
+**** Org-roam
 The best package to manage my PKM is definitely =org-roam=. Installing/configuring it.
 
 #+begin_src emacs-lisp
@@ -607,7 +788,7 @@ The best package to manage my PKM is definitely =org-roam=. Installing/configuri
   :init
   (setq org-roam-v2-ack t)
   :custom
-  (org-roam-directory (file-truename "~/Vault/pkm/pages"))
+  (org-roam-directory (file-truename "~/Vault/pkm/slip-box/"))
   :bind (("C-c n l" . org-roam-buffer-toggle)
 		 ("C-c n f" . org-roam-node-find)
 		 ("C-c n g" . org-roam-graph)
@@ -626,98 +807,109 @@ The best package to manage my PKM is definitely =org-roam=. Installing/configuri
   (setq org-roam-dailies-directory "~/Vault/pkm/journal")
   ;; org-roam templates
   (setq org-roam-capture-templates
-		'(("d" "default" plain "\n#+BEGIN_COMMENT\n- *Resources*::%?\n- *Keywords*::\n#+END_COMMENT\n\n"
+		'(("d" "default" plain "\n:ORG_META:\n- *Resources*::%?\n- *Keywords*::\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unnarrowed t)
 		  ("u" "university")
-		  ("uc" "course" plain	"\n#+BEGIN_COMMENT\n- *Lecturer*:: %?\n- *University*:: \n- *Academic Year*:: %^{Academic Year}\n- *Semester*:: %^{Semester}\n- *Keywords*::\n#+END_COMMENT\n\n"
+		  ("uc" "course" plain	"\n:ORG_META:\n- *Lecturer*:: %?\n- *University*:: \n- *Academic Year*:: %^{Academic Year}\n- *Semester*:: %^{Semester}\n- *Resources*:: \n- *Keywords*::\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("ul" "lecture" plain
-		   "\n#+BEGIN_COMMENT\n- *Course*:: %?\n- *Lecture #*::\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *Resources*::\n#+END_COMMENT\n\n"
+		   "\n:ORG_META:\n- *Course*:: %?\n- *Lecture #*::\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *References*::\n- *Resources*::\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("p" "personal")
 		  ("pp" "people" plain
-		   "\n#+BEGIN_COMMENT\n- *Phone number*:: %?\n- *E-mail*::\n- *Twitter*::\n- *GitHub*::\n- *Website*::\n- *Company*::\n- *Role*::\n- *Location*::\n- *How we met*::\n- *Birthdate*:: %^{Birthdate}u\n#+END_COMMENT\n\n"
+		   "\n:ORG_META:\n- *Phone number*:: %?\n- *E-mail*::\n- *Twitter*::\n- *GitHub*::\n- *dblp*:: \n- *Website*::\n- *Company*::\n- *Role*::\n- *Location*::\n- *How we met*::\n- *Birthdate*:: %^{Birthdate}u\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("pP" "place" plain
-		   "\n#+BEGIN_COMMENT\n- *Address*:: %?\n- *City*::\n- *Why I know this place*::\n- *First time I visited it*:: %^{First time I visited it}u\n- *Keywords*::\n#+END_COMMENT\n\n"
+		   "\n:ORG_META:\n- *Address*:: %?\n- *City*::\n- *Why I know this place*::\n- *First time I visited it*:: %^{First time I visited it}u\n- *Keywords*::\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("ps" "software" plain
-		   "\n#+BEGIN_COMMENT\n- *Developer(s)*:: %?\n- *Status*:: %^{Status|@maintained|@unmaintained}\n- *Repository*::\n- *Recommended by*::\n- *Keywords*::\n#+END_COMMENT\n\n"
+		   "\n:ORG_META:\n- *Developer(s)*:: %?\n- *Status*:: %^{Status|@maintained|@unmaintained}\n- *Repository*::\n- *Recommended by*::\n- *Keywords*::\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("r" "resources")
 		  ("rb" "book" plain
-		   "\n#+BEGIN_COMMENT\n- *Author*:: %?\n- *Status*:: %^{Status|@buyed|@reading|@read}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Keywords*::\n#+END_COMMENT\n\n"
+		   "\n:ORG_META:\n- *Author*:: %?\n- *Status*:: %^{Status|@buyed|@reading|@read}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Keywords*::\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("rm" "manual" plain
-		   "\n#+BEGIN_COMMENT\n- *Author(s)*:: %?\n- *Areas*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Zotero Entry*::\n- *Resources*::\n- *Keywords*::\n#+END_COMMENT\n* Notes\n\n"
+		   "\n:ORG_META:\n- *Author(s)*:: %?\n- *Areas*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Reference Entry*::\n- *Resources*::\n- *Keywords*::\n:END:\n* Notes\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("rp" "paper" plain
-		   "\n#+BEGIN_COMMENT\n- *Author(s)*:: %?\n- *Areas*::\n- *Zotero Entry*::\n- *Related papers*::\n- *Resources*::\n- *Keywords*::\n#+END_COMMENT\n* Notes\n\n"
+		   "\n:ORG_META:\n- *Author(s)*:: %?\n- *Areas*::\n- *Reference Entry*::\n- *Related papers*::\n- *Resources*::\n- *Keywords*::\n:END:\n* Notes\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("ra" "article" plain
-		   "\n#+BEGIN_COMMENT\n- *Author*:: %?\n- *URL*:: %^{URL}\n- *Related*:: %^{Related}\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n#+END_COMMENT\n\n"
+		   "\n:ORG_META:\n- *Author*:: %?\n- *URL*:: %^{URL}\n- *Related*::\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("rv" "video" plain
-		   "\n#+BEGIN_COMMENT\n- *Creator*:: %?\n- *URL*::\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n#+END_COMMENT\n\n"
+		   "\n:ORG_META:\n- *Creator*:: %?\n- *URL*::\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("rc" "conference" plain
-		   "\n#+BEGIN_COMMENT\n- *Speaker(s)*:: %?\n- *Where*::\n- *What*::\n- *Date*:: %^{Date}u\n- *Related*::\n- *Resources*::\n- *Keywords*::\n#+END_COMMENT\n\n"
+		   "\n:ORG_META:\n- *Speaker(s)*:: %?\n- *Where*::\n- *What*::\n- *Date*:: %^{Date}u\n- *Related*::\n- *Resources*::\n- *Keywords*::\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 
 		  ("j" "project")
 		  ("jo" "overview" plain
-		   "\n#+BEGIN_COMMENT\n- *What*:: %?\n- *Areas*::\n- *Repository*::\n- *Status*:: %^{Status|@active|@completed|@ready|@abandoned}\n- *Date*:: %^{Date}u\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Success criteria*::\n- *Keywords*::\n#+END_COMMENT\n* Details\n* Tasks\n* Resources\n* Artifacts"
+		   "\n:ORG_META:\n- *What*:: %?\n- *Areas*::\n- *Repository*::\n- *Status*:: %^{Status|@active|@completed|@ready|@abandoned}\n- *Date*:: %^{Date}u\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Success criteria*::\n- *Keywords*::\n:END:\n* Details\n* Tasks\n* Resources\n* Artifacts"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("jt" "task" plain
-		   "\n#+BEGIN_COMMENT\n- *Project*:: %?\n- *Taken by*::\n- *Status*:: %^{Status|@active|@completed|@picked|@abandoned}\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Resources*::\n- *Success criteria*::\n#+END_COMMENT\n* Details\n* Sub-tasks\n* Roadmap"
+		   "\n:ORG_META:\n- *Project*:: %?\n- *Taken by*::\n- *Status*:: %^{Status|@active|@completed|@picked|@abandoned}\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Resources*::\n- *Success criteria*::\n:END:\n* Details\n* Sub-tasks\n* Roadmap"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 
 		  ("R" "plans")
 		  ("Ry" "year" plain
-		   "\n#+BEGIN_COMMENT\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n#+END_COMMENT\n* Overview\n* Values review and life physolophy\n* 5 Years Vision(s)\n* Goal definition\n* Financial review\n* Time tracking review"
+		   "\n:ORG_META:\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n:END:\n* Overview\n* Values review and life physolophy\n* 5 Years Vision(s)\n* Goal definition\n* Financial review\n* Time tracking review"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("Rq" "quarter" plain
-		   "\n#+BEGIN_COMMENT\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n#+END_COMMENT\n* Overview\n* Projects review\n* Financial review\n* Time tracking review"
+		   "\n:ORG_META:\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n:END:\n* Overview\n* Projects review\n* Financial review\n* Time tracking review"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("Rm" "month" plain
-		   "\n#+BEGIN_COMMENT\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n#+END_COMMENT\n* Overview\n* Projects and task picking\n* Financial review\n* Time tracking review"
+		   "\n:ORG_META:\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n:END:\n* Overview\n* Projects and task picking\n* Financial review\n* Time tracking review"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("Rw" "week" plain
-		   "\n#+BEGIN_COMMENT\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n#+END_COMMENT\n* Overview\n* Time blocking\n* Task picking"
+		   "\n:ORG_META:\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n:END:\n* Overview\n* Time blocking\n* Task picking"
+		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							  "#+TITLE: ${title}\n")
+		   :unarrowed t)
+		  ("z" "Zettelkasten")
+		  ("zr" "reference" plain
+		   "\n:ORG_META:\n- *Date*:: %^{Date}u\n- *Tags*::\n- *Type*:: #reference\n:END:\n\n"
+		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+							  "#+TITLE: ${title}\n")
+		   :unarrowed t)
+		  ("zz" "zettel" plain
+		   "\n:ORG_META:\n- *Date*:: %^{Date}u\n- *Tags*::\n- *Type*:: #zettel\n- *References*::\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
@@ -725,13 +917,13 @@ The best package to manage my PKM is definitely =org-roam=. Installing/configuri
 
   (setq org-roam-dailies-capture-templates
 		'(("d" "default" entry
-		   "* %?"
+		   "\n* Thoughts\n* Workout\n* Time scheduling\n** PEAK @7-11AM\n- 1st focus sprint: \n** DIP @11-2PM\n** RECOVERY PHASE @2-6PM\n- 2nd focus sprint (60 mins):\n* Tasks\n** ALL\n** MITs\n** LITs\n* Fleeting notes%?"
 		   :if-new (file+head "%<%Y-%m-%d>.org"
 							  "#+TITLE: %<%Y-%m-%d>\n")))))
 
 #+end_src
 	
-*** Org-noter
+**** Org-noter
 
 Install org-noter to deal with PDF notes.
 #+begin_src emacs-lisp
@@ -744,6 +936,87 @@ Install org-noter to deal with PDF notes.
 
 #+end_src
 	
+**** Org-ref
+
+Using the superior citation manager.
+
+#+begin_src emacs-lisp
+(use-package helm-bibtex
+  :ensure t)
+
+(use-package org-ref
+  :ensure t
+  :config
+  (setq bibtex-completion-bibliography '("~/Vault/library/org/main.bib")
+		bibtex-completion-library-path '("~/Vault/library/")
+
+		bibtex-completion-additional-search-fields '(keywords)
+		bibtex-completion-display-formats
+		'((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
+		  (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+		  (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+		  (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+		  (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
+		bibtex-completion-pdf-open-function
+		(lambda (fpath)
+		  (call-process "open" nil 0 nil fpath)))
+
+  (require 'org-ref-helm)
+  (setq org-ref-insert-link-function 'org-ref-insert-link-hydra/body
+		org-ref-insert-cite-function 'org-ref-cite-insert-helm
+		org-ref-insert-label-function 'org-ref-insert-label-link
+		org-ref-insert-ref-function 'org-ref-insert-ref-link
+		org-ref-cite-onclick-function (lambda (_) (org-ref-citation-hydra/body))))
+#+end_src
+
+**** Annotate
+
+Annotations can be quite effective.
+#+begin_src emacs-lisp
+(use-package annotate
+  :ensure t
+  :bind ("C-c x a" . annotate-annotate)
+  ("C-c x d" . annotate-delete-annotation)
+  ("C-c x ]" . annotate-goto-next-annotation)
+  ("C-c x [" . annotate-goto-previous-annotation))
+#+end_src	 
+**** Org super agenda
+
+Let's enhance the org agenda's capabilities.
+#+begin_src emacs-lisp
+(use-package org-super-agenda
+  :after org
+  :ensure t
+  :config
+  (setq org-super-agenda-groups
+		'((:name "Today"
+				 :time-grid t)
+		  (:name "Personal"
+				 :tag "personal")
+		  (:name "Todo"
+				 :tag "todo")
+		  (:name "RUSH"
+				 :tag "rush")
+		  (:name "Habits"
+				 :tag "habit")
+		  (:name "INBOX"
+				 :todo "INBOX")
+		  (:name "Important"
+				 ;; Single arguments given alone
+				 :tag "urgent"
+				 :tag "exam"
+				 :priority "A")))
+  (org-super-agenda-mode))
+#+end_src
+	 
+**** Epresent
+
+Nerdy-looking way to turn org mode notes into presentations.
+
+#+begin_src emacs-lisp
+(use-package epresent
+  :ensure t)
+#+end_src
 *** Deft
 
 Searching through roam entries could be a painful experience. =deft= fix this.
@@ -789,6 +1062,84 @@ I want a nice writing environment in Emacs.
 
 #+end_src
 	
+*** Markdown mode
+
+I also modify files in markdown format.
+#+begin_src emacs-lisp
+(use-package markdown-mode
+  :ensure t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init (setq markdown-command "multimarkdown"))
+#+end_src
+	
+*** Skeletons
+
+I like to define my own skeletons to quickly insert recurring patterns.
+
+#+begin_src emacs-lisp
+(define-skeleton place-skeleton
+  "Metadata for places to visit" nil
+  ":PROPERTIES:
+:LINK:
+:VISITED:
+:COMMENT:
+:END:")
+
+(define-skeleton challenge-skeleton
+  "Headings for hacking challenges" nil
+  "**** Commands\n**** Walkthrough\n**** Resources")
+#+end_src
+
+*** Git
+
+I use git as my VCS.
+
+#+begin_src emacs-lisp
+(use-package magit
+:ensure t)
+#+end_src
+
+*** Spellchecking
+
+Enabling spellchecking by default.
+
+#+begin_src emacs-lisp
+(add-hook 'text-mode-hook 'flyspell-mode)
+(add-hook 'prog-mode-hook 'flyspell-prog-mode)
+(setq ispell-dictionary "british")
+#+end_src
+
+** Scientific writing
+*** LaTex
+
+Using =lsp-mode= to have LaTeX autocompletion.
+#+begin_src emacs-lisp
+(use-package lsp-mode
+  :ensure t
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-c l")
+  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+		 (latex-mode . lsp)
+		 (python-mode . lsp)
+		 ;; if you want which-key integration
+		 (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp
+  :config
+  (add-to-list 'exec-path "/home/claudio/.cargo/bin/"))
+
+;; (use-package exec-path-from-shell
+;;   :ensure t
+;;   :config
+;;   (when (memq window-system '(mac ns x))
+;; 	(exec-path-from-shell-initialize)))
+
+;; optionally
+(use-package lsp-ui :ensure t :commands lsp-ui-mode)
+;; if you are helm user
+(use-package helm-lsp :ensure t :commands helm-lsp-workspace-symbol)
+#+end_src
+	
 ** Bookmarks with ebuku
 
 I use buku as my bookmarks manager.
@@ -805,4 +1156,36 @@ I use ledger to track my finances.
 #+begin_src emacs-lisp
 (use-package ledger-mode
   :ensure t)
+#+end_src
+
+** Time tracking
+
+Set up the =activitywatch= watcher for emacs.
+
+#+begin_src emacs-lisp
+(use-package request
+  :ensure t)
+
+(use-package activity-watch-mode
+  :ensure t
+  :config
+  (global-activity-watch-mode))
+#+end_src
+
+** Software development
+*** PlantUML
+
+PlantUML is a cool tool to write down UML diagrms.
+#+begin_src emacs-lisp
+(setq org-plantuml-jar-path (expand-file-name "/home/claudio/Repositories/plantuml/plantuml-1.2022.1.jar"))
+(add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
+(org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
+#+end_src
+*** Terminal
+
+I use ~vterm~ as terminal inside Emacs.
+
+#+begin_src emacs-lisp
+(use-package vterm
+    :ensure t)
 #+end_src
