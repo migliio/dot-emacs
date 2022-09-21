@@ -240,17 +240,18 @@ Use evil mode.
 Clean the Emacs interface making it as minimal as possible, without getting rid of useful improvements.
 
 #+begin_src emacs-lisp
-
 (setq auto-revert-interval 1              ; Refresh buffers fast
 	  recentf-max-saved-items 100         ; Show more recent files
 	  scroll-margin 1                     ; Space between cursor and top/bottom
 	  search-invisible t                  ; Search also in metadata
 	  )
 
-(setq-default tab-width 4                 ; Smaller tabs
-			  split-width-threshold 160   ; Split verticly by default
-			  split-height-threshold nil  ; Split verticly by default
-			  frame-resize-pixelwise t)   ; Fine-grained frame resize
+(setq tab-width 4                     ; Smaller tabs
+	  frame-resize-pixelwise t)   ; Fine-grained frame resize
+
+; Split windows vertically
+(setq split-height-threshold nil)
+(setq split-width-threshold 160)
 
 ;; Answering 'yes' and 'no' is tedious
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -350,8 +351,9 @@ I keep other themes commented in case I want to switch between them.
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
 		doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-one-light t)
-  ;;(load-theme 'doom-gruvbox t)
+  ;;(load-theme 'doom-one-light t)
+  ;;(load-theme 'doom-plain-dark t)
+  (load-theme 'doom-gruvbox t)
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
@@ -502,7 +504,6 @@ I want to open some files with external programs and =open-with= addresses this 
 								("\\.mp4\\'" "mpv" (file))
 								("\\.mkv\\'" "mpv" (file))
 								("\\.m4a\\'" "mpv" (file))
-								("\\.pdf\\'" "okular" (file))
 								("\\.ppt\\'" "libreoffice" (file))
 								("\\.pptx\\'" "libreoffice" (file))
 								("\\.doc\\'" "libreoffice" (file))
@@ -662,11 +663,12 @@ Well, I think that =org-mode= doesn't need any introduction or explanation. In t
 							   (org . t)
 							   (latex . t)
 							   (ditaa . t)
+							   (scheme . t)
+							   (lisp . t)
 							   (R . t)))
 
   ;; Set org agenda directory
-  (setq org-agenda-files (list "~/Vault/pkm/pages/20211126144021-personal_agenda.org"
-							   "~/Vault/pkm/journal")))
+  (setq org-agenda-files (list "~/Vault/pkm/pages/20220919103543-personal_agenda.org")))
 #+end_src
 	 
 **** Org bullets
@@ -817,7 +819,7 @@ The best package to manage my PKM is definitely =org-roam=. Installing/configuri
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
 		  ("ul" "lecture" plain
-		   "\n:ORG_META:\n- *Course*:: %?\n- *Lecture #*::\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *References*::\n- *Resources*::\n:END:\n\n"
+		   "\n:ORG_META:\n- *Topics*::\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *Resources*::\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unarrowed t)
@@ -947,8 +949,9 @@ Using the superior citation manager.
 (use-package org-ref
   :ensure t
   :config
-  (setq bibtex-completion-bibliography '("~/Vault/library/org/main.bib")
+  (setq bibtex-completion-bibliography '("~/Vault/library/org/main/main.bib")
 		bibtex-completion-library-path '("~/Vault/library/")
+		org-ref-pdf-directory '("~/Vault/library")
 
 		bibtex-completion-additional-search-fields '(keywords)
 		bibtex-completion-display-formats
@@ -989,18 +992,19 @@ Let's enhance the org agenda's capabilities.
   :ensure t
   :config
   (setq org-super-agenda-groups
-		'((:name "Today"
-				 :time-grid t)
-		  (:name "Personal"
-				 :tag "personal")
-		  (:name "Todo"
-				 :tag "todo")
-		  (:name "RUSH"
-				 :tag "rush")
-		  (:name "Habits"
-				 :tag "habit")
-		  (:name "INBOX"
-				 :todo "INBOX")
+		 '(
+		   (:name "Todo"
+				  :tag "todo")
+		   (:name "RUSH"
+				  :tag "rush")
+		   (:name "Zettelkasten"
+				  :tag "zettelkasten")
+		   (:name "Habits"
+				  :tag "habit")
+		   (:name "Waste sorting"
+				  :tag "waste_sorting")
+		   (:name "INBOX"
+				  :todo "INBOX")
 		  (:name "Important"
 				 ;; Single arguments given alone
 				 :tag "urgent"
@@ -1017,6 +1021,17 @@ Nerdy-looking way to turn org mode notes into presentations.
 (use-package epresent
   :ensure t)
 #+end_src
+**** Org-ql
+
+Using ~org-ql~ query language.
+
+#+begin_src emacs-lisp
+(use-package org-ql
+  :ensure t
+  :config
+  (setq org-directory "~/Vault/pkm/slip-box"))
+#+end_src
+
 *** Deft
 
 Searching through roam entries could be a painful experience. =deft= fix this.
@@ -1106,40 +1121,9 @@ Enabling spellchecking by default.
 #+begin_src emacs-lisp
 (add-hook 'text-mode-hook 'flyspell-mode)
 (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-(setq ispell-dictionary "british")
 #+end_src
 
 ** Scientific writing
-*** LaTex
-
-Using =lsp-mode= to have LaTeX autocompletion.
-#+begin_src emacs-lisp
-(use-package lsp-mode
-  :ensure t
-  :init
-  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-  (setq lsp-keymap-prefix "C-c l")
-  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-		 (latex-mode . lsp)
-		 (python-mode . lsp)
-		 ;; if you want which-key integration
-		 (lsp-mode . lsp-enable-which-key-integration))
-  :commands lsp
-  :config
-  (add-to-list 'exec-path "/home/claudio/.cargo/bin/"))
-
-;; (use-package exec-path-from-shell
-;;   :ensure t
-;;   :config
-;;   (when (memq window-system '(mac ns x))
-;; 	(exec-path-from-shell-initialize)))
-
-;; optionally
-(use-package lsp-ui :ensure t :commands lsp-ui-mode)
-;; if you are helm user
-(use-package helm-lsp :ensure t :commands helm-lsp-workspace-symbol)
-#+end_src
-	
 ** Bookmarks with ebuku
 
 I use buku as my bookmarks manager.
@@ -1173,6 +1157,59 @@ Set up the =activitywatch= watcher for emacs.
 #+end_src
 
 ** Software development
+*** LSP
+
+Using =lsp-mode= to handle IDE-like features.
+#+begin_src emacs-lisp
+(use-package dap-mode
+  :ensure t)
+
+(use-package rust-mode
+  :ensure t)
+
+(use-package racket-mode
+  :ensure t)
+
+(use-package lsp-mode
+  :ensure t
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-c l")
+  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+		 (latex-mode . lsp)
+		 (python-mode . lsp)
+		 (racket-mode . lsp)
+		 (c-mode . lsp)
+		 ;; if you want which-key integration
+		 (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp
+  :config
+  (add-to-list 'exec-path "/home/claudio/.cargo/bin/"))
+
+;; (use-package exec-path-from-shell
+;;   :ensure t
+;;   :config
+;;   (when (memq window-system '(mac ns x))
+;; 	(exec-path-from-shell-initialize)))
+
+;; optionally
+(use-package lsp-ui :ensure t :commands lsp-ui-mode
+  :config
+  (setq lsp-ui-sideline-show-diagnostics t)
+  (setq lsp-ui-sideline-show-hover t)
+  (setq lsp-ui-sideline-show-code-actions t))
+;; if you are helm user
+(use-package helm-lsp :ensure t :commands helm-lsp-workspace-symbol)
+;; optionally if you want to use debugger
+(use-package dap-mode)
+;; (use-package dap-LANGUAGE) to load the dap adapter for your language
+
+;; optional if you want which-key integration
+(use-package which-key
+    :config
+    (which-key-mode))
+#+end_src
+
 *** PlantUML
 
 PlantUML is a cool tool to write down UML diagrms.
@@ -1187,5 +1224,6 @@ I use ~vterm~ as terminal inside Emacs.
 
 #+begin_src emacs-lisp
 (use-package vterm
-    :ensure t)
+  :bind ("C-c v" . vterm)
+  :ensure t)
 #+end_src
