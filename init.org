@@ -809,7 +809,7 @@ The best package to manage my PKM is definitely =org-roam=. Installing/configuri
   (setq org-roam-dailies-directory "~/Vault/pkm/journal")
   ;; org-roam templates
   (setq org-roam-capture-templates
-		'(("d" "default" plain "\n:ORG_META:\n- *Resources*::%?\n- *Keywords*::\n:END:\n\n"
+		'(("d" "default" plain "\n:ORG_META:\n- *Date*::%?\n- *Resources*::\n- *Keywords*::\n:END:\n\n"
 		   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 							  "#+TITLE: ${title}\n")
 		   :unnarrowed t)
