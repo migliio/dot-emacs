@@ -271,17 +271,6 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 (global-set-key (kbd "C-c h") 'winner-undo)
 (global-set-key (kbd "C-c l") 'winner-redo)
 
-(when (display-graphic-p) 
-  ;; Do any keybindings and theme setup here
-  ;; Disable some boring modes
-  (dolist (mode
-		   '(tool-bar-mode                  ; No toolbars, more room for text
-			 scroll-bar-mode                ; No scroll bars either
-			 menu-bar-mode                  ; Menu bar is useless
-			 blink-cursor-mode))            ; The blinking cursor gets old
-	(funcall mode 0))
-  )
-
 (unless (display-graphic-p) 
   ;; Remove any keybindings and theme setup here
   (dolist (mode
@@ -330,44 +319,188 @@ Inspect a buffer with all assigned keybindings with =which-key= is really useful
 
 #+end_src
 	 
-*** Font
-
-Selecting the font.
-
-#+begin_src emacs-lisp
-;;(set-frame-font "Noto Sans Mono 16" nil t)
-;;(set-frame-font "Inconsolata Nerd Font 18" nil t)
-(set-frame-font "Iosevka 18" nil t)
-#+end_src
-	
 *** Theme
 
 I keep other themes commented in case I want to switch between them.
 
 #+begin_src emacs-lisp
-(use-package doom-themes
+  ;; (use-package doom-themes
+  ;;   :ensure t
+  ;;   :config
+  ;;   ;; Global settings (defaults)
+  ;;   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+  ;; 		doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  ;;   ;;(load-theme 'doom-one-light t)
+  ;;   ;;(load-theme 'doom-ayu-dark t)
+  ;;   (load-theme 'doom-gruvbox t)
+
+  ;;   ;; Enable flashing mode-line on errors
+  ;;   (doom-themes-visual-bell-config)
+  ;;   ;; Enable custom neotree theme (all-the-icons must be installed!)
+  ;;   (doom-themes-neotree-config)
+  ;;   ;; Corrects (and improves) org-mode's native fontification.
+  ;;   (doom-themes-org-config))
+
+  ;;
+  ;; NANO theme loading + other theme-related stuff
+  ;;
+
+                                          ; Path to nano emacs modules (mandatory)
+  (add-to-list 'load-path "/home/claudio/Repositories/nano-emacs")
+  (add-to-list 'load-path ".")
+
+  ;; Default layout (optional)
+  (require 'nano-layout)
+
+  (cond
+   ((member "-default" command-line-args) t)
+   ((member "-dark" command-line-args) (require 'nano-theme-dark))
+   (t (require 'nano-theme-light)))
+
+  ;; Theme
+  (require 'nano-faces)
+  (nano-faces)
+
+  (require 'nano-theme)
+  (nano-theme)
+
+  ;; Nano default settings (optional)
+  (require 'nano-defaults)
+
+  ;; Nano header & mode lines (optional)
+  (require 'nano-modeline)
+
+  ;; Compact layout (need to be loaded after nano-modeline)
+  (when (member "-compact" command-line-args)
+    (require 'nano-compact))
+
+  (setq nano-font-family-monospaced "SF Mono")
+  (setq nano-font-family-proportional nil)
+  (setq nano-font-size 16)
+
+  ;; Nano counsel configuration (optional)
+  ;; Needs "counsel" package to be installed (M-x: package-install)
+  ;; (require 'nano-counsel)
+
+  ;; Welcome message (optional)
+  (let ((inhibit-message t))
+    (message "Welcome to GNU Emacs")
+    (message (format "Initialization time: %s" (emacs-init-time))))
+
+
+;; A minor mode to replace keywords or regular expression with SVG tags
+(use-package svg-lib
+  :ensure t)
+
+;; Replace tags, dates, todos with svg images
+(use-package svg-tag-mode
+  :after svg-lib org
   :ensure t
   :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-		doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  ;;(load-theme 'doom-one-light t)
-  ;;(load-theme 'doom-plain-dark t)
-  (load-theme 'doom-gruvbox t)
+  (add-hook 'org-mode-hook #'svg-tag-mode)
+  (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
+  (defconst time-re "[0-9]\\{2\\}:[0-9]\\{2\\}")
+  (defconst day-re "[A-Za-z]\\{3\\}")
+  (defconst day-time-re (format "\\(%s\\)? ?\\(%s\\)?" day-re time-re))
 
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (all-the-icons must be installed!)
-  (doom-themes-neotree-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
+  (defun svg-progress-percent (value)
+    (svg-image (svg-lib-concat
+                (svg-lib-progress-bar (/ (string-to-number value) 100.0)
+                                      nil :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
+                (svg-lib-tag (concat value "%")
+                             nil :stroke 0 :margin 0)) :ascent 'center))
 
-;; (use-package doom-modeline
-;;   :ensure t
-;;   :hook (after-init . doom-modeline-mode)
-;;   :config
-;;   (setq doom-modeline-height 32))
+  (defun svg-progress-count (value)
+    (let* ((seq (mapcar #'string-to-number (split-string value "/")))
+           (count (float (car seq)))
+           (total (float (cadr seq))))
+      (svg-image (svg-lib-concat
+                  (svg-lib-progress-bar (/ count total) nil
+                                        :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
+                  (svg-lib-tag value nil
+                               :stroke 0 :margin 0)) :ascent 'center)))
 
+  (setq svg-tag-tags
+        `(
+          ;; Org tags
+          (":\\([A-Za-z0-9_]+\\)" . ((lambda (tag) (svg-tag-make tag))))
+          (":\\([A-Za-z0-9-_]+[ \-]\\)" . ((lambda (tag) tag)))
+          
+          ;; Task priority
+          ("\\[#[A-Z]\\]" . ( (lambda (tag)
+                                (svg-tag-make tag :face 'org-priority 
+                                              :beg 2 :end -1 :margin 0))))
+
+          ;; Progress
+          ("\\(\\[[0-9]\\{1,3\\}%\\]\\)" . ((lambda (tag)
+                                              (svg-progress-percent (substring tag 1 -2)))))
+          ("\\(\\[[0-9]+/[0-9]+\\]\\)" . ((lambda (tag)
+                                            (svg-progress-count (substring tag 1 -1)))))
+          
+          ;; TODO / DONE
+          ("TODO" . ((lambda (tag) (svg-tag-make "TODO" :face 'org-todo :inverse t :margin 0))))
+          ("DOING" . ((lambda (tag) (svg-tag-make "DOING" :face 'org-todo :inverse t :margin 0))))
+          ("INBOX" . ((lambda (tag) (svg-tag-make "INBOX" :face 'org-todo :inverse t :margin 0))))
+          ("DONE" . ((lambda (tag) (svg-tag-make "DONE" :face 'org-done :margin 0))))
+          ("ARCHIVED" . ((lambda (tag) (svg-tag-make "ARCHIVED" :face 'org-done :margin 0))))
+
+
+          ;; Citation of the form [cite:@Knuth:1984] 
+          ("\\(\\[cite:@[A-Za-z]+:\\)" . ((lambda (tag)
+                                            (svg-tag-make tag
+                                                          :inverse t
+                                                          :beg 7 :end -1
+                                                          :crop-right t))))
+          ("\\[cite:@[A-Za-z]+:\\([0-9]+\\]\\)" . ((lambda (tag)
+                                                     (svg-tag-make tag
+                                                                   :end -1
+                                                                   :crop-left t))))
+
+          
+          ;; Active date (with or without day name, with or without time)
+          (,(format "\\(<%s>\\)" date-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :end -1 :margin 0))))
+          (,(format "\\(<%s \\)%s>" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0))))
+          (,(format "<%s \\(%s>\\)" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0))))
+
+          ;; Inactive date  (with or without day name, with or without time)
+          (,(format "\\(\\[%s\\]\\)" date-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :end -1 :margin 0 :face 'org-date))))
+          (,(format "\\(\\[%s \\)%s\\]" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date))))
+          (,(format "\\[%s \\(%s\\]\\)" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date)))))))
+
+  (use-package all-the-icons-dired
+    :ensure t
+    :config
+    (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
+
+  (use-package all-the-icons
+    :ensure t
+    :if (display-graphic-p))
+
+  (when (display-graphic-p) 
+    ;; Do any keybindings and theme setup here
+    ;; Disable some boring modes
+    (dolist (mode
+             '(tool-bar-mode                  ; No toolbars, more room for text
+               scroll-bar-mode                ; No scroll bars either
+               menu-bar-mode                  ; Menu bar is useless
+               blink-cursor-mode))            ; The blinking cursor gets old
+      (funcall mode 0))
+    )
+
+  ;;(set-frame-font "SF Mono 14" nil t)
+  ;;(set-frame-font "Iosevka 16" nil t)
 #+end_src
 	
 ** Files navigation
@@ -676,12 +809,12 @@ Well, I think that =org-mode= doesn't need any introduction or explanation. In t
 I want to have nice bullets and not asterisks.
 
 #+begin_src emacs-lisp
-(use-package org-bullets
-  :ensure t
-  :after org
-  :config
-  ;; Enable org-bullets when opening org-files
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+;; (use-package org-bullets
+;;   :ensure t
+;;   :after org
+;;   :config
+;;   ;; Enable org-bullets when opening org-files
+;;   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 #+end_src
 	 
 **** Org export backends
@@ -691,15 +824,20 @@ I'm going to set several =org-mode= export backends.
 #+begin_src emacs-lisp
 
 ;; Assuming that these export backends are located in the site-lisp folder
-(require 'ox-twbs)
-(require 'ox-reveal)
-(require 'ox-md)
-(require 'ox-beamer)
+;; (require 'ox-twbs)
+;; (require 'ox-md)
+;; (require 'ox-beamer)
 
 (use-package ox-pandoc
   :ensure t)
 
-(setq org-reveal-root "file:///Users/claudio/Repositories/reveal.js")
+(use-package ox-twbs
+  :ensure t)
+
+(use-package ox-reveal
+  :ensure t
+  :config
+  (setq org-reveal-root "file:///home/claudio/Repositories/reveal.js"))
 
 (setq org-export-backends '(pandoc md beamer html latex ox-twbs ox-reveal))
 
@@ -1031,6 +1169,14 @@ Using ~org-ql~ query language.
   :config
   (setq org-directory "~/Vault/pkm/slip-box"))
 #+end_src
+**** Org-pomodoro
+
+Using the pomodoro technique inside Emacs.
+
+#+begin_src emacs-lisp
+(use-package org-pomodoro
+  :ensure t)
+#+end_src
 
 *** Deft
 
@@ -1156,7 +1302,18 @@ Set up the =activitywatch= watcher for emacs.
   (global-activity-watch-mode))
 #+end_src
 
-** Software development
+** Programming stuff
+*** Tramp term
+
+Using tramp term to connect to ssh instances and edit files.
+
+#+begin_src emacs-lisp
+(use-package tramp
+  :ensure t
+  :init
+  (setq tramp-default-method "ssh"))
+#+end_src
+
 *** LSP
 
 Using =lsp-mode= to handle IDE-like features.
@@ -1224,6 +1381,11 @@ I use ~vterm~ as terminal inside Emacs.
 
 #+begin_src emacs-lisp
 (use-package vterm
-  :bind ("C-c v" . vterm)
+  :ensure t
+  :config
+  (setq vterm-shell "/bin/bash"))
+
+(use-package multi-vterm
+  :bind ("C-c v" . multi-vterm)
   :ensure t)
 #+end_src
