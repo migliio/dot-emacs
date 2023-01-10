@@ -4,6 +4,7 @@
 /elpa/
 /quelpa/
 init.el
+minimal.el
 straight
 bookmarks
 recentf
