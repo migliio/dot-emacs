@@ -5,3 +5,6 @@
 /quelpa/
 init.el
 straight
+bookmarks
+recentf
+transient
