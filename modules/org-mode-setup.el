@@ -19,8 +19,8 @@
   (require 'oc-biblatex)
   (setq org-cite-export-processors
 	'((latex biblatex)))
-  ;; (setq org-latex-pdf-process (list
-  ;; 			       "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
+  (setq org-latex-pdf-process (list
+			       "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
 
   
   ;; In org-mode, I want source blocks to be themed as they would in native mode

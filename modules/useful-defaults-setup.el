@@ -28,7 +28,7 @@
 (dolist (mode
          '(tool-bar-mode                  ; No toolbars, more room for text
            scroll-bar-mode                ; No scroll bars either
-           menu-bar-mode                  ; Menu bar is useless
+	   menu-bar-mode                  ; Menu bar is useless
            blink-cursor-mode))            ; The blinking cursor gets old
   (funcall mode 0))
 

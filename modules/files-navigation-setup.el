@@ -14,7 +14,6 @@
   :config
   (setq completion-styles '(orderless)))
 
-;; Example configuration for consult
 (use-package consult
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :ensure t
@@ -179,5 +178,8 @@
 
 ;; Dired extra
 (require 'dired-x)
+
+;; Use ripgrep
+(require 'ripgrep-setup)
 
 (provide 'files-navigation-setup)

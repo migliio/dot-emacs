@@ -11,8 +11,15 @@
   :config
   (minions-mode 1))
 
+(use-package beacon
+  :ensure t
+  :config
+  (beacon-mode 1))
+
 (set-frame-font "JetBrains Mono NL 14" nil t)
-;; (set-frame-parameter (selected-frame) 'alpha '(95 95))
-;; (add-to-list 'default-frame-alist '(alpha 95 95))
+
+(when (display-graphic-p)
+  (set-frame-parameter (selected-frame) 'alpha '(92 92))
+  (add-to-list 'default-frame-alist '(alpha 92 92)))
 
 (provide 'theme-setup)
