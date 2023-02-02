@@ -147,6 +147,14 @@ Nerdy-looking way to turn org mode notes into presentations.
 #+end_src
 
 ** Programming stuff
+*** Snippets
+
+Using some snippets to make my writing experience faster.
+
+#+begin_src emacs-lisp
+(require 'yasnippet-setup)
+#+end_src
+
 *** Ctags
 
 Using ctags for kernel development.

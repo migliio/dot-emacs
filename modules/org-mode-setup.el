@@ -1,4 +1,4 @@
-(setq org-export-backends '(pandoc beamer html latex ascii ox-reveal))
+(setq org-export-backends '(pandoc beamer html latex ascii ox-reveal icalendar))
 
 (use-package org
   :ensure t
@@ -8,11 +8,26 @@
 	 ("C-c i" . org-capture)
 	 ("C-c l" . org-store-link))
   :config
+  
   ;; Org-capture templates
   (setq org-capture-templates
-	'(("j" "Journal entry" plain
+	'(("j" "Journal")
+	  ("jp" "Journal plain entry" plain
            (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
-           "**** %U: %?\n")))
+           "**** %U: %?\n")
+	  ("jm" "Journal meeting entry" plain
+	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+	   "**** Meeting with %? :schedule:meeting:work:\n:PROPERTIES:\n:WHERE:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
+	  ("js" "Journal seminar entry" plain
+	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+	   "**** Seminar hold by %? @<place> :schedule:work:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
+	  ("jc" "Journal call entry" plain
+	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+	   "**** Call with %? @online :schedule:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
+	  ("jh" "Journal home chores entry" plain
+	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+	   "**** %? @ home :schedule:personal:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n")))
+  
   ;; Export citations
   (setq org-cite-global-bibliography
 	'("/home/claudio/Vault/library/org/main/main.bib"))
@@ -32,8 +47,8 @@
   ;; Set latex preview size
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
 
-  ;; Fold everything when opening org files
-  (setq org-startup-folded t)
+  ;; Do not fold anything when opening org files
+  (setq org-startup-folded nil)
 
   ;; Not export drawers
   (setq org-export-with-drawers nil)
@@ -97,6 +112,27 @@
   ;; org-export-latex
   (require 'ox-latex)
   (add-to-list 'org-latex-classes
+	       '("memoir"
+		  "\\documentclass[article]{memoir}\n
+\\usepackage{color}
+\\usepackage{amssymb}
+\\usepackage{gensymb}
+\\usepackage{nicefrac}
+\\usepackage{units}"
+		  ("\\section{%s}" . "\\section*{%s}")
+		  ("\\subsection{%s}" . "\\subsection*{%s}")
+		  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		  ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		  ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (add-to-list 'org-latex-classes
+  	       '("letter"
+		  "\\documentclass{letter}\n"
+		  ("\\section{%s}" . "\\section*{%s}")
+		  ("\\subsection{%s}" . "\\subsection*{%s}")
+		  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		  ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		  ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+  (add-to-list 'org-latex-classes	       
 	       '("tuftebook"
 		 "\\documentclass{tufte-book}\n
 \\usepackage{color}
@@ -183,13 +219,19 @@
 			       (org . t)
 			       (latex . t)
 			       (ditaa . t)
-			       (mermaid . t)
 			       (scheme . t)
+			       (hledger . t)
 			       (lisp . t)
 			       (haskell . t)
 			       (R . t)))
 
   ;; Set org agenda directory
   (setq org-agenda-files (list "~/Vault/pkm/pages/")))
+
+(use-package org-wild-notifier
+  :ensure t
+  :config
+  (setq org-wild-notifier-notification-title "Org agenda reminder"
+	org-wild-notifier-alert-times-property "NOTIFY_BEFORE"))
 
 (provide 'org-mode-setup)

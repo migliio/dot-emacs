@@ -1,0 +1,9 @@
+# -*- mode: snippet -*- 
+# name: figure
+# key: figure
+# --
+#+BEGIN_CENTER
+#+ATTR_LATEX: :height 0.5\textwidth
+#+CAPTION: $1
+$0
+#+END_CENTER

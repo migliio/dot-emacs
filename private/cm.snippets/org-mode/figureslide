@@ -1,0 +1,17 @@
+# -*- mode: snippet -*- 
+# name: figureslide
+# key: figureslide
+# --
+
+**** A figure                                      :BMCOL:B_ignoreheading:
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :END:
+
+#+ATTR_LATEX: width=\textwidth 
+file:./figures
+
+**** A block                                       :B_ignoreheading:BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :END:

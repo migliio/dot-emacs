@@ -7,6 +7,7 @@ In this piece of code I add stuff to perform the startup of the Emacs init file 
 
 #+begin_src emacs-lisp
 (add-to-list 'load-path (concat user-emacs-directory "modules/"))
+(add-to-list 'load-path (concat user-emacs-directory "site-lisp/"))
 #+end_src
 
 * Startup performance
@@ -168,14 +169,6 @@ Create mind maps starting from org mode files.
 (require 'org-mind-map-setup)
 #+end_src
 
-**** Ob-mermaid
-
-Generate cool diagrams within org-mode.
-
-#+begin_src emacs-lisp
-(require 'org-ob-mermaid-setup)
-#+end_src
-
 **** Citar
 
 Using the superior citation manager.
@@ -261,6 +254,7 @@ I use ledger to track my finances.
 
 #+begin_src emacs-lisp
 (require 'ledger-setup)
+(require 'hledger-setup)
 #+end_src
 
 ** Time tracking
@@ -280,6 +274,14 @@ Using elfeed as my preferred RSS feed manager.
 #+end_src
 
 ** Programming stuff
+*** Snippets
+
+Using some snippets to make my writing experience faster.
+
+#+begin_src emacs-lisp
+(require 'yasnippet-setup)
+#+end_src
+
 *** CTAGS
 
 Using CTAGS for kernel development.
