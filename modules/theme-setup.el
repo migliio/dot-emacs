@@ -1,19 +1,35 @@
 (use-package doom-themes
   :ensure t
   :config
-  (load-theme 'doom-gruvbox t))
+  (unless (display-graphic-p)
+    (load-theme 'doom-gruvbox t)))
 
 (use-package minions
   :ensure t
   :config
-    (minions-mode 1))
+  (minions-mode 1))
 
-(use-package beacon
+(use-package spaceline
   :ensure t
   :config
-  (beacon-mode 1))
+  (setq spaceline-org-clock-p t)
+  (setq spaceline-org-clock-format-function (lambda ()
+					      (truncate-string-to-width (org-clock-get-clock-string) (- (window-total-width) 70) 0 nil t)))
+  (when (display-graphic-p)
+    (spaceline-spacemacs-theme)))
 
-(when (display-graphic-p)
-     (set-frame-font "Monospace 14" nil t))
+(use-package org-modern
+  :ensure t
+  :config
+  (global-org-modern-mode))
+
+(use-package berrys-theme
+  :ensure t)
+
+(if (display-graphic-p)
+    (progn
+      (load-theme 'berrys t)
+      (set-frame-font "iA Writer Duospace 14" nil t))
+  (set-face-background 'default "undefined"))
 
 (provide 'theme-setup)

@@ -2,31 +2,47 @@
 
 (use-package org
   :ensure t
-  :defer t
   :bind (("C-c a" . org-agenda)
 	 ("C-c t" . org-insert-structure-template)
 	 ("C-c i" . org-capture)
 	 ("C-c l" . org-store-link))
   :config
-  
+  ;; Set org agenda directory
+  (setq org-agenda-files (list "~/Vault/pkm/pages/"))
   ;; Org-capture templates
   (setq org-capture-templates
-	'(("j" "Journal")
-	  ("jp" "Journal plain entry" plain
+	'(("j" "journal")
+	  ("jp" "journal plain entry" plain
            (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
            "**** %U: %?\n")
-	  ("jm" "Journal meeting entry" plain
+	  ("ja" "journal archive resource entry" plain
+           (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+           "**** %U: %? :archive:\n")
+	  ("jm" "journal meeting entry" plain
 	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
 	   "**** Meeting with %? :schedule:meeting:work:\n:PROPERTIES:\n:WHERE:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
-	  ("js" "Journal seminar entry" plain
+	  ("js" "journal seminar entry" plain
 	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
 	   "**** Seminar hold by %? @<place> :schedule:work:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
-	  ("jc" "Journal call entry" plain
+	  ("jc" "journal call entry" plain
 	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
-	   "**** Call with %? @online :schedule:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
+	   "**** call with %? @online :schedule:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
 	  ("jh" "Journal home chores entry" plain
 	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
-	   "**** %? @ home :schedule:personal:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n")))
+	   "**** %? @ home :schedule:personal:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n")
+	  ("p" "plans")
+	  ("py" "year" plain
+	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+	   "**** %U: Year plan :yearly:plan:\n- *Feelings*:: %^{Feelings|good|neutral|bad}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n***** Overview\n***** Values review and life physolophy\n***** 5 Years Vision(s)\n***** Goal definition\n***** Financial review\n***** Time tracking review")
+	  ("pq" "quarter" plain
+	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+	   "**** %U: Quarter plan :quarterly:plan:\n- *Feelings*:: %^{Feelings|good|neutral|bad}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n***** Overview\n***** Projects review\n***** Financial review\n***** Time tracking review")
+	  ("pm" "month" plain
+	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+	   "**** %U: Month plan :monthly:plan:\n- *Feelings*:: %^{Feelings|good|neutral|bad}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n***** Overview\n***** Projects and task picking\n***** Financial review\n***** Time tracking review")
+	  ("pw" "week" plain
+	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+	   "**** %U: Week plan :weekly:plan:\n- *Feelings*:: %^{Feelings|good|neutral|bad}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n***** Overview\n***** Time blocking\n***** Task picking")))
   
   ;; Export citations
   (setq org-cite-global-bibliography
@@ -220,18 +236,86 @@
 			       (latex . t)
 			       (ditaa . t)
 			       (scheme . t)
-			       (hledger . t)
 			       (lisp . t)
 			       (haskell . t)
-			       (R . t)))
-
-  ;; Set org agenda directory
-  (setq org-agenda-files (list "~/Vault/pkm/pages/")))
+			       (R . t))))
 
 (use-package org-wild-notifier
   :ensure t
   :config
   (setq org-wild-notifier-notification-title "Org agenda reminder"
 	org-wild-notifier-alert-times-property "NOTIFY_BEFORE"))
+
+(defun org-activate-links (limit)
+  "Add link properties to links.
+This includes angle, plain, and bracket links."
+  (catch :exit
+    (while (re-search-forward org-link-any-re limit t)
+      (let* ((start (match-beginning 0))
+	     (end (match-end 0))
+	     (visible-start (- (or (match-beginning 3) (match-beginning 2)) 1))
+	     (visible-end (+ (or (match-end 3) (match-end 2)) 1))
+	     (style (cond ((eq ?< (char-after start)) 'angle)
+			  ((eq ?\[ (char-after (1+ start))) 'bracket)
+			  (t 'plain))))
+	(when (and (memq style org-highlight-links)
+		   ;; Do not span over paragraph boundaries.
+		   (not (string-match-p org-element-paragraph-separate
+					(match-string 0)))
+		   ;; Do not confuse plain links with tags.
+		   (not (and (eq style 'plain)
+			     (let ((face (get-text-property
+					  (max (1- start) (point-min)) 'face)))
+			       (if (consp face) (memq 'org-tag face)
+				 (eq 'org-tag face))))))
+	  (let* ((link-object (save-excursion
+				(goto-char start)
+				(save-match-data (org-element-link-parser))))
+		 (link (org-element-property :raw-link link-object))
+		 (type (org-element-property :type link-object))
+		 (path (org-element-property :path link-object))
+                 (face-property (pcase (org-link-get-parameter type :face)
+				  ((and (pred functionp) face) (funcall face path))
+				  ((and (pred facep) face) face)
+				  ((and (pred consp) face) face) ;anonymous
+				  (_ 'org-link)))
+		 (properties		;for link's visible part
+		  (list 'mouse-face (or (org-link-get-parameter type :mouse-face)
+					'highlight)
+			'keymap (or (org-link-get-parameter type :keymap)
+				    org-mouse-map)
+			'help-echo (pcase (org-link-get-parameter type :help-echo)
+				     ((and (pred stringp) echo) echo)
+				     ((and (pred functionp) echo) echo)
+				     (_ (concat "LINK: " link)))
+			'htmlize-link (pcase (org-link-get-parameter type
+								  :htmlize-link)
+					((and (pred functionp) f) (funcall f))
+					(_ `(:uri ,link)))
+			'font-lock-multiline t)))
+	    (org-remove-flyspell-overlays-in start end)
+	    (org-rear-nonsticky-at end)
+	    (if (not (eq 'bracket style))
+		(progn
+                  (add-face-text-property start end face-property)
+		  (add-text-properties start end properties))
+	      ;; Handle invisible parts in bracket links.
+	      (remove-text-properties start end '(invisible nil))
+	      (let ((hidden
+		     (append `(invisible
+			       ,(or (org-link-get-parameter type :display)
+				    'org-link))
+			     properties)))
+		(add-text-properties start visible-start hidden)
+                (add-face-text-property visible-start visible-end face-property)
+		(add-text-properties visible-start visible-end properties)
+		(add-text-properties visible-end end hidden)
+		(org-rear-nonsticky-at visible-start)
+		(org-rear-nonsticky-at visible-end)))
+	    (let ((f (org-link-get-parameter type :activate-func)))
+	      (when (functionp f)
+		(funcall f start end path (eq style 'bracket))))
+	    (throw :exit t)))))		;signal success
+    nil))
 
 (provide 'org-mode-setup)

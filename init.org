@@ -8,6 +8,8 @@ In this piece of code I add stuff to perform the startup of the Emacs init file 
 #+begin_src emacs-lisp
 (add-to-list 'load-path (concat user-emacs-directory "modules/"))
 (add-to-list 'load-path (concat user-emacs-directory "site-lisp/"))
+(add-to-list 'custom-theme-load-path (concat user-emacs-directory "site-lisp/less-theme"))
+(add-to-list 'custom-theme-load-path (concat user-emacs-directory "site-lisp/eink-emacs"))
 #+end_src
 
 * Startup performance
@@ -169,6 +171,14 @@ Create mind maps starting from org mode files.
 (require 'org-mind-map-setup)
 #+end_src
 
+**** Org transclusion
+
+Using org transclusion to group org headers into other org files.
+
+#+begin_src emacs-lisp
+(require 'org-transclusion-setup)
+#+end_src
+
 **** Citar
 
 Using the superior citation manager.
@@ -238,6 +248,14 @@ Enabling spellchecking by default.
 
 #+begin_src emacs-lisp
 (require 'spellchecking-setup)
+#+end_src
+
+*** Side notes
+
+Using side notes to take sketchy notes while reading or reviewing stuff.
+
+#+begin_src emacs-lisp
+(require 'side-notes-setup)
 #+end_src
 
 ** Bookmarks with ebuku

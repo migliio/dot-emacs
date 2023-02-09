@@ -7,7 +7,6 @@
 (setq-default tab-width 8)                ; Set indentation characters
 (setq-default c-basic-offset 8)           ; Set indentation in C
 
-
 ;; Some useful global keybinds
 (global-set-key (kbd "C-c h") 'winner-undo)
 (global-set-key (kbd "C-c l") 'winner-redo)

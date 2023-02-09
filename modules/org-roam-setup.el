@@ -109,28 +109,6 @@
 	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 			      "#+TITLE: ${title}\n")
 	   :unarrowed t)
-
-	  ("R" "plans")
-	  ("Ry" "year" plain
-	   "\n:ORG_META:\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n:END:\n* Overview\n* Values review and life physolophy\n* 5 Years Vision(s)\n* Goal definition\n* Financial review\n* Time tracking review"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("Rq" "quarter" plain
-	   "\n:ORG_META:\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n:END:\n* Overview\n* Projects review\n* Financial review\n* Time tracking review"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("Rm" "month" plain
-	   "\n:ORG_META:\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n:END:\n* Overview\n* Projects and task picking\n* Financial review\n* Time tracking review"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("Rw" "week" plain
-	   "\n:ORG_META:\n- *Feelings*:: %^{Feelings|:smile:|:neutral_face:|:disappointed:}\n- *Related*:: %?\n- *Date*:: %^{Date}u\n- *Keywords*::\n:END:\n* Overview\n* Time blocking\n* Task picking"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
 	  ("z" "Zettelkasten")
 	  ("zr" "reference" plain
 	   "\n:ORG_META:\n- *Date*:: %^{Date}u\n- *Type*:: #reference\n:END:\n\n"
@@ -155,6 +133,11 @@
   :after org-roam)
 
 (use-package org-roam-ui
-  :ensure t)
+  :ensure t
+  :after org-roam
+  :config
+  (setq org-roam-ui-sync-theme t
+	org-roam-ui-follow t
+	org-roam-ui-update-on-save t))
 
 (provide 'org-roam-setup)
