@@ -18,13 +18,14 @@
   (when (display-graphic-p)
     (spaceline-spacemacs-theme)))
 
-(use-package org-modern
-  :ensure t
-  :config
-  (global-org-modern-mode))
-
 (use-package berrys-theme
   :ensure t)
+
+(use-package unicode-fonts
+  :ensure t
+  :config
+  (when (display-graphic-p)
+    (unicode-fonts-setup)))
 
 (if (display-graphic-p)
     (progn

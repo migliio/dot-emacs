@@ -318,4 +318,10 @@ This includes angle, plain, and bracket links."
 	    (throw :exit t)))))		;signal success
     nil))
 
+(use-package org-modern
+  :ensure t
+  :config
+  (when (display-graphic-p)
+    (global-org-modern-mode)))
+
 (provide 'org-mode-setup)

@@ -280,7 +280,7 @@ I use ledger to track my finances.
 Set up the =activitywatch= watcher for emacs.
 
 #+begin_src emacs-lisp
-(require 'activitywatch-setup)
+;; (require 'activitywatch-setup)
 #+end_src
 
 ** RSS reader
