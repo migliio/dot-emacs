@@ -1,0 +1,3 @@
+[submodule "site-lisp/less-theme"]
+	path = site-lisp/less-theme
+	url = https://github.com/nobiot/less-theme.git

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: esselunga
+# key: esse
+# --
+
+$1 * "Esselunga" "Grocery shopping"
+  Expenses:Food:Supermarket                    $0
+  Assets:Cards:N26

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*- 
+# name: thunked page
+# key: thunk
+# --
+
+/Thunked page/: all reference notes for Advanced Operating Systems course are taken at $1. Inspect it for further details.
