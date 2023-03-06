@@ -3,7 +3,7 @@
   :init
   (setq org-roam-v2-ack t)
   :custom
-  (org-roam-directory (file-truename "~/Vault/pkm/slip-box/"))
+  (org-roam-directory (file-truename "~/Vault/pkm/pages/"))
   :bind (("C-c n l" . org-roam-buffer-toggle)
 	 ("C-c n f" . org-roam-node-find)
 	 ("C-c n g" . org-roam-graph)
@@ -30,9 +30,9 @@
 		(rename-buffer new-file)
 		(rename-file old-file new-file)
 		(set-visited-file-name new-file)
-		(set-buffer-modified-p nil))))  
+		(set-buffer-modified-p nil))))
   (org-roam-db-autosync-mode)
-  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (setq org-roam-node-display-template (concat "${title} " (propertize "${tags}" 'face 'org-tag)))
   (setq org-id-extra-files (directory-files-recursively "~/Vault/pkm/pages" "org"))
   ;; org-roam templates
   (setq org-roam-capture-templates
@@ -68,32 +68,22 @@
 	   :unarrowed t)
 	  ("r" "resources")
 	  ("rb" "book" plain
-	   "\n:ORG_META:\n- *Author*:: %?\n- *Status*:: %^{Status|@buyed|@reading|@read}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Keywords*::\n:END:\n\n"
+	   "\n:ORG_META:\n- *Author*:: %?\n- *Status*:: %^{Status|@buyed|@reading|@read}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n\n"
 	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 			      "#+TITLE: ${title}\n")
 	   :unarrowed t)
-	  ("rm" "manual" plain
-	   "\n:ORG_META:\n- *Author(s)*:: %?\n- *Areas*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n- *Reference Entry*::\n- *Resources*::\n- *Keywords*::\n:END:\n* Notes\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("rp" "paper" plain
-	   "\n:ORG_META:\n- *Author(s)*:: %?\n- *Areas*::\n- *Reference Entry*::\n- *Related papers*::\n- *Resources*::\n- *Keywords*::\n:END:\n* Notes\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("ra" "article" plain
-	   "\n:ORG_META:\n- *Author*:: %?\n- *URL*:: %^{URL}\n- *Related*::\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n:END:\n\n"
+	  ("ra" "article/blog" plain
+	   "\n:ORG_META:\n- *Author*:: %?\n- *URL*:: %^L\n- *Related*::\n- *Recommended by*::\n- *Date*:: %^{Date}u\n\n"
 	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 			      "#+TITLE: ${title}\n")
 	   :unarrowed t)
 	  ("rv" "video" plain
-	   "\n:ORG_META:\n- *Creator*:: %?\n- *URL*::\n- *Recommended by*::\n- *Date*:: %^{Date}u\n- *Keywords*::\n:END:\n\n"
+	   "\n:ORG_META:\n- *Creator*:: %?\n- *URL*:: %^L\n- *Recommended by*::\n- *Date*:: %^{Date}u\n:END:\n\n"
 	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 			      "#+TITLE: ${title}\n")
 	   :unarrowed t)
 	  ("rc" "conference" plain
-	   "\n:ORG_META:\n- *Speaker(s)*:: %?\n- *Where*::\n- *What*::\n- *Date*:: %^{Date}u\n- *Related*::\n- *Resources*::\n- *Keywords*::\n:END:\n\n"
+	   "\n:ORG_META:\n- *Speaker(s)*:: %?\n- *Where*::\n- *What*::\n- *Date*:: %^{Date}u\n- *Related*::\n- *Resources*::\n:END:\n\n"
 	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 			      "#+TITLE: ${title}\n")
 	   :unarrowed t)
@@ -136,7 +126,7 @@
   :ensure t
   :after org-roam
   :config
-  (setq org-roam-ui-sync-theme t
+  (setq org-roam-ui-sync-theme nil
 	org-roam-ui-follow t
 	org-roam-ui-update-on-save t))
 

@@ -8,8 +8,6 @@ In this piece of code I add stuff to perform the startup of the Emacs init file 
 #+begin_src emacs-lisp
 (add-to-list 'load-path (concat user-emacs-directory "modules/"))
 (add-to-list 'load-path (concat user-emacs-directory "site-lisp/"))
-(add-to-list 'custom-theme-load-path (concat user-emacs-directory "site-lisp/less-theme"))
-(add-to-list 'custom-theme-load-path (concat user-emacs-directory "site-lisp/eink-emacs"))
 #+end_src
 
 * Startup performance
@@ -202,14 +200,6 @@ Nerdy-looking way to turn org mode notes into presentations.
 (require 'epresent-setup)
 #+end_src
 
-**** Org-ql
-
-Using ~org-ql~ query language.
-
-#+begin_src emacs-lisp
-(require 'org-ql-setup)
-#+end_src
-
 *** Deft
 
 Searching through roam entries could be a painful experience. =deft= fix this.
@@ -268,11 +258,11 @@ I use buku as my bookmarks manager.
 
 ** Finance
 
-I use ledger to track my finances.
+I use beancount to track my finances.
 
 #+begin_src emacs-lisp
-(require 'ledger-setup)
-(require 'hledger-setup)
+(require 'beancount)
+(add-to-list 'auto-mode-alist '("\\.beancount\\'" . beancount-mode))
 #+end_src
 
 ** Time tracking
@@ -292,6 +282,14 @@ Using elfeed as my preferred RSS feed manager.
 #+end_src
 
 ** Programming stuff
+*** Completion
+
+Trying some in-buffer completion framework that is not broken.
+
+#+begin_src emacs-lisp
+(require 'completion-setup)
+#+end_src
+
 *** Snippets
 
 Using some snippets to make my writing experience faster.
@@ -306,14 +304,6 @@ Using CTAGS for kernel development.
 
 #+begin_src emacs-lisp
 (require 'ctags-setup)
-#+end_src
-
-*** Completion
-
-Using Company for completion.
-
-#+begin_src emacs-lisp
-(require 'company-setup)
 #+end_src
 
 *** Tramp term

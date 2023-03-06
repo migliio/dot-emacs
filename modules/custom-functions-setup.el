@@ -16,5 +16,6 @@
 	(when filename
       (kill-new filename)
       (message "Copied buffer file name '%s' to the clipboard." filename))))
+(global-set-key (kbd "C-c f n") 'copy-file-name-to-clipboard)
 
 (provide 'custom-functions-setup)

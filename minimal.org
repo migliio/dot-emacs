@@ -89,47 +89,26 @@ I really love the =undo-tree= mode visualization, so I'm going to enable it.
 (require 'undo-tree-setup)
 #+end_src
 
-*** Export backends
-
-Managing org export backends (before loading ~org.el~).
-
-#+begin_src emacs-lisp
-(require 'org-export-backends-setup)
-#+end_src
-
 ** Personal knowledge management
-*** Skeletons
-
-I like to define my own skeletons to quickly insert recurring patterns.
-
-#+begin_src emacs-lisp
-(require 'skeletons-setup)
-#+end_src
-
 *** Org mode
-**** Install and general configuration
-
-Well, I think that =org-mode= doesn't need any introduction or explanation. In the last two years ([2021-09-03 Fri]) it changed my life for the best.
 
 #+begin_src emacs-lisp
 (require 'org-mode-setup)
 #+end_src
 
+**** Org export backends
+
+I'm going to set several =org-mode= export backends, among those shipped with Emacs itself by default.
+	 
+#+begin_src emacs-lisp
+(require 'org-export-backends-setup)
+#+end_src
 **** Org-roam
-The best package to manage my PKM is definitely =org-roam=. Installing/configuring it.
+The best package to manage my PKM is definitely =org-roam=. Installing/configuring it. I'm also installing and using org-roam-ui to visualize my org-roam graph.
 
 #+begin_src emacs-lisp
 (require 'org-roam-setup)
 #+end_src
-
-**** Org-remark
-
-Using org remark to add annotations to org my org files.
-
-#+begin_src emacs-lisp
-(require 'org-remark-setup)
-#+end_src
-
 **** Citar
 
 Using the superior citation manager.
@@ -137,15 +116,6 @@ Using the superior citation manager.
 #+begin_src emacs-lisp
 (require 'citar-setup)
 #+end_src
-
-**** Epresent
-
-Nerdy-looking way to turn org mode notes into presentations.
-
-#+begin_src emacs-lisp
-(require 'epresent-setup)
-#+end_src
-
 ** Programming stuff
 *** Snippets
 
@@ -161,14 +131,6 @@ Using ctags for kernel development.
 
 #+begin_src emacs-lisp
 (require 'ctags-setup)
-#+end_src
-
-*** Completion
-
-Using Company for completion.
-
-#+begin_src emacs-lisp
-(require 'company-setup)
 #+end_src
 
 *** LSP

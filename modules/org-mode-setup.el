@@ -8,7 +8,7 @@
 	 ("C-c l" . org-store-link))
   :config
   ;; Set org agenda directory
-  (setq org-agenda-files (list "~/Vault/pkm/pages/"))
+  (setq org-agenda-files '("~/Vault/pkm/pages/20220919103543-personal_agenda.org" "~/Vault/pkm/pages/20221122175451-personal_journal.org"))
   ;; Org-capture templates
   (setq org-capture-templates
 	'(("j" "journal")
@@ -27,9 +27,13 @@
 	  ("jc" "journal call entry" plain
 	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
 	   "**** call with %? @online :schedule:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
-	  ("jh" "Journal home chores entry" plain
+	  ("jh" "journal home chores entry" plain
 	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
 	   "**** %? @ home :schedule:personal:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n")
+	  ("P" "personal")
+	  ("Pc" "contact" plain
+	   (file "~/Vault/pkm/pages/20230216124800-personal_contacts.org")
+	   "* %(org-contacts-template-name) %^g\n:PROPERTIES:\n:EMAIL: %(org-contacts-template-email)\n:NOTES: %^{NOTES}\n:PKM_LINK: %?\n:END:")
 	  ("p" "plans")
 	  ("py" "year" plain
 	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
@@ -318,10 +322,13 @@ This includes angle, plain, and bracket links."
 	    (throw :exit t)))))		;signal success
     nil))
 
-(use-package org-modern
+(use-package calfw-org
   :ensure t
-  :config
-  (when (display-graphic-p)
-    (global-org-modern-mode)))
+  :bind (("C-c c c" . cfw:open-org-calendar)))
+
+(use-package org-contacts
+  :ensure t
+  :after org
+  :custom (org-contacts-files '("~/Vault/pkm/pages/20230216124800-personal_contacts.org")))
 
 (provide 'org-mode-setup)
