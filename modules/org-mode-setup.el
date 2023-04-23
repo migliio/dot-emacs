@@ -1,4 +1,4 @@
-(setq org-export-backends '(pandoc beamer html latex ascii ox-reveal icalendar))
+(setq org-export-backends '(pandoc beamer html latex ascii ox-reveal ox-hugo icalendar))
 
 (use-package org
   :ensure t
@@ -7,6 +7,7 @@
 	 ("C-c i" . org-capture)
 	 ("C-c l" . org-store-link))
   :config
+  (require 'org-tempo)
   ;; Set org agenda directory
   (setq org-agenda-files '("~/Vault/pkm/pages/20220919103543-personal_agenda.org" "~/Vault/pkm/pages/20221122175451-personal_journal.org"))
   ;; Org-capture templates
@@ -20,13 +21,13 @@
            "**** %U: %? :archive:\n")
 	  ("jm" "journal meeting entry" plain
 	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
-	   "**** Meeting with %? :schedule:meeting:work:\n:PROPERTIES:\n:WHERE:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
+	   "**** Meeting with %? on %U :schedule:meeting:work:\n:PROPERTIES:\n:WHERE:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
 	  ("js" "journal seminar entry" plain
 	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
 	   "**** Seminar hold by %? @<place> :schedule:work:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
 	  ("jc" "journal call entry" plain
 	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
-	   "**** call with %? @online :schedule:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
+	   "**** Call with %? @online on %U :schedule:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
 	  ("jh" "journal home chores entry" plain
 	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
 	   "**** %? @ home :schedule:personal:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n")
@@ -67,8 +68,8 @@
   ;; Set latex preview size
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
 
-  ;; Do not fold anything when opening org files
-  (setq org-startup-folded nil)
+  ;; Fold everything when opening org files
+  (setq org-startup-folded t)
 
   ;; Not export drawers
   (setq org-export-with-drawers nil)
@@ -131,6 +132,15 @@
 
   ;; org-export-latex
   (require 'ox-latex)
+  (add-to-list 'org-latex-classes
+	       '("res"
+		 "\\documentclass[margin]{res}\n
+\\setlength{\textwidth}{5.1in}"
+		  ("\\section{%s}" . "\\section*{%s}")
+		  ("\\subsection{%s}" . "\\subsection*{%s}")
+		  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		  ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		  ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
   (add-to-list 'org-latex-classes
 	       '("memoir"
 		  "\\documentclass[article]{memoir}\n
@@ -250,85 +260,13 @@
   (setq org-wild-notifier-notification-title "Org agenda reminder"
 	org-wild-notifier-alert-times-property "NOTIFY_BEFORE"))
 
-(defun org-activate-links (limit)
-  "Add link properties to links.
-This includes angle, plain, and bracket links."
-  (catch :exit
-    (while (re-search-forward org-link-any-re limit t)
-      (let* ((start (match-beginning 0))
-	     (end (match-end 0))
-	     (visible-start (- (or (match-beginning 3) (match-beginning 2)) 1))
-	     (visible-end (+ (or (match-end 3) (match-end 2)) 1))
-	     (style (cond ((eq ?< (char-after start)) 'angle)
-			  ((eq ?\[ (char-after (1+ start))) 'bracket)
-			  (t 'plain))))
-	(when (and (memq style org-highlight-links)
-		   ;; Do not span over paragraph boundaries.
-		   (not (string-match-p org-element-paragraph-separate
-					(match-string 0)))
-		   ;; Do not confuse plain links with tags.
-		   (not (and (eq style 'plain)
-			     (let ((face (get-text-property
-					  (max (1- start) (point-min)) 'face)))
-			       (if (consp face) (memq 'org-tag face)
-				 (eq 'org-tag face))))))
-	  (let* ((link-object (save-excursion
-				(goto-char start)
-				(save-match-data (org-element-link-parser))))
-		 (link (org-element-property :raw-link link-object))
-		 (type (org-element-property :type link-object))
-		 (path (org-element-property :path link-object))
-                 (face-property (pcase (org-link-get-parameter type :face)
-				  ((and (pred functionp) face) (funcall face path))
-				  ((and (pred facep) face) face)
-				  ((and (pred consp) face) face) ;anonymous
-				  (_ 'org-link)))
-		 (properties		;for link's visible part
-		  (list 'mouse-face (or (org-link-get-parameter type :mouse-face)
-					'highlight)
-			'keymap (or (org-link-get-parameter type :keymap)
-				    org-mouse-map)
-			'help-echo (pcase (org-link-get-parameter type :help-echo)
-				     ((and (pred stringp) echo) echo)
-				     ((and (pred functionp) echo) echo)
-				     (_ (concat "LINK: " link)))
-			'htmlize-link (pcase (org-link-get-parameter type
-								  :htmlize-link)
-					((and (pred functionp) f) (funcall f))
-					(_ `(:uri ,link)))
-			'font-lock-multiline t)))
-	    (org-remove-flyspell-overlays-in start end)
-	    (org-rear-nonsticky-at end)
-	    (if (not (eq 'bracket style))
-		(progn
-                  (add-face-text-property start end face-property)
-		  (add-text-properties start end properties))
-	      ;; Handle invisible parts in bracket links.
-	      (remove-text-properties start end '(invisible nil))
-	      (let ((hidden
-		     (append `(invisible
-			       ,(or (org-link-get-parameter type :display)
-				    'org-link))
-			     properties)))
-		(add-text-properties start visible-start hidden)
-                (add-face-text-property visible-start visible-end face-property)
-		(add-text-properties visible-start visible-end properties)
-		(add-text-properties visible-end end hidden)
-		(org-rear-nonsticky-at visible-start)
-		(org-rear-nonsticky-at visible-end)))
-	    (let ((f (org-link-get-parameter type :activate-func)))
-	      (when (functionp f)
-		(funcall f start end path (eq style 'bracket))))
-	    (throw :exit t)))))		;signal success
-    nil))
-
-(use-package calfw-org
-  :ensure t
-  :bind (("C-c c c" . cfw:open-org-calendar)))
-
 (use-package org-contacts
   :ensure t
   :after org
   :custom (org-contacts-files '("~/Vault/pkm/pages/20230216124800-personal_contacts.org")))
+
+(use-package ox-hugo
+  :ensure t
+  :after ox)
 
 (provide 'org-mode-setup)

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: coffe at giuriati
+# key: giuriati
+# --
+
+$1 * "Politecnico" "Coffee @giuriati"
+  Expenses:Food:Bar                             $0
+  Assets:Cards:N26

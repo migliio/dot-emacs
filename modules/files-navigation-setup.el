@@ -1,6 +1,3 @@
-(fido-mode t) 
-(icomplete-vertical-mode t) 
-
 (use-package projectile
   :ensure t
   :commands projectile-mode projectile-project-name

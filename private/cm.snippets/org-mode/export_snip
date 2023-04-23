@@ -1,0 +1,9 @@
+# -*- mode: snippet -*- 
+# name: export snippet
+# key: exsni
+# --
+
+#+include:"~/Repositories/knock-files/org-headers/header_notes_document.org"
+#+TITLE: Lecture notes on $1
+#+SUBTITLE: Politecnico di Milano
+#+AUTHOR: Claudio Migliorelli (prof. $0)

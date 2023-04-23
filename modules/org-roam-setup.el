@@ -11,26 +11,30 @@
 	 ("C-c n i" . org-roam-node-insert)
 	 ("C-c n c" . org-roam-capture))
   :config
+  (defun get-roam-refs (file)
+    "Get the value of the 'ROAM_REFS' property from the given FILE."
+    (with-current-buffer (find-file-noselect file)
+      (org-entry-get (point-min) "ROAM_REFS" t)))
   (add-hook 'after-save-hook
-	    (defun org-rename-to-new-title ()
-	      (when-let*
-		  ((old-file (buffer-file-name))
-		   (is-roam-file (org-roam-file-p old-file))
-		   (file-node (save-excursion
-				(goto-char 1)
-				(org-roam-node-at-point)))
-		   (file-name  (file-name-base (org-roam-node-file file-node)))
-		   (file-time  (or (and (string-match "^\\([0-9]\\{14\\}\\)-" file-name)
-					(concat (match-string 1 file-name) "-"))
-				   ""))
-		   (slug (org-roam-node-slug file-node))
-		   (new-file (expand-file-name (concat file-time slug ".org")))
-		   (different-name? (not (string-equal old-file new-file))))
-
-		(rename-buffer new-file)
-		(rename-file old-file new-file)
-		(set-visited-file-name new-file)
-		(set-buffer-modified-p nil))))
+	      (defun org-rename-to-new-title ()
+		(when-let*
+		    ((old-file (buffer-file-name))
+		     (is-roam-file (org-roam-file-p old-file))
+		     (file-node (save-excursion
+				  (goto-char 1)
+				  (org-roam-node-at-point)))
+		     (file-name  (file-name-base (org-roam-node-file file-node)))
+		     (file-time  (or (and (string-match "^\\([0-9]\\{14\\}\\)-" file-name)
+					  (concat (match-string 1 file-name) "-"))
+				     ""))
+		     (slug (org-roam-node-slug file-node))
+		     (new-file (expand-file-name (concat file-time slug ".org")))
+		     (different-name? (not (string-equal old-file new-file))))
+		  (when (null (get-roam-refs buffer-file-name))
+		    (rename-buffer new-file)
+		    (rename-file old-file new-file)
+		    (set-visited-file-name new-file)
+		    (set-buffer-modified-p nil)))))
   (org-roam-db-autosync-mode)
   (setq org-roam-node-display-template (concat "${title} " (propertize "${tags}" 'face 'org-tag)))
   (setq org-id-extra-files (directory-files-recursively "~/Vault/pkm/pages" "org"))
@@ -68,12 +72,12 @@
 	   :unarrowed t)
 	  ("r" "resources")
 	  ("rb" "book" plain
-	   "\n:ORG_META:\n- *Author*:: %?\n- *Status*:: %^{Status|@buyed|@reading|@read}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n\n"
+	   "\n:ORG_META:\n- *Author*:: %?\n- *Status*:: %^{Status|@buyed|@reading|@read}\n- *Recommended by*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n:END:\n\n"
 	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 			      "#+TITLE: ${title}\n")
 	   :unarrowed t)
 	  ("ra" "article/blog" plain
-	   "\n:ORG_META:\n- *Author*:: %?\n- *URL*:: %^L\n- *Related*::\n- *Recommended by*::\n- *Date*:: %^{Date}u\n\n"
+	   "\n:ORG_META:\n- *Author*:: %?\n- *URL*:: %^L\n- *Related*::\n- *Recommended by*::\n- *Date*:: %^{Date}u\n:END:\n\n"
 	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 			      "#+TITLE: ${title}\n")
 	   :unarrowed t)

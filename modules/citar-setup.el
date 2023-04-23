@@ -21,10 +21,6 @@
           (note . "@${author editor}, ${title}")))
   (setq citar-file-notes-extensions '("org")
 	citar-notes-paths '("~/Vault/pkm/slip-box"))
-  (setq citar-symbols
-	`((file ,(all-the-icons-faicon "file-o" :face 'all-the-icons-green :v-adjust -0.1) . " ")
-          (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) . " ")
-          (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) . " ")))
   (setq citar-symbol-separator "  "))
 
 (provide 'citar-setup)

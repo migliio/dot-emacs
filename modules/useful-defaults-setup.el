@@ -6,6 +6,8 @@
 (winner-mode t)
 (setq-default tab-width 8)
 (setq-default c-basic-offset 8)
+(setq confirm-kill-processes nil)
+(setq frame-resize-pixelwise t)
 
 ;; Some useful global keybinds
 (global-set-key (kbd "C-c h") 'winner-undo)
@@ -24,6 +26,7 @@
             #'linum-mode))
 (setq display-line-numbers-type 'relative)
 
+;; Avoid boring warnings
 (setq warning-minimum-level :emergency)
 
 ;; Disable some boring modes
@@ -42,5 +45,9 @@
 
 ;; Use UTF-8 as a preferred coding system
 (set-language-environment "UTF-8")
+
+;; Avoid async shell commands warnings
+(add-to-list 'display-buffer-alist
+	     (cons "\\*Async Shell Command\\*.*" (cons #'display-buffer-no-window nil)))
 
 (provide 'useful-defaults-setup)

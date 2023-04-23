@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: generali pension fund
+# key: generali
+# --
+
+$1 * "Generali" "Deposit"
+  Assets:Generali:RetirementFund		100.00 EUR
+  Income:Parents:Investments

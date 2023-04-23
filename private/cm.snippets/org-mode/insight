@@ -1,0 +1,8 @@
+# -*- mode: snippet -*- 
+# name: insight
+# key: ins
+# --
+
+#+begin_insight
+$1
+#+end_insight

@@ -7,7 +7,16 @@ In this piece of code I add stuff to perform the startup of the Emacs init file 
 
 #+begin_src emacs-lisp
 (add-to-list 'load-path (concat user-emacs-directory "modules/"))
-(add-to-list 'load-path (concat user-emacs-directory "site-lisp/"))
+(let ((default-directory (expand-file-name "site-lisp")))
+  (normal-top-level-add-subdirs-to-load-path))
+#+end_src
+
+Start the emacs server when opening emacs
+
+#+begin_src emacs-lisp
+  (require 'server)
+  (unless (server-running-p)
+    (server-start))
 #+end_src
 
 * Startup performance
@@ -40,7 +49,8 @@ Thanks to @daviwil I finally found a way to get rid of all transient files that 
 In order to enable MacOS support I want to set the keyboard /Command/ key as the /Meta/ key and change the image scaling in order to resolve the fuzzy PDFs with Retina displays.
 
 #+begin_src emacs-lisp
-(require 'macos-setup)
+(when (eq system-type 'darwin)
+    (require 'macos-setup))
 #+end_src
 
 * General configuration
@@ -68,6 +78,14 @@ Adding some custom functions I use to make my life easier.
 #+end_src
    
 ** User interface
+*** Buffer management
+
+Adding some tweaks to manage buffers better.
+
+#+begin_src emacs-lisp
+(require 'buffer-management-setup)
+#+end_src
+
 *** Theme
 
 Loading the preferred theme.
@@ -130,14 +148,6 @@ Enabling =org-crypt= support as it is automatically installed with =org-mode= it
 (require 'org-crypt-setup)
 #+end_src
 
-**** Olivetti mode
-
-I want a nice writing environment in Emacs with some distraction free setup.
-
-#+begin_src emacs-lisp
-(require 'org-olivetti-setup)
-#+end_src
-
 **** Org-roam
 The best package to manage my PKM is definitely =org-roam=. Installing/configuring it. I'm also installing and using org-roam-ui to visualize my org-roam graph.
 
@@ -151,14 +161,6 @@ Install org-noter to deal with PDF notes.
 
 #+begin_src emacs-lisp
 (require 'org-noter-setup)
-#+end_src
-
-**** Org-remark
-
-Using org remark to add annotations to my org files.
-
-#+begin_src emacs-lisp
-(require 'org-remark-setup)
 #+end_src
 
 **** Org-mind-map
@@ -265,12 +267,12 @@ I use beancount to track my finances.
 (add-to-list 'auto-mode-alist '("\\.beancount\\'" . beancount-mode))
 #+end_src
 
-** Time tracking
+** Email
 
-Set up the =activitywatch= watcher for emacs.
+I use ~mu4e~ as e-mail client.
 
 #+begin_src emacs-lisp
-;; (require 'activitywatch-setup)
+(require 'email-setup)
 #+end_src
 
 ** RSS reader
@@ -328,14 +330,6 @@ Using which key to remind what keybinds to use to perform actions.
 
 #+begin_src emacs-lisp
 (require 'which-key-setup)
-#+end_src
-
-*** PlantUML
-
-PlantUML is a cool tool to write down UML diagrams.
-
-#+begin_src emacs-lisp
-(require 'plantuml-setup)
 #+end_src
 
 *** Terminal

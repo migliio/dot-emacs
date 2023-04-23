@@ -10,6 +10,7 @@
 	  "https://feeds.feedburner.com/TheHackersNews?format=xml"
 	  "https://www.kernel.org/feeds/kdist.xml"
 	  "https://9to5linux.com/feed/atom"
+	  "https://www.phoronix.com/rss.php"
 	  "https://www.freelists.org/feed/cryptome"
 	  "https://www.schneier.com/feed/")))
 

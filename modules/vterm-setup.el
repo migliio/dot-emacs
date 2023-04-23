@@ -1,10 +1,8 @@
 (use-package vterm
-  :ensure t
-  :config
-  (setq vterm-shell "/bin/bash"))
+  :ensure t)
 
 (use-package multi-vterm
-  :bind ("C-c v" . multi-vterm)
-  :ensure t)
+  :ensure t
+  :bind (("C-c v" . multi-vterm)))
 
 (provide 'vterm-setup)
