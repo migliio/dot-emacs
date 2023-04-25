@@ -1,4 +1,4 @@
-(setq org-export-backends '(pandoc beamer html latex ascii ox-reveal ox-hugo icalendar))
+(setq org-export-backends '(beamer html latex ascii ox-reveal ox-hugo icalendar))
 
 (use-package org
   :ensure t

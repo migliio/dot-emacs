@@ -27,7 +27,7 @@
 (setq display-line-numbers-type 'relative)
 
 ;; Avoid boring warnings
-(setq warning-minimum-level :emergency)
+;; (setq warning-minimum-level :emergency)
 
 ;; Disable some boring modes
 (dolist (mode

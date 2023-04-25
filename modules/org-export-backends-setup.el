@@ -1,5 +1,5 @@
-(use-package ox-pandoc
-  :ensure t)
+;; (use-package ox-pandoc
+;;   :ensure t)
 
 (use-package ox-twbs
   :ensure t)

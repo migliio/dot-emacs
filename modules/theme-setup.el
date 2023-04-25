@@ -16,6 +16,7 @@
 
 (if (display-graphic-p)
     (progn
+;      (set-face-attribute 'default nil :height 150)
       (set-frame-font "Inconsolata 18" nil t)
       (set-fringe-mode 0)
       (use-package hc-zenburn-theme :ensure t :config (load-theme 'hc-zenburn t)))
