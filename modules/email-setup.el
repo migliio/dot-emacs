@@ -7,7 +7,7 @@
 	mu4e-use-fancy-chars nil
 	mu4e-attachment-dir  "~/Downloads"
 	message-send-mail-function 'message-send-mail-with-sendmail
-	sendmail-program "/home/claudio/.nix-profile/bin/msmtp"
+	sendmail-program "/usr/bin/msmtp"
 	message-kill-buffer-on-exit t
 	mu4e-get-mail-command "mbsync -a"
 	mu4e-update-interval 300

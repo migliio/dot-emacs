@@ -89,33 +89,6 @@ I really love the =undo-tree= mode visualization, so I'm going to enable it.
 (require 'undo-tree-setup)
 #+end_src
 
-** Personal knowledge management
-*** Org mode
-
-#+begin_src emacs-lisp
-(require 'org-mode-setup)
-#+end_src
-
-**** Org export backends
-
-I'm going to set several =org-mode= export backends, among those shipped with Emacs itself by default.
-	 
-#+begin_src emacs-lisp
-(require 'org-export-backends-setup)
-#+end_src
-**** Org-roam
-The best package to manage my PKM is definitely =org-roam=. Installing/configuring it. I'm also installing and using org-roam-ui to visualize my org-roam graph.
-
-#+begin_src emacs-lisp
-(require 'org-roam-setup)
-#+end_src
-**** Citar
-
-Using the superior citation manager.
-
-#+begin_src emacs-lisp
-(require 'citar-setup)
-#+end_src
 ** Programming stuff
 *** Snippets
 

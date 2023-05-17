@@ -1,0 +1,48 @@
+# -*- mode: snippet -*- 
+# name: kernel module with qemu
+# key: kqemu
+# expand-env: ((yas-indent-line 'fixed))
+# --
+
+CONFIG_MODULE_SIG=n
+
+# module name
+MODULE          := modulename
+
+# build
+BUILD_DIR       := /sources/linux
+MODULE_DIR      := /staging/initramfs/fs/modules
+
+# source dirs
+SRC_S           := src
+
+# module object
+obj-m           := $(MODULE).o
+
+# core object
+$(MODULE)-y     += src/core.o
+
+# flags
+ccflags-y       := -g -DDEBUG
+
+# compilation
+all: prepare
+	$(MAKE) -C $(BUILD_DIR) M=$(PWD) modules
+
+clean:
+	$(MAKE) -C $(BUILD_DIR) M=$(PWD) clean
+
+copy-to-fs: all
+	mkdir -p $(MODULE_DIR)
+	cp $(MODULE).ko $(MODULE_DIR)
+
+prepare:
+	cp /sources/linux/scripts/module.lds.S /sources/linux/scripts/module.lds
+	sed -i '$ d' /sources/linux/scripts/module.lds
+
+run:
+	@/scripts/build-k.sh
+	@/scripts/build-fs.sh
+	@make all
+	@make copy-to-fs
+	@/scripts/start_qemu.sh

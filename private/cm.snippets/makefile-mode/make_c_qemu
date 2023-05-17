@@ -1,0 +1,27 @@
+# -*- mode: snippet -*- 
+# name: c program with qemu
+# key: cqemu
+# expand-env: ((yas-indent-line 'fixed))
+# --
+
+.phony: all clean copy-to-fs run
+
+PROG_DIR	:= /staging/initramfs/fs/programs
+FLAGS		:= -Wall -Wextra -O2 -static
+PROG_NAME	:= $0
+
+all: clean
+	gcc $(FLAGS) -o $(PROG_NAME) $(PROG_NAME).c
+
+clean:
+	@rm -f $(PROG_NAME)
+
+copy-to-fs:
+	mkdir -p $(PROG_DIR)
+	cp $(PROG_NAME) $(PROG_DIR)
+
+run:
+	@/scripts/build-k.sh
+	@/scripts/build-fs.sh
+	@make copy-to-fs
+	@/scripts/start_qemu.sh

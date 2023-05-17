@@ -50,7 +50,7 @@
 			      "#+TITLE: ${title}\n")
 	   :unarrowed t)
 	  ("ul" "lecture" plain
-	   "\n:ORG_META:\n- *Topics*::\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *Resources*::\n:END:\n\n"
+	   "\n:ORG_META:\n- *Topics*::\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *Resources*::\n- *Related*::\n:END:\n\n"
 	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 			      "#+TITLE: ${title}\n")
 	   :unarrowed t)

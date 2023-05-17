@@ -7,8 +7,8 @@ In this piece of code I add stuff to perform the startup of the Emacs init file 
 
 #+begin_src emacs-lisp
 (add-to-list 'load-path (concat user-emacs-directory "modules/"))
-(let ((user-emacs-directory (expand-file-name "site-lisp")))
-  (normal-top-level-add-subdirs-to-load-path))
+(add-to-list 'load-path (concat user-emacs-directory "site-lisp/"))
+(add-to-list 'load-path (concat user-emacs-directory "site-lisp/git-email"))
 #+end_src
 
 Start the emacs server when opening emacs

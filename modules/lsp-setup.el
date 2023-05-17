@@ -25,4 +25,7 @@
   :config
   (add-hook 'after-init-hook 'global-company-mode))
 
+(use-package docker-tramp
+  :ensure t)
+
 (provide 'lsp-setup)

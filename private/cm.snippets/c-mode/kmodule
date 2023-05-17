@@ -1,0 +1,24 @@
+# -*- mode: snippet -*- 
+# name: kernel module skeleton
+# key: kmod
+# expand-env: ((yas-indent-line 'fixed))
+# --
+
+#include <linux/module.h>
+
+MODULE_LICENSE("GPL");
+
+/* load the LKM */
+static int __init module_t_load(void)
+{
+	return 0;
+}
+
+/* unload the LKM */
+static void __exit module_t_unload(void)
+{
+	
+}
+
+module_init(module_t_load);
+module_exit(module_t_unload);
