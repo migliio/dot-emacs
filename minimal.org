@@ -26,14 +26,6 @@ First of all, let's initialize the package management setting up ELPA, MELPA and
 #+end_src
 
 * General configuration
-** Skeletons
-
-I like to define my own skeletons to quickly insert recurring patterns.
-
-#+begin_src emacs-lisp
-(require 'skeletons-setup)
-#+end_src
-
 ** Custom functions
 
 Adding some custom functions I use to make my life easier.

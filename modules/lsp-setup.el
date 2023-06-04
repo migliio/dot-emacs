@@ -15,7 +15,7 @@
   :config
   (add-to-list 'eglot-server-programs
 	       '((c-mode c++-mode)
-                 . ("ccls")))
+                 . ("clangd")))
   (add-to-list 'eglot-server-programs '(nix-mode . ("rnix-lsp")))
   (add-hook 'c-mode-hook 'eglot-ensure)
   (add-hook 'python-mode-hook 'eglot-ensure))
