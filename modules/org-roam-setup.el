@@ -38,6 +38,17 @@
   (org-roam-db-autosync-mode)
   (setq org-roam-node-display-template (concat "${title} " (propertize "${tags}" 'face 'org-tag)))
   (setq org-id-extra-files (directory-files-recursively "~/Vault/pkm/pages" "org"))
+  (setq org-roam-mode-sections
+        (list #'org-roam-backlinks-section
+              #'org-roam-reflinks-section
+	      #'org-roam-unlinked-references-section
+              ))
+  (add-to-list 'display-buffer-alist
+               '("\\*org-roam\\*"
+                 (display-buffer-in-direction)
+                 (direction . right)
+                 (window-width . 0.33)
+                 (window-height . fit-window-to-buffer)))
   ;; org-roam templates
   (setq org-roam-capture-templates
 	'(("d" "default" plain "\n:ORG_META:\n- *Date*::%?\n- *Resources*::\n:END:\n\n"

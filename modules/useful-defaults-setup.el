@@ -8,6 +8,7 @@
 (setq-default c-basic-offset 8)
 (setq confirm-kill-processes nil)
 (setq frame-resize-pixelwise t)
+(add-hook 'artist-mode-hook (lambda () (setq indent-tabs-mode nil)))
 
 ;; Some useful global keybinds
 (global-set-key (kbd "C-c h") 'winner-undo)

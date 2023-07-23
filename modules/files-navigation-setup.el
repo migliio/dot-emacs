@@ -21,6 +21,12 @@
 ;; Dired extra
 (require 'dired-x)
 
+;; Prompt for deleting files directly
+(setq delete-by-moving-to-trash t)
+
+;; Make emacs smart when multiple dired buffers are opened
+(setq dired-dwim-target t)
+
 ;; Use ripgrep
 (require 'ripgrep-setup)
 

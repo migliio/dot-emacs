@@ -9,6 +9,7 @@ In this piece of code I add stuff to perform the startup of the Emacs init file 
 (add-to-list 'load-path (concat user-emacs-directory "modules/"))
 (add-to-list 'load-path (concat user-emacs-directory "site-lisp/"))
 (add-to-list 'load-path (concat user-emacs-directory "site-lisp/git-email"))
+(add-to-list 'load-path (concat user-emacs-directory "./site-lisp/org-fc"))
 #+end_src
 
 Start the emacs server when opening emacs
@@ -69,14 +70,7 @@ Put Emacs auto-save and backup files to /tmp/.
 #+begin_src emacs-lisp
 (require 'autosave-setup)
 #+end_src
-** Custom functions
 
-Adding some custom functions I use to make my life easier.
-
-#+begin_src emacs-lisp
-(require 'custom-functions-setup)
-#+end_src
-   
 ** User interface
 *** Buffer management
 
@@ -338,4 +332,11 @@ I use ~vterm~ as terminal inside Emacs.
 
 #+begin_src emacs-lisp
 (require 'vterm-setup)
+#+end_src
+** Custom functions
+
+Adding some custom functions I use to make my life easier.
+
+#+begin_src emacs-lisp
+(require 'custom-functions-setup)
 #+end_src
