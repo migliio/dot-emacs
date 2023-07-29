@@ -51,6 +51,20 @@ First of all, let's initialize the package management setting up ELPA, MELPA and
 (eval-when-compile
   (require 'use-package))
 (setq use-package-always-ensure t)
+
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+(straight-use-package 'use-package)
 #+end_src
 
 * Keep emacs.d clean
@@ -158,7 +172,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 (setq display-line-numbers-type 'relative)
 
 ;; avoid boring warnings
-(setq warning-minimum-level :emergency)
+;; (setq warning-minimum-level :emergency)
 
 ;; disable some boring modes
 (dolist (mode
@@ -320,6 +334,29 @@ I really love the =undo-tree= mode visualization, so I'm going to enable it.
 #+end_src
 
 ** Personal knowledge management
+*** Zettelkasten
+
+#+begin_src emacs-lisp
+(use-package denote
+  :ensure t
+  :custom
+  (setq denote-directory (expand-file-name "~/pkm/slip-box")
+	denote-known-keywords '("kernel" "security" "machine-learning" "productivity" "probability")
+	denote-infer-keywords t
+	denote-sort-keywords t
+	denote-file-type nil
+	denote-prompts '(title keywords)
+	denote-date-prompt-use-org-read-date t
+	denote-backlinks-show-context t
+	denote-dired-directories))
+
+(use-package org-super-links
+  :straight (org-super-links :type git :host github :repo "toshism/org-super-links" :branch "develop")
+  :bind (("C-c s s" . org-super-links-link)
+         ("C-c s l" . org-super-links-store-link)
+         ("C-c s C-l" . org-super-links-insert-link)))
+#+end_src
+
 *** Org mode
 
 #+begin_src emacs-lisp
@@ -333,7 +370,7 @@ I really love the =undo-tree= mode visualization, so I'm going to enable it.
   :config
   (setq org-reveal-root "file:///home/claudio/Repositories/reveal.js"))
 
-(setq org-export-backends '(beamer html latex ascii ox-reveal ox-hugo icalendar))
+;; (setq org-export-backends '(beamer html latex ascii ox-reveal ox-hugo icalendar))
 
 (use-package org
   :ensure t
@@ -342,7 +379,7 @@ I really love the =undo-tree= mode visualization, so I'm going to enable it.
 	 ("C-c i" . mg/agenda-w-capture)
 	 ("C-c l" . org-store-link))
   :config
-  ;; Match files in pages with name 'agenda' 'journal' and 'projects'
+  ;; match files in pages with name 'agenda' 'journal' and 'projects'
   (defun mg/find-files-with-keywords (directory)
     "Recursively search DIRECTORY for files containing the words 'agenda', 'journal', or 'projects'.
 Returns a list of file paths."
@@ -356,8 +393,10 @@ Returns a list of file paths."
             (push file file-list))))
       file-list))
   (require 'org-tempo)
-  ;; Set org agenda directory  
+  ;; Set org agenda directory
   (setq org-agenda-files (mg/find-files-with-keywords "~/Vault/pkm/pages"))
+  ;; ignore archived entries in org-clock-report
+  (setq org-clock-sources '(agenda))
   ;; Org-capture templates
   (setq org-capture-templates
 	'(("j" "journal")
@@ -642,9 +681,11 @@ Returns a list of file paths."
 
 (use-package org-wild-notifier
   :ensure t
+  :custom
+    (setq org-wild-notifier-notification-title "Org agenda reminder"
+	  org-wild-notifier-alert-times-property "NOTIFY_BEFORE")
   :config
-  (setq org-wild-notifier-notification-title "Org agenda reminder"
-	org-wild-notifier-alert-times-property "NOTIFY_BEFORE"))
+  (org-wild-notifier-mode))
 
 (use-package org-contacts
   :ensure t
@@ -652,11 +693,6 @@ Returns a list of file paths."
   :custom (org-contacts-files '("~/Vault/pkm/pages/20230216124800-personal_contacts.org")))
 
 (require 'org-fc)
-;; keybindings for org-fc
-(add-hook 'org-mode-hook
-          (lambda ()
-	    (local-set-key (kbd "C-r i") #'org-fc-type-normal-init)
-	    (local-set-key (kbd "C-r r") #'org-fc-review)))
 (setq org-fc-directories '("~/Vault/pkm/pages" "~/Vault/pkm/slip-box"))
 
 (use-package ox-hugo
@@ -719,20 +755,12 @@ The best package to manage my PKM is definitely =org-roam=. Installing/configuri
 		    (rename-file old-file new-file)
 		    (set-visited-file-name new-file)
 		    (set-buffer-modified-p nil)))))
-  (org-roam-db-autosync-mode)
   (setq org-roam-node-display-template (concat "${title} " (propertize "${tags}" 'face 'org-tag)))
   (setq org-id-extra-files (directory-files-recursively "~/Vault/pkm/pages" "org"))
   (setq org-roam-mode-sections
         (list #'org-roam-backlinks-section
               #'org-roam-reflinks-section
-	      #'org-roam-unlinked-references-section
               ))
-  (add-to-list 'display-buffer-alist
-               '("\\*org-roam\\*"
-                 (display-buffer-in-direction)
-                 (direction . right)
-                 (window-width . 0.33)
-                 (window-height . fit-window-to-buffer)))
   ;; org-roam templates
   (setq org-roam-capture-templates
 	'(("d" "default" plain "\n:ORG_META:\n- *Date*::%?\n- *Resources*::\n:END:\n\n"
@@ -851,14 +879,7 @@ Create mind maps starting from org mode files.
   (require 'ox-org)
   :ensure t
   :config
-  (setq org-mind-map-engine "dot")       ; Default. Directed Graph
-  ;; (setq org-mind-map-engine "neato")  ; Undirected Spring Graph
-  ;; (setq org-mind-map-engine "twopi")  ; Radial Layout
-  ;; (setq org-mind-map-engine "fdp")    ; Undirected Spring Force-Directed
-  ;; (setq org-mind-map-engine "sfdp")   ; Multiscale version of fdp for the layout of large graphs
-  ;; (setq org-mind-map-engine "twopi")  ; Radial layouts
-  ;; (setq org-mind-map-engine "circo")  ; Circular Layout
-  )
+  (setq org-mind-map-engine "dot"))
 #+end_src
 
 **** Citar
@@ -874,7 +895,6 @@ Using the superior citation manager.
   (org-cite-follow-processor 'citar)
   (org-cite-activate-processor 'citar)
   (citar-bibliography org-cite-global-bibliography)
-  ;; optional: org-cite-insert is also bound to C-c C-x C-@
   :bind
   (("C-c c o" . citar-open)
    ("C-c c e" . citar-open-entry)
@@ -946,7 +966,7 @@ I like to define my own skeletons to quickly insert recurring patterns.
   "- *Exam date(s)*:
 - *Exam type*:
 - *Feelings*:
-- *Mark(s)*")
+- *Mark(s)*:")
 
 (define-skeleton pwn-ctf-skeleton
   "Python template used to solve pwn challenges" nil
