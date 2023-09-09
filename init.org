@@ -339,431 +339,6 @@ I use ~rg~ to find file content easily.
 #+end_src
 
 ** Personal knowledge management
-*** Org mode
-
-#+begin_src emacs-lisp
-(use-package ox-twbs
-  :after org
-  :ensure t)
-
-(use-package ox-reveal
-  :after org
-  :ensure t
-  :config
-  (setq org-reveal-root "file:///home/claudio/Repositories/reveal.js"))
-
-(setq org-export-backends '(beamer html latex ascii ox-reveal ox-hugo ox-twbs))
-
-(use-package org
-  :ensure t
-  :bind (("C-c a" . org-agenda)
-	 ("C-c t" . org-insert-structure-template)
-	 ("C-c i" . org-capture)
-	 ("C-c l" . org-store-link))
-  :config
-  (require 'org-tempo)
-  ;; Set org agenda directory
-  (setq org-agenda-files (list "~/Vault/pkm/pages/journal.org" "~/Vault/pkm/pages/agenda.org" "/home/claudio/Vault/pkm/pages/projects.org"))
-  ;; Set org files where to search for IDs
-  (setq org-id-extra-files '("~/Vault/pkm/pages"))
-  ;; ignore archived entries in org-clock-report
-  (setq org-clock-sources '(agenda))
-  ;; Org-capture templates
-  (defun mg/create-pages-file ()
-    "Create an org file in ~/Vault/pkm/pages/."
-    (setq mg-org-note--name (read-string "File name: "))
-    (let ((mg-org-note--filename (downcase mg-org-note--name)))
-      (expand-file-name (format "%s.org" mg-org-note--filename) "~/Vault/pkm/pages")))
-  (setq org-capture-templates
-	'(("f" "file" plain (file (lambda() (mg/create-pages-file)))
-	   "%(format \"#+title: %s\n#+date: %U\n\" mg-org-note--name)")
-	  ("j" "journal")
-	  ("jp" "journal plain entry" plain
-           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-           "**** %U: %?\n")
-	  ("js" "journal schedule entry" plain
-           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-	   "**** %U: today's schedule :schedule:\n***** %?\n")
-	  ("je" "journal event entry" plain
-           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")	   
-	   "**** %U: %? :schedule:event:\n:PROPERTIES:\n:WHERE:\n:NOTIFY_BEFORE:\n:END:\n%T\n***** Notes")
-	  ("ji" "journal inbox entry" plain
-           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")  	   
-	   "**** INBOX %U: %? :@inbox:\n")
-	  ("ja" "journal archive resource entry" plain
-           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-           "**** %U: %? :archive:\n")
-	  ("jm" "journal meeting entry" plain
-           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-	   "**** Meeting with %? on %U :schedule:meeting:work:\n:PROPERTIES:\n:WHERE:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
-	  ("js" "journal seminar entry" plain
-           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-	   "**** Seminar hold by %? @<place> :schedule:work:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
-	  ("jc" "journal call entry" plain
-           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-	   "**** Call with %? @online on %U :schedule:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
-	  ("jh" "journal home chores entry" plain
-           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-	   "**** %? @ home :schedule:personal:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n")
-	  ("r" "resources")
-	  ("rc" "conference" entry
-	   (file "~/Vault/pkm/pages/conferences.org")
-	   "* %^{Conference name}\n:PROPERTIES:\n:WHERE: %?\n:WEBSITE: %?\n:END:\n")
-	  ("p" "personal")
-	  ("pc" "contact" entry
-	   (file "~/Vault/pkm/pages/contacts.org")
-	   "* %(org-contacts-template-name) %^g\n:PROPERTIES:\n:EMAIL: %(org-contacts-template-email)\n:COMPANY:\n:PHONE_NUMBER: %?\n:WEBSITE:\n:TWITTER:\n:NOTES:\n:END:\n")
-	  ("u" "university")
-	  ("uc" "course" plain
-	   (file "~/Vault/pkm/pages/courses.org")
-	   "** %^{Course name}\n:PROPERTIES:\n:LECTURER:\n:UNIVERSITY:\n:ACADEMIC_YEAR:\n:RESOURCES:\n:END:\n*** Lecture notes\n")
-	  ("ul" "lecture" plain
-	   (file "~/Vault/pkm/pages/courses.org")
-	   "** %^{Lecture #}\n:PROPERTIES:\n:TOPICS:\n:LECTURER:\n:DATE:\n:RESOURCES:\n:RELATED:\n:END:\n")
-	  ("t" "project" plain
-	   (file "~/Vault/pkm/pages/projects.org")
-	   "** %^{Project name}\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
-	  ("P" "plans")
-	  ("Py" "yearly" plain
-	   (file "~/Vault/pkm/pages/planning.org")
-	   "* %U: %? yearly plan :yearly:plan:\n:PROPERTIES:\n- *Feelings*:: %^{Feelings|good|neutral|bad}\n- *Related*::\n- *Date*:: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Values review and life physolophy*\n- *5 Years Vision(s)*\n- *Goal definition*\n# reviewing\n- *Financial review*\n- *Time tracking review*")
-	  ("Pq" "quarterly" plain
-	   (file "~/Vault/pkm/pages/planning.org")
-	   "** %U: %? quarterly plan :quarterly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n# reviewing\n- *Projects review*\n- *Financial review*\n- *Time tracking review*")
-	  ("Pm" "monthly" plain
-	   (file "~/Vault/pkm/pages/planning.org")
-	   "*** %U: %? monthly plan :monthly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Projects and task picking*\n# reviewing\n- *Financial review*\n- *Time tracking review*\n- *Workout review*\n")
-	  ("Pw" "weekly" plain
-	   (file "~/Vault/pkm/pages/planning.org")
-	   "**** %U: %? weekly plan :weekly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Task picking*\n  - [ ] Inbox refile\n# reviewing\n- *Review*\n")))
-  ;; Export citations
-  (setq org-cite-global-bibliography
-	'("/home/claudio/Vault/library/org/main/main.bib"))
-  (require 'oc-biblatex)
-  (setq org-cite-export-processors
-	'((latex biblatex)))
-  (setq org-latex-pdf-process (list
-			       "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
-
-  
-  ;; In org-mode, I want source blocks to be themed as they would in native mode
-  (setq org-src-fontify-natively t
-	org-src-tab-acts-natively t
-	org-confirm-babel-evaluate nil
-	org-edit-src-content-indentation 0)
-
-  ;; Set latex preview size
-  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
-
-  ;; Fold everything when opening org files
-  (setq org-startup-folded t)
-
-  ;; Not export drawers
-  (setq org-export-with-drawers nil)
-
-  ;; Set org-mode TODO keywords
-  (setq org-todo-keywords
-	'((sequence "TODO(t)" "NEXT(n)" "PROG(p)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)" "INTR(i)")
-	  (sequence "INBOX" "|" "ARCHIVED")))
-
-  ;; Setup org stuck projects
-  (setq org-stuck-projects '("+project/" ("NEXT" "PROG" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
-
-  ;; Org-agenda custom commands
-  (setq org-agenda-block-separator "==============================================================================")
-  (setq org-agenda-custom-commands
-	'(
-	  ("a" "Agenda"
-	   ((agenda ""
-		    ((org-agenda-span 1)
-		     (org-deadline-warning-days 0)
-		     (org-scheduled-past-days 14)
-		     (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-		     (org-agenda-format-date "%A %-e %B %Y")
-		     (org-agenda-overriding-header "Today's schedule:\n")))
-	    (todo "PROG"
-		  ((org-agenda-time-grid nil)
-		   (org-agenda-span 1)
-		   (org-deadline-warning-days 0)
-		   (org-scheduled-past-days 0)
-		   (org-agenda-skip-function '(org-agenda-skip-entry-if 'notscheduled))
-		   (org-agenda-overriding-header "PROG tasks:\n")))
-	    (todo "NEXT"
-		  ((org-agenda-time-grid nil)
-		   (org-agenda-span 1)
-		   (org-deadline-warning-days 0)
-		   (org-scheduled-past-days 0)
-		   (org-agenda-skip-function '(org-agenda-skip-entry-if 'notscheduled))
-		   (org-agenda-overriding-header "NEXT tasks:\n")))
-            (agenda "" ((org-agenda-time-grid nil)
-			(org-agenda-start-day "+1d")
-			(org-agenda-start-on-weekday nil)
-			(org-agenda-span 30)
-			(org-agenda-show-all-dates nil)
-			(org-deadline-warning-days 0)
-			(org-agenda-entry-types '(:deadline))
-			(org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-			(org-agenda-overriding-header "\nUpcoming deadlines (+30d)\n")))
-	    (agenda ""
-		    ((org-agenda-start-on-weekday nil)
-		     (org-agenda-start-day "+1d")
-		     (org-agenda-span 5)
-		     (org-deadline-warning-days 0)
-		     (org-scheduled-past-days 0)
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-                     (org-agenda-overriding-header "\nWeek at a glance:\n")))
-	    (todo "INBOX"
-		  ((org-agenda-time-grid nil)
-		   (org-agenda-span 1)
-		   (org-deadline-warning-days 0)
-		   (org-scheduled-past-days 0)
-		   (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-		   (org-agenda-overriding-header "INBOX tasks to refile:\n")))
-	    ))
-	  ("c" "Agenda with capture"
-	   ((agenda ""
-		    ((org-agenda-span 1)
-		     (org-deadline-warning-days 0)
-		     (org-scheduled-past-days 14)
-		     (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-		     (org-agenda-format-date "%A %-e %B %Y")
-		     (org-agenda-overriding-header "Today's schedule:\n")))
-	    (agenda ""
-		    ((org-agenda-start-on-weekday nil)
-		     (org-agenda-start-day "+1d")
-		     (org-agenda-span 5)
-		     (org-deadline-warning-days 0)
-		     (org-scheduled-past-days 0)
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-                     (org-agenda-overriding-header "\nWeek at a glance:\n")))))))
-
-  ;; Enable DONE logging in org-mode
-  (setq org-log-done 'time)
-  
-  ;; View LaTeX previews in better quality
-  (setq org-latex-create-formula-image-program 'dvisvgm)
-
-  ;; org-export-latex
-  (require 'ox-latex)
-  (add-to-list 'org-latex-classes
-	       '("res"
-		 "\\documentclass[margin]{res}\n
-\\setlength{\textwidth}{5.1in}"
-		  ("\\section{%s}" . "\\section*{%s}")
-		  ("\\subsection{%s}" . "\\subsection*{%s}")
-		  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		  ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		  ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-  (add-to-list 'org-latex-classes
-	       '("memoir"
-		  "\\documentclass[article]{memoir}\n
-\\usepackage{color}
-\\usepackage{amssymb}
-\\usepackage{gensymb}
-\\usepackage{nicefrac}
-\\usepackage{units}"
-		  ("\\section{%s}" . "\\section*{%s}")
-		  ("\\subsection{%s}" . "\\subsection*{%s}")
-		  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		  ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		  ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-    (add-to-list 'org-latex-classes
-  	       '("letter"
-		  "\\documentclass{letter}\n"
-		  ("\\section{%s}" . "\\section*{%s}")
-		  ("\\subsection{%s}" . "\\subsection*{%s}")
-		  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		  ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		  ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-  (add-to-list 'org-latex-classes	       
-	       '("tuftebook"
-		 "\\documentclass{tufte-book}\n
-\\usepackage{color}
-\\usepackage{amssymb}
-\\usepackage{gensymb}
-\\usepackage{nicefrac}
-\\usepackage{units}"
-		 ("\\section{%s}" . "\\section*{%s}")
-		 ("\\subsection{%s}" . "\\subsection*{%s}")
-		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-  (add-to-list 'org-latex-classes
-	       '("tuftehandout"
-		 "\\documentclass{tufte-handout}
-\\usepackage{color}
-\\usepackage{amssymb}
-\\usepackage{amsmath}
-\\usepackage{gensymb}
-\\usepackage{nicefrac}
-\\usepackage{units}"
-		 ("\\section{%s}" . "\\section*{%s}")
-		 ("\\subsection{%s}" . "\\subsection*{%s}")
-		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-  (add-to-list 'org-latex-classes
-	       '("tufnotes"
-		 "\\documentclass{tufte-handout}
-				   \\usepackage{xcolor}
-					 \\usepackage{graphicx} %% allow embedded images
-					 \\setkeys{Gin}{width=\\linewidth,totalheight=\\textheight,keepaspectratio}
-					 \\usepackage{amsmath}  %% extended mathematics
-					 \\usepackage{booktabs} %% book-quality tables
-					 \\usepackage{units}    %% non-stacked fractions and better unit spacing
-					 \\usepackage{multicol} %% multiple column layout facilities
-					 \\RequirePackage[many]{tcolorbox}
-					 \\usepackage{fancyvrb} %% extended verbatim environments
-					   \\fvset{fontsize=\\normalsize}%% default font size for fancy-verbatim environments
-
-			  \\definecolor{g1}{HTML}{077358}
-			  \\definecolor{g2}{HTML}{00b096}
-
-			  %%section format
-			  \\titleformat{\\section}
-			  {\\normalfont\\Large\\itshape\\color{g1}}%% format applied to label+text
-			  {\\llap{\\colorbox{g1}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesection}}}}%% label
-			  {1em}%% horizontal separation between label and title body
-			  {}%% before the title body
-			  []%% after the title body
-
-			  %% subsection format
-			  \\titleformat{\\subsection}%%
-			  {\\normalfont\\large\\itshape\\color{g2}}%% format applied to label+text
-			  {\\llap{\\colorbox{g2}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesubsection}}}}%% label
-			  {1em}%% horizontal separation between label and title body
-			  {}%% before the title body
-			  []%% after the title body
-
-							\\newtheorem{note}{Note}[section]
-
-							\\tcolorboxenvironment{note}{
-							 boxrule=0pt,
-							 boxsep=2pt,
-							 colback={green!10},
-							 enhanced jigsaw, 
-							 borderline west={2pt}{0pt}{Green},
-							 sharp corners,
-							 before skip=10pt,
-							 after skip=10pt,
-							 breakable,
-						  }"
-
-		 ("\\section{%s}" . "\\section*{%s}")
-		 ("\\subsection{%s}" . "\\subsection*{%s}")
-		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-
-  ;; Create ID property when using org-store-link
-  (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
-
-  ;; Set up org-babel
-  (setq org-ditaa-jar-path "/home/claudio/Repositories/dot-emacs/private/cm.tools/ditaa.jar")
-  (org-babel-do-load-languages
-   'org-babel-load-languages '((C . t)
-			       (shell . t)
-			       (python .t)
-			       (emacs-lisp . t)
-			       (org . t)
-			       (gnuplot . t)
-			       (latex . t)
-			       (ditaa . t)
-			       (scheme . t)
-			       (lisp . t)
-			       (haskell . t)
-			       (R . t))))
-
-(use-package org-wild-notifier
-  :ensure t
-  :custom
-    (setq org-wild-notifier-notification-title "Org agenda reminder"
-	  org-wild-notifier-alert-times-property "NOTIFY_BEFORE")
-  :config
-  (org-wild-notifier-mode))
-
-(use-package org-contacts
-  :ensure t
-  :after org
-  :custom (org-contacts-files '("~/Vault/pkm/pages/contacts.org")))
-
-(require 'org-fc)
-(setq org-fc-directories '("~/Vault/pkm/pages" "~/Vault/pkm/slip-box"))
-
-(use-package ox-hugo
-  :ensure t
-  :after ox)
-#+end_src
-
-**** Encrypting
-
-Enabling =org-crypt= support as it is automatically installed with =org-mode= itself.
-
-#+begin_src emacs-lisp
-;; enable and set org-crypt
-(require 'org-crypt)
-(org-crypt-use-before-save-magic)
-(setq org-tags-exclude-from-inheritance (quote ("crypt")))
-
-;; GPG key to use for encryption
-(setq org-crypt-key nil)
-#+end_src
-
-**** Org-noter
-
-Install org-noter to deal with PDF notes.
-
-#+begin_src emacs-lisp
-(use-package org-noter
-  :bind ("C-c r" . org-noter)
-  :ensure t
-  :config
-  (setq org-noter-auto-save-last-location t))
-#+end_src
-
-**** Org-mind-map
-
-Create mind maps starting from org mode files.
-
-#+begin_src emacs-lisp
-(use-package org-mind-map
-  :init
-  (require 'ox-org)
-  :ensure t
-  :config
-  (setq org-mind-map-engine "dot"))
-#+end_src
-
-**** Citar
-
-Using the superior citation manager.
-
-#+begin_src emacs-lisp
-(use-package citar
-  :ensure t
-  :custom
-  (org-cite-global-bibliography '("~/Vault/library/org/main/main.bib"))
-  (org-cite-insert-processor 'citar)
-  (org-cite-follow-processor 'citar)
-  (org-cite-activate-processor 'citar)
-  (citar-bibliography org-cite-global-bibliography)
-  :bind
-  (("C-c c o" . citar-open)
-   ("C-c c e" . citar-open-entry)
-   ("C-c c n" . citar-open-notes)
-   ("C-c c l" . citar-open-links)
-   (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
-  :config
-  (setq citar-templates
-	'((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
-          (suffix . "          ${=key= id:15}    ${=type=:12}")
-          (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher}.\n")
-          (note . "@${author editor}, ${title}")))
-  (setq citar-file-notes-extensions '("org")
-	citar-notes-paths '("~/Vault/pkm/slip-box"))
-  (setq citar-symbol-separator "  "))
-#+end_src
-
 *** Zettelkasten
 
 #+begin_src emacs-lisp
@@ -845,6 +420,431 @@ Using the superior citation manager.
   (citar-org-roam-mode))
 #+end_src
 
+*** Org mode
+
+#+begin_src emacs-lisp
+  (use-package ox-twbs
+    :after org
+    :ensure t)
+
+  (use-package ox-reveal
+    :after org
+    :ensure t
+    :config
+    (setq org-reveal-root "file:///home/claudio/Repositories/reveal.js"))
+
+  (setq org-export-backends '(beamer html latex ascii ox-reveal ox-hugo ox-twbs))
+
+  (use-package org
+    :ensure t
+    :bind (("C-c a" . org-agenda)
+	   ("C-c t" . org-insert-structure-template)
+	   ("C-c i" . org-capture)
+	   ("C-c l" . org-store-link))
+    :config
+    (require 'org-tempo)
+    ;; Set org agenda directory
+    (setq org-agenda-files (list "~/Vault/pkm/pages/journal.org" "~/Vault/pkm/pages/agenda.org" "/home/claudio/Vault/pkm/pages/projects.org"))
+    ;; Set org files where to search for IDs
+    (setq org-id-extra-files '("~/Vault/pkm/pages"))
+    ;; ignore archived entries in org-clock-report
+    (setq org-clock-sources '(agenda))
+    ;; Org-capture templates
+    (defun mg/create-pages-file ()
+      "Create an org file in ~/Vault/pkm/pages/."
+      (setq mg-org-note--name (read-string "File name: "))
+      (let ((mg-org-note--filename (downcase mg-org-note--name)))
+	(expand-file-name (format "%s.org" mg-org-note--filename) "~/Vault/pkm/pages")))
+    (setq org-capture-templates
+	  '(("f" "file" plain (file (lambda() (mg/create-pages-file)))
+	     "%(format \"#+title: %s\n#+date: %U\n\" mg-org-note--name)")
+	    ("j" "journal")
+	    ("jp" "journal plain entry" plain
+	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
+	     "**** %U: %?\n")
+	    ("js" "journal schedule entry" plain
+	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
+	     "**** %U: today's schedule :schedule:\n***** %?\n")
+	    ("je" "journal event entry" plain
+	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")	   
+	     "**** %U: %? :schedule:event:\n:PROPERTIES:\n:WHERE:\n:NOTIFY_BEFORE:\n:END:\n%T\n***** Notes")
+	    ("ji" "journal inbox entry" plain
+	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")  	   
+	     "**** INBOX %U: %? :@inbox:\n")
+	    ("ja" "journal archive resource entry" plain
+	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
+	     "**** %U: %? :archive:\n")
+	    ("jm" "journal meeting entry" plain
+	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
+	     "**** Meeting with %? on %U :schedule:meeting:work:\n:PROPERTIES:\n:WHERE:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
+	    ("js" "journal seminar entry" plain
+	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
+	     "**** Seminar hold by %? @<place> :schedule:work:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
+	    ("jc" "journal call entry" plain
+	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
+	     "**** Call with %? @online on %U :schedule:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
+	    ("jh" "journal home chores entry" plain
+	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
+	     "**** %? @ home :schedule:personal:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n")
+	    ("r" "resources")
+	    ("rc" "conference" entry
+	     (file "~/Vault/pkm/pages/conferences.org")
+	     "* %^{Conference name}\n:PROPERTIES:\n:WHERE: %?\n:WEBSITE: %?\n:END:\n")
+	    ("p" "personal")
+	    ("pc" "contact" entry
+	     (file "~/Vault/pkm/pages/contacts.org")
+	     "* %(org-contacts-template-name) %^g\n:PROPERTIES:\n:EMAIL: %(org-contacts-template-email)\n:COMPANY:\n:PHONE_NUMBER: %?\n:WEBSITE:\n:TWITTER:\n:NOTES:\n:END:\n")
+	    ("u" "university")
+	    ("uc" "course" plain
+	     (file "~/Vault/pkm/pages/courses.org")
+	     "** %^{Course name}\n:PROPERTIES:\n:LECTURER:\n:UNIVERSITY:\n:ACADEMIC_YEAR:\n:RESOURCES:\n:END:\n*** Lecture notes\n")
+	    ("ul" "lecture" plain
+	     (file "~/Vault/pkm/pages/courses.org")
+	     "** %^{Lecture #}\n:PROPERTIES:\n:TOPICS:\n:LECTURER:\n:DATE:\n:RESOURCES:\n:RELATED:\n:END:\n")
+	    ("t" "project" plain
+	     (file "~/Vault/pkm/pages/projects.org")
+	     "** %^{Project name}\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+	    ("P" "plans")
+	    ("Py" "yearly" plain
+	     (file "~/Vault/pkm/pages/planning.org")
+	     "* %U: %? yearly plan :yearly:plan:\n:PROPERTIES:\n- *Feelings*:: %^{Feelings|good|neutral|bad}\n- *Related*::\n- *Date*:: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Values review and life physolophy*\n- *5 Years Vision(s)*\n- *Goal definition*\n# reviewing\n- *Financial review*\n- *Time tracking review*")
+	    ("Pq" "quarterly" plain
+	     (file "~/Vault/pkm/pages/planning.org")
+	     "** %U: %? quarterly plan :quarterly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n# reviewing\n- *Projects review*\n- *Financial review*\n- *Time tracking review*")
+	    ("Pm" "monthly" plain
+	     (file "~/Vault/pkm/pages/planning.org")
+	     "*** %U: %? monthly plan :monthly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Projects and task picking*\n# reviewing\n- *Financial review*\n- *Time tracking review*\n- *Workout review*\n")
+	    ("Pw" "weekly" plain
+	     (file "~/Vault/pkm/pages/planning.org")
+	     "**** %U: %? weekly plan :weekly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Task picking*\n  - [ ] Inbox refile\n# reviewing\n- *Review*\n")))
+    ;; Export citations
+    (setq org-cite-global-bibliography
+	  '("/home/claudio/Vault/library/org/main/main.bib"))
+    (if (display-graphic-p)
+	(require 'oc-biblatex)
+      (setq org-cite-export-processors
+	    '((latex biblatex)))
+      (setq org-latex-pdf-process (list
+				   "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f")))
+
+  
+    ;; In org-mode, I want source blocks to be themed as they would in native mode
+    (setq org-src-fontify-natively t
+	  org-src-tab-acts-natively t
+	  org-confirm-babel-evaluate nil
+	  org-edit-src-content-indentation 0)
+
+    ;; Set latex preview size
+    (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+
+    ;; Fold everything when opening org files
+    (setq org-startup-folded t)
+
+    ;; Not export drawers
+    (setq org-export-with-drawers nil)
+
+    ;; Set org-mode TODO keywords
+    (setq org-todo-keywords
+	  '((sequence "TODO(t)" "NEXT(n)" "PROG(p)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)" "INTR(i)")
+	    (sequence "INBOX" "|" "ARCHIVED")))
+
+    ;; Setup org stuck projects
+    (setq org-stuck-projects '("+project/" ("NEXT" "PROG" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
+
+    ;; Org-agenda custom commands
+    (setq org-agenda-block-separator "==============================================================================")
+    (setq org-agenda-custom-commands
+	  '(
+	    ("a" "Agenda"
+	     ((agenda ""
+		      ((org-agenda-span 1)
+		       (org-deadline-warning-days 0)
+		       (org-scheduled-past-days 14)
+		       (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+		       (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
+		       (org-agenda-format-date "%A %-e %B %Y")
+		       (org-agenda-overriding-header "Today's schedule:\n")))
+	      (todo "PROG"
+		    ((org-agenda-time-grid nil)
+		     (org-agenda-span 1)
+		     (org-deadline-warning-days 0)
+		     (org-scheduled-past-days 0)
+		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'notscheduled))
+		     (org-agenda-overriding-header "PROG tasks:\n")))
+	      (todo "NEXT"
+		    ((org-agenda-time-grid nil)
+		     (org-agenda-span 1)
+		     (org-deadline-warning-days 0)
+		     (org-scheduled-past-days 0)
+		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'notscheduled))
+		     (org-agenda-overriding-header "NEXT tasks:\n")))
+	      (agenda "" ((org-agenda-time-grid nil)
+			  (org-agenda-start-day "+1d")
+			  (org-agenda-start-on-weekday nil)
+			  (org-agenda-span 30)
+			  (org-agenda-show-all-dates nil)
+			  (org-deadline-warning-days 0)
+			  (org-agenda-entry-types '(:deadline))
+			  (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
+			  (org-agenda-overriding-header "\nUpcoming deadlines (+30d)\n")))
+	      (agenda ""
+		      ((org-agenda-start-on-weekday nil)
+		       (org-agenda-start-day "+1d")
+		       (org-agenda-span 5)
+		       (org-deadline-warning-days 0)
+		       (org-scheduled-past-days 0)
+		       (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
+		       (org-agenda-overriding-header "\nWeek at a glance:\n")))
+	      (todo "INBOX"
+		    ((org-agenda-time-grid nil)
+		     (org-agenda-span 1)
+		     (org-deadline-warning-days 0)
+		     (org-scheduled-past-days 0)
+		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
+		     (org-agenda-overriding-header "INBOX tasks to refile:\n")))
+	      ))
+	    ("c" "Agenda with capture"
+	     ((agenda ""
+		      ((org-agenda-span 1)
+		       (org-deadline-warning-days 0)
+		       (org-scheduled-past-days 14)
+		       (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+		       (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
+		       (org-agenda-format-date "%A %-e %B %Y")
+		       (org-agenda-overriding-header "Today's schedule:\n")))
+	      (agenda ""
+		      ((org-agenda-start-on-weekday nil)
+		       (org-agenda-start-day "+1d")
+		       (org-agenda-span 5)
+		       (org-deadline-warning-days 0)
+		       (org-scheduled-past-days 0)
+		       (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
+		       (org-agenda-overriding-header "\nWeek at a glance:\n")))))))
+
+    ;; Enable DONE logging in org-mode
+    (setq org-log-done 'time)
+  
+    ;; View LaTeX previews in better quality
+    (setq org-latex-create-formula-image-program 'dvisvgm)
+
+    ;; org-export-latex
+    (require 'ox-latex)
+    (add-to-list 'org-latex-classes
+		 '("res"
+		   "\\documentclass[margin]{res}\n
+  \\setlength{\textwidth}{5.1in}"
+		    ("\\section{%s}" . "\\section*{%s}")
+		    ("\\subsection{%s}" . "\\subsection*{%s}")
+		    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		    ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (add-to-list 'org-latex-classes
+		 '("memoir"
+		    "\\documentclass[article]{memoir}\n
+  \\usepackage{color}
+  \\usepackage{amssymb}
+  \\usepackage{gensymb}
+  \\usepackage{nicefrac}
+  \\usepackage{units}"
+		    ("\\section{%s}" . "\\section*{%s}")
+		    ("\\subsection{%s}" . "\\subsection*{%s}")
+		    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		    ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+      (add-to-list 'org-latex-classes
+		 '("letter"
+		    "\\documentclass{letter}\n"
+		    ("\\section{%s}" . "\\section*{%s}")
+		    ("\\subsection{%s}" . "\\subsection*{%s}")
+		    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		    ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (add-to-list 'org-latex-classes	       
+		 '("tuftebook"
+		   "\\documentclass{tufte-book}\n
+  \\usepackage{color}
+  \\usepackage{amssymb}
+  \\usepackage{gensymb}
+  \\usepackage{nicefrac}
+  \\usepackage{units}"
+		   ("\\section{%s}" . "\\section*{%s}")
+		   ("\\subsection{%s}" . "\\subsection*{%s}")
+		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (add-to-list 'org-latex-classes
+		 '("tuftehandout"
+		   "\\documentclass{tufte-handout}
+  \\usepackage{color}
+  \\usepackage{amssymb}
+  \\usepackage{amsmath}
+  \\usepackage{gensymb}
+  \\usepackage{nicefrac}
+  \\usepackage{units}"
+		   ("\\section{%s}" . "\\section*{%s}")
+		   ("\\subsection{%s}" . "\\subsection*{%s}")
+		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (add-to-list 'org-latex-classes
+		 '("tufnotes"
+		   "\\documentclass{tufte-handout}
+				     \\usepackage{xcolor}
+					   \\usepackage{graphicx} %% allow embedded images
+					   \\setkeys{Gin}{width=\\linewidth,totalheight=\\textheight,keepaspectratio}
+					   \\usepackage{amsmath}  %% extended mathematics
+					   \\usepackage{booktabs} %% book-quality tables
+					   \\usepackage{units}    %% non-stacked fractions and better unit spacing
+					   \\usepackage{multicol} %% multiple column layout facilities
+					   \\RequirePackage[many]{tcolorbox}
+					   \\usepackage{fancyvrb} %% extended verbatim environments
+					     \\fvset{fontsize=\\normalsize}%% default font size for fancy-verbatim environments
+
+			    \\definecolor{g1}{HTML}{077358}
+			    \\definecolor{g2}{HTML}{00b096}
+
+			    %%section format
+			    \\titleformat{\\section}
+			    {\\normalfont\\Large\\itshape\\color{g1}}%% format applied to label+text
+			    {\\llap{\\colorbox{g1}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesection}}}}%% label
+			    {1em}%% horizontal separation between label and title body
+			    {}%% before the title body
+			    []%% after the title body
+
+			    %% subsection format
+			    \\titleformat{\\subsection}%%
+			    {\\normalfont\\large\\itshape\\color{g2}}%% format applied to label+text
+			    {\\llap{\\colorbox{g2}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesubsection}}}}%% label
+			    {1em}%% horizontal separation between label and title body
+			    {}%% before the title body
+			    []%% after the title body
+
+							  \\newtheorem{note}{Note}[section]
+
+							  \\tcolorboxenvironment{note}{
+							   boxrule=0pt,
+							   boxsep=2pt,
+							   colback={green!10},
+							   enhanced jigsaw, 
+							   borderline west={2pt}{0pt}{Green},
+							   sharp corners,
+							   before skip=10pt,
+							   after skip=10pt,
+							   breakable,
+						    }"
+
+		   ("\\section{%s}" . "\\section*{%s}")
+		   ("\\subsection{%s}" . "\\subsection*{%s}")
+		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+
+    ;; Create ID property when using org-store-link
+    (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
+
+    ;; Set up org-babel
+    (setq org-ditaa-jar-path "/home/claudio/Repositories/dot-emacs/private/cm.tools/ditaa.jar")
+    (org-babel-do-load-languages
+     'org-babel-load-languages '((C . t)
+				 (shell . t)
+				 (python .t)
+				 (emacs-lisp . t)
+				 (org . t)
+				 (gnuplot . t)
+				 (latex . t)
+				 (ditaa . t)
+				 (scheme . t)
+				 (lisp . t)
+				 (haskell . t)
+				 (R . t))))
+
+  (use-package org-wild-notifier
+    :ensure t
+    :custom
+      (setq org-wild-notifier-notification-title "Org agenda reminder"
+	    org-wild-notifier-alert-times-property "NOTIFY_BEFORE")
+    :config
+    (org-wild-notifier-mode))
+
+  (use-package org-contacts
+    :ensure t
+    :after org
+    :custom (org-contacts-files '("~/Vault/pkm/pages/contacts.org")))
+
+  (require 'org-fc)
+  (setq org-fc-directories '("~/Vault/pkm/pages" "~/Vault/pkm/slip-box"))
+
+  (use-package ox-hugo
+    :ensure t
+    :after ox)
+#+end_src
+
+**** Encrypting
+
+Enabling =org-crypt= support as it is automatically installed with =org-mode= itself.
+
+#+begin_src emacs-lisp
+;; enable and set org-crypt
+(require 'org-crypt)
+(org-crypt-use-before-save-magic)
+(setq org-tags-exclude-from-inheritance (quote ("crypt")))
+
+;; GPG key to use for encryption
+(setq org-crypt-key nil)
+#+end_src
+
+**** Org-noter
+
+Install org-noter to deal with PDF notes.
+
+#+begin_src emacs-lisp
+(use-package org-noter
+  :bind ("C-c r" . org-noter)
+  :ensure t
+  :config
+  (setq org-noter-auto-save-last-location t))
+#+end_src
+
+**** Org-mind-map
+
+Create mind maps starting from org mode files.
+
+#+begin_src emacs-lisp
+(use-package org-mind-map
+  :init
+  (require 'ox-org)
+  :ensure t
+  :config
+  (setq org-mind-map-engine "dot"))
+#+end_src
+
+**** Citar
+
+Using the superior citation manager.
+
+#+begin_src emacs-lisp
+(use-package citar
+  :ensure t
+  :custom
+  (org-cite-global-bibliography '("~/Vault/library/org/main/main.bib"))
+  (org-cite-insert-processor 'citar)
+  (org-cite-follow-processor 'citar)
+  (org-cite-activate-processor 'citar)
+  (citar-bibliography org-cite-global-bibliography)
+  :bind
+  (("C-c c o" . citar-open)
+   ("C-c c e" . citar-open-entry)
+   ("C-c c n" . citar-open-notes)
+   ("C-c c l" . citar-open-links)
+   (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
+  :config
+  (setq citar-templates
+	'((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
+          (suffix . "          ${=key= id:15}    ${=type=:12}")
+          (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher}.\n")
+          (note . "@${author editor}, ${title}")))
+  (setq citar-file-notes-extensions '("org")
+	citar-notes-paths '("~/Vault/pkm/slip-box"))
+  (setq citar-symbol-separator "  "))
+#+end_src
 *** Deft
 
 Searching through roam entries could be a painful experience. =deft= fix this.
