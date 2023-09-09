@@ -9,7 +9,7 @@ In this piece of code I add stuff to perform the startup of the Emacs init file 
 (add-to-list 'load-path (concat user-emacs-directory "modules/"))
 (add-to-list 'load-path (concat user-emacs-directory "site-lisp/"))
 (add-to-list 'load-path (concat user-emacs-directory "site-lisp/git-email"))
-(add-to-list 'load-path (concat user-emacs-directory "./site-lisp/org-fc"))
+(add-to-list 'load-path (concat user-emacs-directory "site-lisp/org-fc"))
 #+end_src
 
 Start the emacs server when opening emacs
@@ -98,88 +98,89 @@ In order to enable MacOS support I want to set the keyboard /Command/ key as the
 Clean the Emacs interface making it as minimal as possible, without getting rid of useful improvements. Adding some defaults on indentation, etc.
 
 #+begin_src emacs-lisp
-;; no startup screen
-(setq inhibit-startup-screen t)
+  ;; no startup screen
+  (setq inhibit-startup-screen t)
 
-;; no message in the scratch buffer
-(setq initial-scratch-message "")
+  ;; no message in the scratch buffer
+  (setq initial-scratch-message "")
 
-;; set the frame title format to display the name of the buffer associated with the current frame
-(setq-default frame-title-format '("%b"))
+  ;; set the frame title format to display the name of the buffer associated with the current frame
+  (setq-default frame-title-format '("%b"))
 
-;; no ring bell
-(setq ring-bell-function 'ignore)
+  ;; no ring bell
+  (setq ring-bell-function 'ignore)
 
-;; auto new line without actual '\n'
-(global-visual-line-mode t)
+  ;; auto new line without actual '\n'
+  (global-visual-line-mode t)
 
-;; use winner mode
-(winner-mode t)
+  ;; use winner mode
+  (winner-mode t)
 
-;; indentation is 8 char
-(setq-default tab-width 8)
-(setq-default c-basic-offset 8)
+  ;; indentation is 8 char
+  (setq-default tab-width 8)
+  (setq-default c-basic-offset 8)
 
-;; no confirmation when exiting and there are processes running in the background
-(setq confirm-kill-processes nil)
+  ;; no confirmation when exiting and there are processes running in the background
+  (setq confirm-kill-processes nil)
 
-;; frame resize in pixel increments
-(setq frame-resize-pixelwise t)
+  ;; frame resize in pixel increments
+  (setq frame-resize-pixelwise t)
 
-;; no indent in artist mode
-(add-hook 'artist-mode-hook (lambda () (setq indent-tabs-mode nil)))
+  ;; no indent in artist mode
+  (add-hook 'artist-mode-hook (lambda () (setq indent-tabs-mode nil)))
 
-;; some useful global keybinds
-(global-set-key (kbd "C-c h") 'winner-undo)
-(global-set-key (kbd "C-c l") 'winner-redo)
-(global-set-key (kbd "C-c c k s") 'replace-string)
-(global-set-key (kbd "C-c c k c") 'comment-region)
-(global-set-key (kbd "C-c c k u") 'uncomment-region)
+  ;; some useful global keybinds
+  (global-set-key (kbd "C-c h") 'winner-undo)
+  (global-set-key (kbd "C-c l") 'winner-redo)
+  (global-set-key (kbd "C-c c k s") 'replace-string)
+  (global-set-key (kbd "C-c c k c") 'comment-region)
+  (global-set-key (kbd "C-c c k u") 'uncomment-region)
 
 
-;; 'yes' and 'no' are tedious
-(fset 'yes-or-no-p 'y-or-n-p)
+  ;; 'yes' and 'no' are tedious
+  (fset 'yes-or-no-p 'y-or-n-p)
 
-;; show parenthesis
-(show-paren-mode 1)
+  ;; show parenthesis
+  (show-paren-mode 1)
 
-;; set linum format
-(setq linum-format "%4d ")
+  ;; set linum format
+  (setq linum-format "%4d ")
 
-;; auto revert buffers
-(global-auto-revert-mode t)
+  ;; auto revert buffers
+  (global-auto-revert-mode t)
 
-;; enable some modes when programming
-(add-hook 'prog-mode-hook
-          #'display-line-numbers-mode
-          #'linum-mode)
+  ;; enable some modes when programming
+  (add-hook 'prog-mode-hook
+	    #'display-line-numbers-mode
+	    #'linum-mode)
 
-;; relative line numbers
-(setq display-line-numbers-type 'relative)
+  ;; relative line numbers
+  (setq display-line-numbers-type 'relative)
 
-;; avoid boring warnings
-(setq warning-minimum-level :emergency)
+  ;; avoid boring warnings
+  ;; (setq warning-minimum-level :emergency)
 
-;; disable some boring modes
-(dolist (mode
-         '(tool-bar-mode
-           scroll-bar-mode
-	   menu-bar-mode
-           blink-cursor-mode))
-  (funcall mode 0))
+  ;; disable some boring modes
+  (if (display-graphic-p)
+      (dolist (mode
+	       '(tool-bar-mode
+		 scroll-bar-mode
+		 menu-bar-mode
+		 blink-cursor-mode))
+	(funcall mode 0)))
 
-;; solves a bug with xdg-open
-(setq process-connection-type nil)
+  ;; solves a bug with xdg-open
+  (setq process-connection-type nil)
 
-;; system locale to use for formatting time values
-(setq system-time-locale "C")
+  ;; system locale to use for formatting time values
+  (setq system-time-locale "C")
 
-;; use UTF-8 as a preferred coding system
-(set-language-environment "UTF-8")
+  ;; use UTF-8 as a preferred coding system
+  (set-language-environment "UTF-8")
 
-;; avoid async shell commands warnings
-(add-to-list 'display-buffer-alist
-	     (cons "\\*Async Shell Command\\*.*" (cons #'display-buffer-no-window nil)))
+  ;; avoid async shell commands warnings
+  (add-to-list 'display-buffer-alist
+	       (cons "\\*Async Shell Command\\*.*" (cons #'display-buffer-no-window nil)))
 #+end_src
 
 ** Emacs auto-save
@@ -972,57 +973,58 @@ I use beancount to track my finances.
 I use ~mu4e~ as e-mail client.
 
 #+begin_src emacs-lisp
-(use-package mu4e
-  :ensure nil
-  :commands (mu4e)
-  :bind (("C-c m" . mu4e))
-  :config
-  (setq mu4e-maildir (expand-file-name "~/Maildir")
-	mu4e-use-fancy-chars nil
-	mu4e-attachment-dir  "~/Downloads"
-	message-send-mail-function 'message-send-mail-with-sendmail
-	sendmail-program "/usr/bin/msmtp"
-	message-kill-buffer-on-exit t
-	mu4e-get-mail-command "mbsync -a"
-	mu4e-update-interval 300
-	mu4e-context-policy 'pick-first
-	mu4e-headers-auto-update t
-	mu4e-contexts
-	`(,(make-mu4e-context
-	    :name "polimi"
-	    :enter-func (lambda () (mu4e-message "Switch to the polimi context"))
-	    :match-func (lambda (msg)
-			  (when msg
-			    (mu4e-message-contact-field-matches msg
-								:to "claudio.migliorelli@mail.polimi.it")))
-	    :vars '((mu4e-sent-folder       . "/polimi/sent")
-		    (mu4e-drafts-folder     . "/polimi/drafts")
-		    (mu4e-trash-folder      . "/polimi/trash")
-		    (user-mail-address	   . "claudio.migliorelli@mail.polimi.it")
-		    (user-full-name	   . "Claudio Migliorelli" )
-		    (mu4e-maildir-shortcuts . (("/polimi/INBOX" . ?i)
-					       ("/polimi/sent" . ?s)
-					       ("/polimi/drafts" . ?d)
-					       ("/polimi/trash" . ?t)))
-		    (mu4e-sent-messages-behavior . delete)))))
-  (setq mu4e-headers-thread-single-orphan-prefix '("└>" . " ")
-	mu4e-headers-thread-child-prefix '("└> " . " ")
-	mu4e-headers-thread-last-child-prefix '("└> " . " ")
-	mu4e-headers-thread-connection-prefix '("│ " . " ")
-	mu4e-headers-thread-orphan-prefix '("└>" . " ")
-	mu4e-headers-thread-root-prefix '("> " . " "))
-  (with-eval-after-load "mm-decode"
-    (add-to-list 'mm-discouraged-alternatives "text/html")
-    (add-to-list 'mm-discouraged-alternatives "text/richtext"))
-  (defun mg/message-insert-citation-line ()
-    "Based off `message-insert-citation-line`."
-    (when message-reply-headers
-      (insert "On " (format-time-string "%a, %d %b %Y %H:%M:%S %z" (date-to-time (mail-header-date message-reply-headers))) " ")
-      (insert (mail-header-from message-reply-headers) " wrote:")
-      (newline)
-      (newline)))
+  (if (display-graphic-p)
+      (use-package mu4e
+		   :ensure nil
+		   :commands (mu4e)
+		   :bind (("C-c m" . mu4e))
+		   :config
+		   (setq mu4e-maildir (expand-file-name "~/Maildir")
+			 mu4e-use-fancy-chars nil
+			 mu4e-attachment-dir  "~/Downloads"
+			 message-send-mail-function 'message-send-mail-with-sendmail
+			 sendmail-program "/usr/bin/msmtp"
+			 message-kill-buffer-on-exit t
+			 mu4e-get-mail-command "mbsync -a"
+			 mu4e-update-interval 300
+			 mu4e-context-policy 'pick-first
+			 mu4e-headers-auto-update t
+			 mu4e-contexts
+			 `(,(make-mu4e-context
+			     :name "polimi"
+			     :enter-func (lambda () (mu4e-message "Switch to the polimi context"))
+			     :match-func (lambda (msg)
+					   (when msg
+					     (mu4e-message-contact-field-matches msg
+										 :to "claudio.migliorelli@mail.polimi.it")))
+			     :vars '((mu4e-sent-folder       . "/polimi/sent")
+				     (mu4e-drafts-folder     . "/polimi/drafts")
+				     (mu4e-trash-folder      . "/polimi/trash")
+				     (user-mail-address	   . "claudio.migliorelli@mail.polimi.it")
+				     (user-full-name	   . "Claudio Migliorelli" )
+				     (mu4e-maildir-shortcuts . (("/polimi/INBOX" . ?i)
+								("/polimi/sent" . ?s)
+								("/polimi/drafts" . ?d)
+								("/polimi/trash" . ?t)))
+				     (mu4e-sent-messages-behavior . delete)))))
+		   (setq mu4e-headers-thread-single-orphan-prefix '("└>" . " ")
+			 mu4e-headers-thread-child-prefix '("└> " . " ")
+			 mu4e-headers-thread-last-child-prefix '("└> " . " ")
+			 mu4e-headers-thread-connection-prefix '("│ " . " ")
+			 mu4e-headers-thread-orphan-prefix '("└>" . " ")
+			 mu4e-headers-thread-root-prefix '("> " . " "))
+		   (with-eval-after-load "mm-decode"
+		     (add-to-list 'mm-discouraged-alternatives "text/html")
+		     (add-to-list 'mm-discouraged-alternatives "text/richtext"))
+		   (defun mg/message-insert-citation-line ()
+		     "Based off `message-insert-citation-line`."
+		     (when message-reply-headers
+		       (insert "On " (format-time-string "%a, %d %b %Y %H:%M:%S %z" (date-to-time (mail-header-date message-reply-headers))) " ")
+		       (insert (mail-header-from message-reply-headers) " wrote:")
+		       (newline)
+		       (newline)))
 
-  (setq message-citation-line-function 'mg/message-insert-citation-line))
+		   (setq message-citation-line-function 'mg/message-insert-citation-line)))
 #+end_src
 
 ** RSS reader
