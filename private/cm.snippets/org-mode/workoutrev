@@ -1,0 +1,38 @@
+# -*- mode: snippet -*- 
+# name: workout monthly review
+# key: workout
+# --
+
+#+begin_src bash
+grep "Running" ~/Vault/pkm/assets/notebooks/assets/activities_garmin.csv > /tmp/gnuplot_running.csv
+awk -F\',\' \'NR > 1 { cmd="date -d \\"" \$1 "\\" +\\"%Y-%m-%d 00:00:00\\""; cmd | getline d; close(cmd); print d "," \$2 }\\' ~/Vault/pkm/assets/notebooks/assets/sleep_garmin.csv > /tmp/gnuplot_sleep.csv
+#+end_src
+
+#+begin_src gnuplot
+reset
+
+stats 'data.txt' using 2 nooutput
+YMIN = 3
+YMAX = 9
+
+set datafile separator ','
+set xdata time
+set x2tics 1 format '' scale 0
+set timefmt "%Y-%m-%d %H:%M:%S"
+set xtics 24*60*60
+set xtics rotate by -45
+set grid xtics
+set xtics mirror
+set xrange [$0]
+set format x "%Y-%m-%d"
+set autoscale y
+set yrange [0:1]
+set xlabel "Date"
+
+set linetype 1 lw 2 lc rgb 'forest-green' ps 2 pt 9
+set linetype 2 lw 2 lc rgb 'dark-blue' ps 2 pt 9 dashtype (1,9)
+
+plot "/tmp/gnuplot_running.csv" using 2:(column(5)/column(13)) with linespoints lt 1 title "Workout score", \
+     "/tmp/gnuplot_sleep.csv" using 1:(\$2 - YMIN) / (YMAX - YMIN) with lines lt 2 title "Sleep"
+
+#+end_src

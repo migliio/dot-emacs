@@ -1,0 +1,10 @@
+# -*- mode: snippet -*- 
+# name: place
+# key: pla
+# --
+
+:PROPERTIES:
+:LINK: $0
+:VISITED:
+:COMMENT:
+:END:

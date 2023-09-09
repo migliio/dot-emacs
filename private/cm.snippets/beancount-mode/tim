@@ -4,5 +4,5 @@
 # --
 
 $1 * "TIM" "Monthly Internet subscription"
-  Expenses:Housing:Utilities                   24.90 EUR
+  Expenses:House:Utilities                   24.90 EUR
   Assets:Cards:N26

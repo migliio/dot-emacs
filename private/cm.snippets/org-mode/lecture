@@ -1,0 +1,11 @@
+# -*- mode: snippet -*- 
+# name: lecture
+# key: lle
+# --
+
+:PROPERTIES:
+:TOPICS: $0
+:LECTURER:
+:DATE:
+:RESOURCES:
+:END:

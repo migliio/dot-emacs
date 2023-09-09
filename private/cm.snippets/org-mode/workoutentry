@@ -1,0 +1,14 @@
+# -*- mode: snippet -*- 
+# name: workout program entry
+# key: wentry
+# --
+
+:PROPERTIES:
+:HOUR: $0
+:TIME:
+:DISTANCE:
+:PACE:
+:CALORIES:
+:PUNCTUALITY:
+:RATE:
+:END:

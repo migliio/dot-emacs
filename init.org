@@ -51,20 +51,6 @@ First of all, let's initialize the package management setting up ELPA, MELPA and
 (eval-when-compile
   (require 'use-package))
 (setq use-package-always-ensure t)
-
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-(straight-use-package 'use-package)
 #+end_src
 
 * Keep emacs.d clean
@@ -172,7 +158,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 (setq display-line-numbers-type 'relative)
 
 ;; avoid boring warnings
-;; (setq warning-minimum-level :emergency)
+(setq warning-minimum-level :emergency)
 
 ;; disable some boring modes
 (dolist (mode
@@ -279,11 +265,18 @@ Loading the preferred theme.
 ;; dired extra
 (require 'dired-x)
 
+;; omit hidden files
+(setq dired-omit-files "^\\...+$")
+(add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
+
 ;; prompt for deleting files directly
 (setq delete-by-moving-to-trash t)
 
 ;; make emacs smart when multiple dired buffers are opened
 (setq dired-dwim-target t)
+
+;; use ibuffer to switch between buffers
+(global-set-key (kbd "C-x C-b") 'ibuffer)
 #+end_src
 
 ** File visualization
@@ -333,30 +326,18 @@ I really love the =undo-tree= mode visualization, so I'm going to enable it.
   (global-undo-tree-mode 1))
 #+end_src
 
-** Personal knowledge management
-*** Zettelkasten
+*** Ripgrep
+
+I use ~rg~ to find file content easily.
 
 #+begin_src emacs-lisp
-(use-package denote
+(use-package deadgrep
   :ensure t
-  :custom
-  (setq denote-directory (expand-file-name "~/pkm/slip-box")
-	denote-known-keywords '("kernel" "security" "machine-learning" "productivity" "probability")
-	denote-infer-keywords t
-	denote-sort-keywords t
-	denote-file-type nil
-	denote-prompts '(title keywords)
-	denote-date-prompt-use-org-read-date t
-	denote-backlinks-show-context t
-	denote-dired-directories))
-
-(use-package org-super-links
-  :straight (org-super-links :type git :host github :repo "toshism/org-super-links" :branch "develop")
-  :bind (("C-c s s" . org-super-links-link)
-         ("C-c s l" . org-super-links-store-link)
-         ("C-c s C-l" . org-super-links-insert-link)))
+  :bind
+  (("C-c s" . deadgrep)))
 #+end_src
 
+** Personal knowledge management
 *** Org mode
 
 #+begin_src emacs-lisp
@@ -370,81 +351,90 @@ I really love the =undo-tree= mode visualization, so I'm going to enable it.
   :config
   (setq org-reveal-root "file:///home/claudio/Repositories/reveal.js"))
 
-;; (setq org-export-backends '(beamer html latex ascii ox-reveal ox-hugo icalendar))
+(setq org-export-backends '(beamer html latex ascii ox-reveal ox-hugo ox-twbs))
 
 (use-package org
   :ensure t
   :bind (("C-c a" . org-agenda)
 	 ("C-c t" . org-insert-structure-template)
-	 ("C-c i" . mg/agenda-w-capture)
+	 ("C-c i" . org-capture)
 	 ("C-c l" . org-store-link))
   :config
-  ;; match files in pages with name 'agenda' 'journal' and 'projects'
-  (defun mg/find-files-with-keywords (directory)
-    "Recursively search DIRECTORY for files containing the words 'agenda', 'journal', or 'projects'.
-Returns a list of file paths."
-    (let (file-list)
-      (dolist (file (directory-files-recursively directory "\\.org$"))
-	(with-temp-buffer
-          (insert-file-contents file)
-          (when (or (search-forward "agenda" nil t)
-                    (search-forward "journal" nil t)
-                    (search-forward "projects" nil t))
-            (push file file-list))))
-      file-list))
   (require 'org-tempo)
   ;; Set org agenda directory
-  (setq org-agenda-files (mg/find-files-with-keywords "~/Vault/pkm/pages"))
+  (setq org-agenda-files (list "~/Vault/pkm/pages/journal.org" "~/Vault/pkm/pages/agenda.org" "/home/claudio/Vault/pkm/pages/projects.org"))
+  ;; Set org files where to search for IDs
+  (setq org-id-extra-files '("~/Vault/pkm/pages"))
   ;; ignore archived entries in org-clock-report
   (setq org-clock-sources '(agenda))
   ;; Org-capture templates
+  (defun mg/create-pages-file ()
+    "Create an org file in ~/Vault/pkm/pages/."
+    (setq mg-org-note--name (read-string "File name: "))
+    (let ((mg-org-note--filename (downcase mg-org-note--name)))
+      (expand-file-name (format "%s.org" mg-org-note--filename) "~/Vault/pkm/pages")))
   (setq org-capture-templates
-	'(("j" "journal")
+	'(("f" "file" plain (file (lambda() (mg/create-pages-file)))
+	   "%(format \"#+title: %s\n#+date: %U\n\" mg-org-note--name)")
+	  ("j" "journal")
 	  ("jp" "journal plain entry" plain
-           (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
            "**** %U: %?\n")
 	  ("js" "journal schedule entry" plain
-	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
 	   "**** %U: today's schedule :schedule:\n***** %?\n")
 	  ("je" "journal event entry" plain
-	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")	   
 	   "**** %U: %? :schedule:event:\n:PROPERTIES:\n:WHERE:\n:NOTIFY_BEFORE:\n:END:\n%T\n***** Notes")
 	  ("ji" "journal inbox entry" plain
-	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")  	   
 	   "**** INBOX %U: %? :@inbox:\n")
 	  ("ja" "journal archive resource entry" plain
-           (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
            "**** %U: %? :archive:\n")
 	  ("jm" "journal meeting entry" plain
-	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
 	   "**** Meeting with %? on %U :schedule:meeting:work:\n:PROPERTIES:\n:WHERE:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
 	  ("js" "journal seminar entry" plain
-	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
 	   "**** Seminar hold by %? @<place> :schedule:work:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
 	  ("jc" "journal call entry" plain
-	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
 	   "**** Call with %? @online on %U :schedule:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
 	  ("jh" "journal home chores entry" plain
-	   (file+datetree+prompt "~/Vault/pkm/pages/20221122175451-personal_journal.org")
+           (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
 	   "**** %? @ home :schedule:personal:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n")
-	  ("P" "personal")
-	  ("Pc" "contact" plain
-	   (file "~/Vault/pkm/pages/20230216124800-personal_contacts.org")
-	   "* %(org-contacts-template-name) %^g\n:PROPERTIES:\n:EMAIL: %(org-contacts-template-email)\n:NOTES: %^{NOTES}\n:PKM_LINK: %?\n:END:")
-	  ("p" "plans")
-	  ("py" "yearly" plain
-	   (file "~/Vault/pkm/pages/20230604134809-personal_planning.org")
+	  ("r" "resources")
+	  ("rc" "conference" entry
+	   (file "~/Vault/pkm/pages/conferences.org")
+	   "* %^{Conference name}\n:PROPERTIES:\n:WHERE: %?\n:WEBSITE: %?\n:END:\n")
+	  ("p" "personal")
+	  ("pc" "contact" entry
+	   (file "~/Vault/pkm/pages/contacts.org")
+	   "* %(org-contacts-template-name) %^g\n:PROPERTIES:\n:EMAIL: %(org-contacts-template-email)\n:COMPANY:\n:PHONE_NUMBER: %?\n:WEBSITE:\n:TWITTER:\n:NOTES:\n:END:\n")
+	  ("u" "university")
+	  ("uc" "course" plain
+	   (file "~/Vault/pkm/pages/courses.org")
+	   "** %^{Course name}\n:PROPERTIES:\n:LECTURER:\n:UNIVERSITY:\n:ACADEMIC_YEAR:\n:RESOURCES:\n:END:\n*** Lecture notes\n")
+	  ("ul" "lecture" plain
+	   (file "~/Vault/pkm/pages/courses.org")
+	   "** %^{Lecture #}\n:PROPERTIES:\n:TOPICS:\n:LECTURER:\n:DATE:\n:RESOURCES:\n:RELATED:\n:END:\n")
+	  ("t" "project" plain
+	   (file "~/Vault/pkm/pages/projects.org")
+	   "** %^{Project name}\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+	  ("P" "plans")
+	  ("Py" "yearly" plain
+	   (file "~/Vault/pkm/pages/planning.org")
 	   "* %U: %? yearly plan :yearly:plan:\n:PROPERTIES:\n- *Feelings*:: %^{Feelings|good|neutral|bad}\n- *Related*::\n- *Date*:: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Values review and life physolophy*\n- *5 Years Vision(s)*\n- *Goal definition*\n# reviewing\n- *Financial review*\n- *Time tracking review*")
-	  ("pq" "quarterly" plain
-	   (file "~/Vault/pkm/pages/20230604134809-personal_planning.org")
-	   "** %U: %? quarterly plan :quarterly:plan:\n:PROPERTIES:\n- *Feelings*:: %^{Feelings|good|neutral|bad}\n- *Related*::\n- *Date*:: %^{Date}u\n:END:\n# planning\n- *Overview*\n# reviewing\n- *Projects review*\n- *Financial review*\n- *Time tracking review*")
-	  ("pm" "monthly" plain
-	   (file "~/Vault/pkm/pages/20230604134809-personal_planning.org")
-	   "*** %U: %? monthly plan :monthly:plan:\n:PROPERTIES:\n- *Feelings*:: %^{Feelings|good|neutral|bad}\n- *Related*::\n- *Date*:: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Projects and task picking*\n# reviewing\n- *Financial review*\n- *Time tracking review*")
-	  ("pw" "weekly" plain
-	   (file "~/Vault/pkm/pages/20230604134809-personal_planning.org")
-	   "**** %U: %? weekly plan :weekly:plan:\n:PROPERTIES:\n- *Feelings*:: %^{Feelings|good|neutral|bad}\n- *Related*::\n- *Date*:: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Task picking*\n  - [ ] Inbox refile\n# reviewing\n- *Review*\n")))
-  
+	  ("Pq" "quarterly" plain
+	   (file "~/Vault/pkm/pages/planning.org")
+	   "** %U: %? quarterly plan :quarterly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n# reviewing\n- *Projects review*\n- *Financial review*\n- *Time tracking review*")
+	  ("Pm" "monthly" plain
+	   (file "~/Vault/pkm/pages/planning.org")
+	   "*** %U: %? monthly plan :monthly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Projects and task picking*\n# reviewing\n- *Financial review*\n- *Time tracking review*\n- *Workout review*\n")
+	  ("Pw" "weekly" plain
+	   (file "~/Vault/pkm/pages/planning.org")
+	   "**** %U: %? weekly plan :weekly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Task picking*\n  - [ ] Inbox refile\n# reviewing\n- *Review*\n")))
   ;; Export citations
   (setq org-cite-global-bibliography
 	'("/home/claudio/Vault/library/org/main/main.bib"))
@@ -664,6 +654,9 @@ Returns a list of file paths."
 		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
 		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
+  ;; Create ID property when using org-store-link
+  (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
+
   ;; Set up org-babel
   (setq org-ditaa-jar-path "/home/claudio/Repositories/dot-emacs/private/cm.tools/ditaa.jar")
   (org-babel-do-load-languages
@@ -672,6 +665,7 @@ Returns a list of file paths."
 			       (python .t)
 			       (emacs-lisp . t)
 			       (org . t)
+			       (gnuplot . t)
 			       (latex . t)
 			       (ditaa . t)
 			       (scheme . t)
@@ -690,7 +684,7 @@ Returns a list of file paths."
 (use-package org-contacts
   :ensure t
   :after org
-  :custom (org-contacts-files '("~/Vault/pkm/pages/20230216124800-personal_contacts.org")))
+  :custom (org-contacts-files '("~/Vault/pkm/pages/contacts.org")))
 
 (require 'org-fc)
 (setq org-fc-directories '("~/Vault/pkm/pages" "~/Vault/pkm/slip-box"))
@@ -712,149 +706,6 @@ Enabling =org-crypt= support as it is automatically installed with =org-mode= it
 
 ;; GPG key to use for encryption
 (setq org-crypt-key nil)
-#+end_src
-
-**** Org-roam
-The best package to manage my PKM is definitely =org-roam=. Installing/configuring it. I'm also installing and using org-roam-ui to visualize my org-roam graph.
-
-#+begin_src emacs-lisp
-(use-package org-roam
-  :ensure t
-  :init
-  (setq org-roam-v2-ack t)
-  :custom
-  (org-roam-directory (file-truename "~/Vault/pkm/pages/"))
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-	 ("C-c n f" . org-roam-node-find)
-	 ("C-c n g" . org-roam-graph)
-	 ("C-c n t" . org-roam-tag-add)
-	 ("C-c n i" . org-roam-node-insert)
-	 ("C-c n c" . org-roam-capture))
-  :config
-  (defun get-roam-refs (file)
-    "Get the value of the 'ROAM_REFS' property from the given FILE."
-    (with-current-buffer (find-file-noselect file)
-      (org-entry-get (point-min) "ROAM_REFS" t)))
-  (add-hook 'after-save-hook
-	      (defun org-rename-to-new-title ()
-		(when-let*
-		    ((old-file (buffer-file-name))
-		     (is-roam-file (org-roam-file-p old-file))
-		     (file-node (save-excursion
-				  (goto-char 1)
-				  (org-roam-node-at-point)))
-		     (file-name  (file-name-base (org-roam-node-file file-node)))
-		     (file-time  (or (and (string-match "^\\([0-9]\\{14\\}\\)-" file-name)
-					  (concat (match-string 1 file-name) "-"))
-				     ""))
-		     (slug (org-roam-node-slug file-node))
-		     (new-file (expand-file-name (concat file-time slug ".org")))
-		     (different-name? (not (string-equal old-file new-file))))
-		  (when (null (get-roam-refs buffer-file-name))
-		    (rename-buffer new-file)
-		    (rename-file old-file new-file)
-		    (set-visited-file-name new-file)
-		    (set-buffer-modified-p nil)))))
-  (setq org-roam-node-display-template (concat "${title} " (propertize "${tags}" 'face 'org-tag)))
-  (setq org-id-extra-files (directory-files-recursively "~/Vault/pkm/pages" "org"))
-  (setq org-roam-mode-sections
-        (list #'org-roam-backlinks-section
-              #'org-roam-reflinks-section
-              ))
-  ;; org-roam templates
-  (setq org-roam-capture-templates
-	'(("d" "default" plain "\n:ORG_META:\n- *Date*::%?\n- *Resources*::\n:END:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unnarrowed t)
-	  ("u" "university")
-	  ("uc" "course" plain	"\n:ORG_META:\n- *Lecturer*:: %?\n- *University*:: \n- *Academic Year*:: %^{Academic Year}\n- *Semester*:: %^{Semester}\n- *Resources*:: \n:END:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("ul" "lecture" plain
-	   "\n:ORG_META:\n- *Topics*::\n- *Lecturer*::\n- *Date*:: %^{Date}u\n- *Resources*::\n- *Related*::\n:END:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("p" "personal")
-	  ("pp" "people" plain
-	   "\n:ORG_META:\n- *Phone number*:: %?\n- *E-mail*::\n- *Twitter*::\n- *GitHub*::\n- *dblp*:: \n- *Website*::\n- *Company*::\n- *Role*::\n- *Location*::\n- *How we met*::\n- *Birthdate*:: %^{Birthdate}u\n:END:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("pP" "place" plain
-	   "\n:ORG_META:\n- *Address*:: %?\n- *City*::\n- *Why I know this place*::\n- *First time I visited it*:: %^{First time I visited it}u\n- *Keywords*::\n:END:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("ps" "software" plain
-	   "\n:ORG_META:\n- *Developer(s)*:: %?\n- *Status*:: %^{Status|@maintained|@unmaintained}\n- *Repository*::\n- *Recommended by*::\n- *Keywords*::\n:END:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("r" "resources")
-	  ("rb" "book" plain
-	   "\n:ORG_META:\n- *Author*:: %?\n- *Status*:: %^{Status|@buyed|@reading|@read}\n- *Recommended by*::\n- *Archive entry*::\n- *Start date*:: %^{Start date}u\n- *Completed date*:: %^{Completed date}u\n:END:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("ra" "article/blog" plain
-	   "\n:ORG_META:\n- *Author*:: %?\n- *URL*:: %^L\n- *Related*::\n- *Recommended by*::\n- *Archive entry*::\n- *Date*:: %^{Date}u\n:END:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("rv" "video" plain
-	   "\n:ORG_META:\n- *Creator*:: %?\n- *URL*:: %^L\n- *Recommended by*::\n- *Archive entry*::\n- *Date*:: %^{Date}u\n:END:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("rc" "conference" plain
-	   "\n:ORG_META:\n- *Speaker(s)*:: %?\n- *Where*::\n- *What*::\n- *Date*:: %^{Date}u\n- *Related*::\n- *Resources*::\n:END:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-
-	  ("j" "project")
-	  ("jo" "overview" plain
-	   "\n:ORG_META:\n- *What*:: %?\n- *Repository*::\n- *Status*:: %^{Status|@active|@completed|@ready|@abandoned}\n- *Date*:: %^{Date}u\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Success criteria*::\n:END:\n* Details\n* Tasks\n* Resources\n* Artifacts"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("jt" "task" plain
-	   "\n:ORG_META:\n- *Project*:: %?\n- *Taken by*::\n- *Status*:: %^{Status|@active|@completed|@picked|@abandoned}\n- *Due date*:: %^{Due date}t\n- *Completed date*:: %^{Completed date}u\n- *Resources*::\n- *Success criteria*::\n:END:\n* Details\n* Sub-tasks\n* Roadmap"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("z" "Zettelkasten")
-	  ("zr" "reference" plain
-	   "\n:ORG_META:\n- *Date*:: %^{Date}u\n- *Type*:: #reference\n:END:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  ("zz" "zettel" plain
-	   "\n:ORG_META:\n- *Date*:: %^{Date}u\n- *Type*:: #zettel\n- *References*::\n:END:\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+TITLE: ${title}\n")
-	   :unarrowed t)
-	  )))
-
-;; configuring org-roam-ui to visualize my knowledge graph
-(use-package websocket
-  :ensure t
-  :after org-roam)
-
-(use-package simple-httpd
-  :ensure t
-  :after org-roam)
-
-(use-package org-roam-ui
-  :ensure t
-  :after org-roam
-  :config
-  (setq org-roam-ui-sync-theme nil
-	org-roam-ui-follow t
-	org-roam-ui-update-on-save t))
 #+end_src
 
 **** Org-noter
@@ -912,6 +763,87 @@ Using the superior citation manager.
   (setq citar-symbol-separator "  "))
 #+end_src
 
+*** Zettelkasten
+
+#+begin_src emacs-lisp
+(use-package org-roam
+  :after org
+  :ensure t
+  :config
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory (file-truename "~/Vault/pkm/slip-box/"))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+	 ("C-c n f" . org-roam-node-find)
+	 ("C-c n g" . org-roam-graph)
+	 ("C-c n t" . org-roam-tag-add)
+	 ("C-c n i" . org-roam-node-insert)
+	 ("C-c n c" . org-roam-capture))
+  :config
+  (add-hook 'after-save-hook
+	    (defun org-rename-to-new-title ()
+	      (when-let*
+		  ((old-file (buffer-file-name))
+		   (is-roam-file (org-roam-file-p old-file))
+		   (file-node (save-excursion
+				(goto-char 1)
+				(org-roam-node-at-point)))
+		   (file-name  (file-name-base (org-roam-node-file file-node)))
+		   (file-time  (or (and (string-match "^\\([0-9]\\{14\\}\\)-" file-name)
+					(concat (match-string 1 file-name) "-"))
+				   ""))
+		   (slug (org-roam-node-slug file-node))
+		   (new-file (expand-file-name (concat file-time slug ".org")))
+		   (different-name? (not (string-equal old-file new-file))))
+
+		(rename-buffer new-file)
+		(rename-file old-file new-file)
+		(set-visited-file-name new-file)
+		(set-buffer-modified-p nil))))
+  (org-roam-db-autosync-mode)
+  (setq org-roam-node-display-template (concat "${title} " (propertize "${tags}" 'face 'org-tag)))
+  ;; org-roam templates
+  (setq org-roam-capture-templates
+	'(("d" "default" plain "\n#+date: %U\n\n\n-----\n\n\n"
+	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+			      "#+title: ${title}\n")
+	   :unnarrowed t)
+	  )))
+
+;; configuring org-roam-ui to visualize my knowledge graph
+(use-package websocket
+  :ensure t
+  :after org-roam)
+
+(use-package simple-httpd
+  :ensure t
+  :after org-roam)
+
+(use-package org-roam-ui
+  :ensure t
+  :after org-roam
+  :config
+  (setq org-roam-ui-sync-theme nil
+	org-roam-ui-follow t
+	org-roam-ui-update-on-save t))
+
+(use-package org-sidebar
+  :ensure t
+  :bind
+  (("C-c k b" . org-sidebar-backlinks)
+   ("C-c k s" . org-sidebar-toggle)
+   ("C-c k t" . org-sidebar-tree))
+  :config
+  (setq org-directory "~/Vault/pkm/pages"))
+
+(use-package citar-org-roam
+  :after (citar org-roam)
+  :config
+  (setq citar-org-roam-note-title-template "@${author} - ${title}")
+  (citar-org-roam-mode))
+#+end_src
+
 *** Deft
 
 Searching through roam entries could be a painful experience. =deft= fix this.
@@ -922,7 +854,7 @@ Searching through roam entries could be a painful experience. =deft= fix this.
   :bind ("C-c d" . deft)
   :config
   ;; set the deft directory and file extensions
-  (setq deft-directory "~/Vault/pkm/slip-box/")
+  (setq deft-directory "~/Vault/pkm/pages/")
   (setq deft-extensions '("org"))
   (setq deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n")
   (setq deft-recursive t)
@@ -949,6 +881,14 @@ I also modify files in markdown format.
 I like to define my own skeletons to quickly insert recurring patterns.
 
 #+begin_src emacs-lisp
+(define-skeleton conference-attendance-skeleton
+  "Conference attendance log template for org files" nil
+  "*** Timetable\n*** Thoughts\n*** Notable talks")
+
+(define-skeleton talk-skeleton
+  "Conference talk log template for org files" nil
+  ":PROPERTIES:\n:SPEAKER:\n:END:\n")
+
 (define-skeleton place-skeleton
   "Metadata for places to visit" nil
   ":PROPERTIES:
@@ -1097,6 +1037,12 @@ Using elfeed as my preferred RSS feed manager.
   (setq elfeed-feeds
 	'("https://news.ycombinator.com/rss"
 	  "https://seclists.org/rss/fulldisclosure.rss"
+	  "http://feeds.feedburner.com/smittenkitchen"
+	  "https://www.justonecookbook.com/feed/"
+	  "https://ournextlife.com/feed/"
+	  "https://www.frugalwoods.com/feed/"
+	  "https://moretothat.com/feed/"
+	  "https://calnewport.com/feed/"
 	  "https://xkcd.com/atom.xml"
 	  "https://feeds.feedburner.com/TheHackersNews?format=xml"
 	  "https://www.kernel.org/feeds/kdist.xml"
@@ -1186,7 +1132,7 @@ Using tramp term to connect to ssh instances and edit files.
 
 *** LSP
 
-Using =lsp-mode= to handle IDE-like features.
+Using ~lsp-mode~ to handle IDE-like features.
 
 #+begin_src emacs-lisp
 (use-package nix-mode
@@ -1200,6 +1146,9 @@ Using =lsp-mode= to handle IDE-like features.
 (use-package dockerfile-mode
   :ensure t
   :mode "\\.docker.file\\'" "\\Dockerfile\\'")
+
+(use-package gnuplot
+  :ensure t)
 
 (use-package eglot
   :ensure t
@@ -1245,6 +1194,15 @@ I use ~vterm~ as terminal inside Emacs.
   :ensure t
   :bind (("C-c v" . multi-vterm)))
 #+end_src
+*** Pythonenv
+
+Enable pythonenv inside Emacs.
+
+#+begin_src emacs-lisp
+(use-package pyvenv
+  :ensure t)
+#+end_src
+
 ** Custom functions
 
 Adding some custom functions I use to make my life easier.
