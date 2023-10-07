@@ -1,0 +1,37 @@
+# -*- mode: snippet -*- 
+# name: build a presentation with beamer
+# key: beamer
+# expand-env: ((yas-indent-line 'fixed))
+# --
+
+.PHONY: pdf init dvi clean
+.DEFAULT_GOAL: pdf
+
+FILE_NAME = $0
+BIB_ORIG = /home/claudio/Vault/library/org/main/main.bib
+BIB_NAME = main
+EMACS_INIT = /home/claudio/Repositories/dot-emacs/init.el
+
+pdf: init
+	lualatex $(FILE_NAME).tex
+	bibtex $(FILE_NAME)
+	lualatex $(FILE_NAME).tex
+	lualatex $(FILE_NAME).tex
+	@echo "pdf built"
+
+dvi: clean
+	latex $(FILE_NAME).tex
+	bibtex $(FILE_NAME)
+	latex $(FILE_NAME).tex
+	latex $(FILE_NAME).tex
+	@echo "dvi built"
+
+init:
+	cp $(BIB_ORIG) ./$(BIB_NAME).bib
+	emacs -nw -q --load $(EMACS_INIT) $(FILE_NAME).org --batch -f org-beamer-export-to-latex --kill
+
+clean:
+	@touch $(FILE_NAME).log $(FILE_NAME).out $(FILE_NAME).toc $(FILE_NAME).aux $(FILE_NAME).pdf $(BIB_NAME).bib $(FILE_NAME).tex $(FILE_NAME).run.xml $(FILE_NAME).nav $(FILE_NAME).snm $(FILE_NAME).vrb
+	@touch $(FILE_NAME).blg $(FILE_NAME)-blx.bib $(FILE_NAME).bbl
+	@rm $(FILE_NAME).log $(FILE_NAME).out $(FILE_NAME).toc $(FILE_NAME).aux $(FILE_NAME).pdf $(BIB_NAME).bib $(FILE_NAME).tex $(FILE_NAME).run.xml $(FILE_NAME).nav $(FILE_NAME).snm *.vrb
+	@rm $(FILE_NAME).blg $(FILE_NAME)-blx.bib $(FILE_NAME).bbl
