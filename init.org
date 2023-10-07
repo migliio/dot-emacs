@@ -97,8 +97,9 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 (add-hook 'artist-mode-hook (lambda () (setq indent-tabs-mode nil)))
 
 ;; some useful global keybinds
-(global-set-key (kbd "C-c h") 'winner-undo)
-(global-set-key (kbd "C-c l") 'winner-redo)
+(use-package winner
+  :ensure nil)
+
 (global-set-key (kbd "C-c c k s") 'replace-string)
 (global-set-key (kbd "C-c c k c") 'comment-region)
 (global-set-key (kbd "C-c c k u") 'uncomment-region)
@@ -116,13 +117,13 @@ Put Emacs auto-save and backup files to /tmp/.
 #+begin_src emacs-lisp
 (defconst emacs-tmp-dir (expand-file-name (format "emacs%d" (user-uid)) temporary-file-directory))
 (setq
-   backup-by-copying t                                        ; avoid symlinks
+   backup-by-copying t
    delete-old-versions t
    kept-new-versions 6
    kept-old-versions 2
    version-control t
    auto-save-list-file-prefix emacs-tmp-dir
-   auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))  ; change autosave dir to tmp
+   auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
    backup-directory-alist `((".*" . ,emacs-tmp-dir)))
 #+end_src
 
@@ -145,6 +146,298 @@ Loading the preferred theme.
   (set-face-background 'default "undefined"))
 #+end_src
 	
+** Completion
+
+Trying some in-buffer completion framework that is not broken.
+
+#+begin_src emacs-lisp
+(use-package vertico
+  :ensure t
+  :config
+  (vertico-mode)
+  (add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy))
+
+(use-package marginalia
+  :ensure t
+  :init
+  (marginalia-mode))
+
+(use-package savehist
+  :ensure t
+  :init
+  (savehist-mode))
+
+(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic)))
+
+(use-package consult
+  :ensure t
+  :bind (("C-c M-x" . consult-mode-command)
+         ("C-c h" . consult-history)
+         ("C-c k" . consult-kmacro)
+         ([remap Info-search] . consult-info)
+         ;; C-x bindings in `ctl-x-map'
+         ("C-x M-:" . consult-complex-command)
+         ("C-x b" . consult-buffer)
+         ("C-x 4 b" . consult-buffer-other-window)
+         ("C-x 5 b" . consult-buffer-other-frame)
+         ("C-x r b" . consult-bookmark)
+         ("C-x p b" . consult-project-buffer)
+
+         ("M-#" . consult-register-load)
+         ("M-'" . consult-register-store)
+         ("C-M-#" . consult-register)
+
+         ("M-y" . consult-yank-pop)
+
+         ("M-g e" . consult-compile-error)
+         ("M-g f" . consult-flycheck)
+         ("M-g g" . consult-goto-line)
+         ("M-g M-g" . consult-goto-line)
+         ("M-g o" . consult-outline)
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-imenu-multi)
+
+         ("M-s d" . consult-find)
+         ("M-s D" . consult-locate)
+         ("M-s g" . consult-grep)
+         ("M-s G" . consult-git-grep)
+         ("M-s r" . consult-ripgrep)
+         ("M-s l" . consult-line)
+         ("M-s L" . consult-line-multi)
+         ("M-s k" . consult-keep-lines)
+         ("M-s u" . consult-focus-lines)
+
+         ("M-s e" . consult-isearch-history)
+         :map isearch-mode-map
+         ("M-e" . consult-isearch-history)
+         ("M-s e" . consult-isearch-history)
+         ("M-s l" . consult-line)
+         ("M-s L" . consult-line-multi)
+         ;; Minibuffer history
+         :map minibuffer-local-map
+         ("M-s" . consult-history)
+         ("M-r" . consult-history))
+
+
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+  :config
+  (setq completion-in-region-function
+        (lambda (&rest args)
+          (apply (if vertico-mode
+                     #'consult-completion-in-region
+                   #'completion--in-region)
+                 args)))
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+
+   :preview-key '(:debounce 0.4 any))
+  :init
+  (setq register-preview-delay 0.5
+        register-preview-function #'consult-register-format)
+
+  (advice-add #'register-preview :override #'consult-register-window)
+
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+  (defun mg/consult-buffer-by-prefix (prefix caller show-preview)
+    "Use consult to select a buffer prefixed by PREFIX#.
+Show buffer previews if SHOW-PREVIEW is not nil."
+    (let* ((consult--customize-alist
+            (if show-preview
+                (remove (list caller :preview-key nil) consult--customize-alist)
+              consult--customize-alist))
+           (my/consult--source-buffer-prefixed
+            `(:name ,(format "Buffers (%s)" prefix)
+                    :category buffer
+                    :face consult-buffer
+                    :history buffer-name-history
+                    :state ,#'consult--buffer-state
+                    :default t
+                    :items
+                    ,(lambda ()
+                       (consult--buffer-query
+                        :sort 'visibility
+                        :include (concat "^" prefix "#")
+                        :as #'buffer-name))))
+           (consult-buffer-sources (list my/consult--source-buffer-prefixed)))
+      (consult-buffer)))
+  (defun mg/consult-xstarter ()
+    "Use consult to choose the application to run"
+    (interactive)
+    (let* ((candidates (split-string
+			(shell-command-to-string "xstarter -P")
+			"\n"
+			t))
+	   (application-path (consult--read
+			      candidates
+			      :prompt "Application to launch: ")))
+      (start-process "" nil application-path)))
+
+  (setq consult-narrow-key "<"))
+
+(use-package embark
+  :ensure t
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+  :init
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+  ;; strategy, if you want to see the documentation from multiple providers.
+  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+  :config
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+;; Consult users will also want the embark-consult package.
+(use-package embark-consult
+  :ensure t
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+#+end_src
+
+*** Snippets
+
+Using some snippets to make my writing experience faster.
+
+#+begin_src emacs-lisp
+(use-package yasnippet
+  :ensure t
+  :config
+  (setq yasnippet-snippets-dir '())
+  (setq yas-snippet-dirs
+	'("~/.emacs.d/private/cm.snippets"                                              ;; personal snippets
+          ))
+  (yas-global-mode 1))
+
+(use-package yasnippet-snippets
+  :after yasnippet
+  :ensure t)
+#+end_src
+
+*** CTAGS
+
+Using CTAGS for kernel development.
+
+#+begin_src emacs-lisp
+(use-package citre
+  :ensure t
+  :bind (("C-x c j" . citre-jump)
+	 ("C-x c J" . citre-jump-back)
+	 ("C-x c p" . citre-ace-peek)
+	 ("C-x c u" . citre-update-this-tags-file))
+    :config
+    (add-to-list 'load-path "~/Repositories/citre")
+    (citre-auto-enable-citre-mode-modes '(prog-mode)))
+#+end_src
+
+*** Tramp term
+
+Using tramp term to connect to ssh instances and edit files.
+
+#+begin_src emacs-lisp
+(use-package tramp
+  :ensure t
+  :init
+  (setq tramp-default-method "ssh"))
+#+end_src
+
+*** LSP
+
+Using ~lsp-mode~ to handle IDE-like features.
+
+#+begin_src emacs-lisp
+(use-package nix-mode
+  :ensure t
+  :mode "\\.nix\\'")
+
+(use-package lua-mode
+  :ensure t
+  :mode "\\.lua\\'")
+
+(use-package dockerfile-mode
+  :ensure t
+  :mode "\\.docker.file\\'" "\\Dockerfile\\'")
+
+(use-package gnuplot
+  :ensure t)
+
+(use-package eglot
+  :ensure t
+  :config
+  (add-to-list 'eglot-server-programs
+	       '((c-mode c++-mode)
+                 . ("clangd")))
+  (add-to-list 'eglot-server-programs '(nix-mode . ("rnix-lsp")))
+  (add-hook 'c-mode-hook 'eglot-ensure)
+  (add-hook 'python-mode-hook 'eglot-ensure))
+
+(use-package company
+  :ensure t
+  :config
+  (add-hook 'after-init-hook 'global-company-mode))
+
+(use-package docker-tramp
+  :ensure t)
+#+end_src
+
+*** Which key
+
+Using which key to remind what keybinds to use to perform actions.
+
+#+begin_src emacs-lisp
+(use-package which-key
+  :ensure t
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 0.3))
+#+end_src
+
+*** Terminal
+
+I use ~vterm~ as terminal inside Emacs.
+
+#+begin_src emacs-lisp
+(use-package vterm
+  :ensure t)
+
+(use-package multi-vterm
+  :ensure t
+  :bind (("C-c v" . multi-vterm)))
+#+end_src
+*** Pythonenv
+
+Enable pythonenv inside Emacs.
+
+#+begin_src emacs-lisp
+(use-package pyvenv
+  :ensure t)
+#+end_src
+
+*** Compilation
+
+Define compilation-specific tweaks to make the work faster.
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-x c c") 'compile)
+#+end_src
+
 ** Files navigation
 
 #+begin_src emacs-lisp
@@ -153,33 +446,38 @@ Loading the preferred theme.
   :commands projectile-mode projectile-project-name
   :init
   (add-hook 'after-init-hook 'projectile-mode)
+  :custom
   (setq projectile-indexing-method 'alien)
   (setq projectile-project-search-path '("~/Repositories"))
   (setq projectile-use-git-grep t)
   (setq projectile-mode-line-prefix " Proj")
-  (setq projectile-completion-system 'ido)
-  :config
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
 ;; some dired tweaks
-(setq ls-lisp-use-insert-directory-program nil
-      ls-lisp-dirs-first t
-      default-directory "~/")      
+(use-package dired
+  :ensure nil
+  :custom
+  (setq ls-lisp-use-insert-directory-program nil
+	ls-lisp-dirs-first t
+	default-directory "~/")
+  ;; omit hidden files
+  (setq dired-omit-files "^\\...+$")
+  :init
+  (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1))))
 
-;; dired extra
-(require 'dired-x)
-(setq dired-dwim-target t
-      delete-by-moving-to-trash t)
+;; use dired-x
+(use-package dired-x
+  :ensure nil
+  :custom
+  (setq dired-dwim-target t
+	delete-by-moving-to-trash t))
 
 ;; toggle disk usage
 (use-package disk-usage)
 
-;; omit hidden files
-(setq dired-omit-files "^\\...+$")
-(add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
-
-;; use ibuffer to switch between buffers
-(global-set-key (kbd "C-x C-b") 'ibuffer)
+(use-package ibuffer
+  :ensure nil
+  :bind (("C-x C-b" . ibuffer)))
 #+end_src
 
 ** File visualization
@@ -258,7 +556,7 @@ I use ~rg~ to find file content easily.
   :config
   (setq org-reveal-root "file:///home/claudio/Repositories/reveal.js"))
 
-(setq org-export-backends '(beamer html latex ascii ox-reveal ox-hugo ox-twbs))
+
 
 (use-package org
   :ensure t
@@ -270,6 +568,8 @@ I use ~rg~ to find file content easily.
   (require 'org-tempo)
   ;; Set org agenda directory
   (setq org-agenda-files (list "~/Vault/pkm/pages/journal.org" "~/Vault/pkm/pages/agenda.org" "/home/claudio/Vault/pkm/pages/projects.org"))
+  ;; set org-export backends
+  (setq org-export-backends '(beamer html latex ascii ox-reveal ox-hugo ox-twbs))
   ;; Set org files where to search for IDs
   (setq org-id-extra-files '("~/Vault/pkm/pages"))
   ;; ignore archived entries in org-clock-report
@@ -949,11 +1249,13 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 (use-package exwm
   :config
   ;; default number of workspaces
-  (setq exwm-workspace-number 5)
+  (setq exwm-workspace-number 6)
 
   (add-hook 'exwm-update-class-hook #'efs/exwm-update-class)
 
-  (start-process-shell-command "xmodmap" nil "xmodmap ~/.emacs.d/exwm/Xmodmap")
+  ;; start workspaces from 1
+  (setq exwm-workspace-index-map
+      (lambda (index) (number-to-string (1+ index))))
 
   ;; set the screen resolution
   (require 'exwm-randr)
@@ -962,10 +1264,9 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
   ;; load the system tray before exwm-init
   (require 'exwm-systemtray)
   (exwm-systemtray-enable)
-  (setq exwm-systemtray--icon-min-size 13)
 
   ;; assign workspaces to monitors
-  (setq exwm-randr-workspace-monitor-plist '(4 "HDMI1" 5 "HDMI1"))
+  (setq exwm-randr-workspace-monitor-plist '(5 "HDMI1" 6 "HDMI1"))
 
   ;; these keys should always pass through to Emacs
   (setq exwm-input-prefix-keys
@@ -986,6 +1287,20 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
   ;; ctrl+Q will enable the next key to be sent directly
   (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
 
+  (exwm-input-set-key
+   (kbd "<XF86MonBrightnessUp>")
+   (lambda ()
+     (interactive)
+     (start-process-shell-command
+      "xbacklight" nil "xbacklight -inc 5")))
+
+  (exwm-input-set-key
+   (kbd "<XF86MonBrightnessDown>")
+   (lambda ()
+     (interactive)
+     (start-process-shell-command
+      "xbacklight" nil "xbacklight -dec 5")))
+
   ;; set up global key bindings
   ;; keep in mind that changing this list after EXWM initializes has no effect
   (setq exwm-input-global-keys
@@ -1003,10 +1318,14 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
           ([s-up] . windmove-up)
           ([s-down] . windmove-down)
 
+	  ;; move window to another workspace
+	  ([?\s-m] . exwm-workspace-move-window)
+
           ;; launch applications via shell command
-          ([?\s-\ ] . (lambda (command)
-                       (interactive (list (read-shell-command "$ ")))
-                       (start-process-shell-command command nil command)))
+          ([?\s-\ ] .
+	   (lambda ()
+	     (interactive)
+	     (mg/consult-xstarter)))
 
           ;; switch workspace
           ([?\s-w] . exwm-workspace-switch)
@@ -1025,14 +1344,17 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 	   (lambda ()
              (interactive)
              (start-process "" nil "/usr/bin/setxkbmap" "us")))
+	  ([?\s-p] .
+	   (lambda ()
+             (interactive)
+             (start-process "" nil "/usr/bin/shutdown" "now")))	  
 
-          ;; 's-N': switch to certain workspace with super plus a number key (0 - 9)
           ,@(mapcar (lambda (i)
                       `(,(kbd (format "s-%d" i)) .
                         (lambda ()
                           (interactive)
                           (exwm-workspace-switch-create ,i))))
-                    (number-sequence 0 9))))
+                    (number-sequence 1 9))))
   (add-hook 'exwm-init-hook
             (lambda ()
               (progn
@@ -1136,283 +1458,6 @@ Using elfeed as my preferred RSS feed manager.
 #+end_src
 
 ** Programming stuff
-*** Completion
-
-Trying some in-buffer completion framework that is not broken.
-
-#+begin_src emacs-lisp
-(use-package vertico
-  :ensure t
-  :config
-  (vertico-mode)
-  (add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy))
-
-(use-package marginalia
-  :ensure t
-  :init
-  (marginalia-mode))
-
-(use-package savehist
-  :ensure t
-  :init
-  (savehist-mode))
-
-(use-package orderless
-  :ensure t
-  :custom
-  (completion-styles '(orderless basic)))
-
-;; Example configuration for Consult
-(use-package consult
-  ;; Replace bindings. Lazily loaded due by `use-package'.
-  :bind (;; C-c bindings in `mode-specific-map'
-         ("C-c M-x" . consult-mode-command)
-         ("C-c h" . consult-history)
-         ("C-c k" . consult-kmacro)
-         ([remap Info-search] . consult-info)
-         ;; C-x bindings in `ctl-x-map'
-         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-         ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-         ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
-         ;; Custom M-# bindings for fast register access
-         ("M-#" . consult-register-load)
-         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-         ("C-M-#" . consult-register)
-         ;; Other custom bindings
-         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-         ;; M-g bindings in `goto-map'
-         ("M-g e" . consult-compile-error)
-         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
-         ("M-g g" . consult-goto-line)             ;; orig. goto-line
-         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-         ("M-g m" . consult-mark)
-         ("M-g k" . consult-global-mark)
-         ("M-g i" . consult-imenu)
-         ("M-g I" . consult-imenu-multi)
-         ;; M-s bindings in `search-map'
-         ("M-s d" . consult-find)                  ;; Alternative: consult-fd
-         ("M-s D" . consult-locate)
-         ("M-s g" . consult-grep)
-         ("M-s G" . consult-git-grep)
-         ("M-s r" . consult-ripgrep)
-         ("M-s l" . consult-line)
-         ("M-s L" . consult-line-multi)
-         ("M-s k" . consult-keep-lines)
-         ("M-s u" . consult-focus-lines)
-         ;; Isearch integration
-         ("M-s e" . consult-isearch-history)
-         :map isearch-mode-map
-         ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
-         ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
-         ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
-         ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
-         ;; Minibuffer history
-         :map minibuffer-local-map
-         ("M-s" . consult-history)                 ;; orig. next-matching-history-element
-         ("M-r" . consult-history))                ;; orig. previous-matching-history-element
-
-  ;; Enable automatic preview at point in the *Completions* buffer. This is
-  ;; relevant when you use the default completion UI.
-  :hook (completion-list-mode . consult-preview-at-point-mode)
-  ;; The :init configuration is always executed (Not lazy)
-  :init
-  ;; Optionally configure the register formatting. This improves the register
-  ;; preview for `consult-register', `consult-register-load',
-  ;; `consult-register-store' and the Emacs built-ins.
-  (setq register-preview-delay 0.5
-        register-preview-function #'consult-register-format)
-
-  ;; Optionally tweak the register preview window.
-  ;; This adds thin lines, sorting and hides the mode line of the window.
-  (advice-add #'register-preview :override #'consult-register-window)
-
-  ;; Use Consult to select xref locations with preview
-  (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
-
-  ;; Configure other variables and modes in the :config section,
-  ;; after lazily loading the package.
-  :config
-
-  ;; Optionally configure preview. The default value
-  ;; is 'any, such that any key triggers the preview.
-  ;; (setq consult-preview-key 'any)
-  ;; (setq consult-preview-key "M-.")
-  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
-  ;; For some commands and buffer sources it is useful to configure the
-  ;; :preview-key on a per-command basis using the `consult-customize' macro.
-  (consult-customize
-   consult-theme :preview-key '(:debounce 0.2 any)
-   consult-ripgrep consult-git-grep consult-grep
-   consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
-   consult--source-recent-file consult--source-project-recent-file
-   ;; :preview-key "M-."
-   :preview-key '(:debounce 0.4 any))
-
-  ;; Optionally configure the narrowing key.
-  ;; Both < and C-+ work reasonably well.
-  (setq consult-narrow-key "<") ;; "C-+"
-  )
-
-(use-package embark
-  :ensure t
-  :bind
-  (("C-." . embark-act)         ;; pick some comfortable binding
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-  :init
-  ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
-
-  ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-  ;; strategy, if you want to see the documentation from multiple providers.
-  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
-  :config
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none)))))
-
-;; Consult users will also want the embark-consult package.
-(use-package embark-consult
-  :ensure t ; only need to install it, embark loads it after consult if found
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
-#+end_src
-
-*** Snippets
-
-Using some snippets to make my writing experience faster.
-
-#+begin_src emacs-lisp
-(use-package yasnippet
-  :ensure t
-  :config
-  (setq yasnippet-snippets-dir '())
-  (setq yas-snippet-dirs
-	'("~/.emacs.d/private/cm.snippets"                                              ;; personal snippets
-          ))
-  (yas-global-mode 1))
-
-(use-package yasnippet-snippets
-  :after yasnippet
-  :ensure t)
-#+end_src
-
-*** CTAGS
-
-Using CTAGS for kernel development.
-
-#+begin_src emacs-lisp
-(use-package citre
-  :ensure t
-  :bind (("C-x c j" . citre-jump)
-	 ("C-x c J" . citre-jump-back)
-	 ("C-x c p" . citre-ace-peek)
-	 ("C-x c u" . citre-update-this-tags-file))
-    :config
-    (add-to-list 'load-path "~/Repositories/citre")
-    (citre-auto-enable-citre-mode-modes '(prog-mode)))
-#+end_src
-
-*** Tramp term
-
-Using tramp term to connect to ssh instances and edit files.
-
-#+begin_src emacs-lisp
-(use-package tramp
-  :ensure t
-  :init
-  (setq tramp-default-method "ssh"))
-#+end_src
-
-*** LSP
-
-Using ~lsp-mode~ to handle IDE-like features.
-
-#+begin_src emacs-lisp
-(use-package nix-mode
-  :ensure t
-  :mode "\\.nix\\'")
-
-(use-package lua-mode
-  :ensure t
-  :mode "\\.lua\\'")
-
-(use-package dockerfile-mode
-  :ensure t
-  :mode "\\.docker.file\\'" "\\Dockerfile\\'")
-
-(use-package gnuplot
-  :ensure t)
-
-(use-package eglot
-  :ensure t
-  :config
-  (add-to-list 'eglot-server-programs
-	       '((c-mode c++-mode)
-                 . ("clangd")))
-  (add-to-list 'eglot-server-programs '(nix-mode . ("rnix-lsp")))
-  (add-hook 'c-mode-hook 'eglot-ensure)
-  (add-hook 'python-mode-hook 'eglot-ensure))
-
-(use-package company
-  :ensure t
-  :config
-  (add-hook 'after-init-hook 'global-company-mode))
-
-(use-package docker-tramp
-  :ensure t)
-#+end_src
-
-*** Which key
-
-Using which key to remind what keybinds to use to perform actions.
-
-#+begin_src emacs-lisp
-(use-package which-key
-  :ensure t
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 0.3))
-#+end_src
-
-*** Terminal
-
-I use ~vterm~ as terminal inside Emacs.
-
-#+begin_src emacs-lisp
-(use-package vterm
-  :ensure t)
-
-(use-package multi-vterm
-  :ensure t
-  :bind (("C-c v" . multi-vterm)))
-#+end_src
-*** Pythonenv
-
-Enable pythonenv inside Emacs.
-
-#+begin_src emacs-lisp
-(use-package pyvenv
-  :ensure t)
-#+end_src
-
-*** Compilation
-
-Define compilation-specific tweaks to make the work faster.
-
-#+begin_src emacs-lisp
-(global-set-key (kbd "C-x c c") 'compile)
-#+end_src
-
 ** Custom functions
 
 Adding some custom functions I use to make my life easier.
@@ -1459,10 +1504,11 @@ Adding some custom functions I use to make my life easier.
 
 (defun mg/display-machine-info()
   (interactive)
-  (message "System-level info: %s" (concat
-		 (format "CPU: %s - " (shell-command-to-string "~/.config/scripts/cpu.sh"))
-		 (format "Mem: %s - " (shell-command-to-string "~/.config/scripts/ram.sh"))
-		 (format "Disk: %s - " (shell-command-to-string "~/.config/scripts/disk.sh"))
-		 (format "Vol: %s " (shell-command-to-string "~/.config/scripts/volume.sh")))))
+  (message "System-level info => %s" (concat
+				    (format "BAT: %s- " (shell-command-to-string "~/.config/scripts/battery.sh"))
+				    (format "CPU: %s - " (shell-command-to-string "~/.config/scripts/cpu.sh"))			    
+				    (format "MEM: %s - " (shell-command-to-string "~/.config/scripts/ram.sh"))
+				    (format "DSK: %s - " (shell-command-to-string "~/.config/scripts/disk.sh"))
+				    (format "VOL: %s " (shell-command-to-string "~/.config/scripts/volume.sh")))))
 (global-set-key (kbd "C-c f s") 'mg/display-machine-info)
 #+end_src
