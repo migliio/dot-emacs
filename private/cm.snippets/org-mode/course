@@ -1,0 +1,12 @@
+# -*- mode: snippet -*- 
+# name: course
+# key: cco
+# --
+** $0
+:PROPERTIES:
+:LECTURER:
+:UNIVERSITY:
+:ACADEMIC_YEAR:
+:RESOURCES:
+:END:
+*** Lecture notes

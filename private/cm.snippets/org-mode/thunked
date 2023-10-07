@@ -1,6 +1,7 @@
 # -*- mode: snippet -*- 
 # name: thunked page
-# key: thunk
+# key: tthu
 # --
 
-/Thunked page/: all reference notes for Advanced Operating Systems course are taken at $1. Inspect it for further details.
+/Thunked page/: all reference notes for the $1 course are taken at [[file:~/Vault/pkm/pages/courses.org]]. Inspect it for further details.
+$0

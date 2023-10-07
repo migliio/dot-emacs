@@ -2,7 +2,7 @@
 # name: lecture
 # key: lle
 # --
-
+**** $1
 :PROPERTIES:
 :TOPICS: $0
 :LECTURER:

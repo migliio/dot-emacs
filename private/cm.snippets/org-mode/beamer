@@ -1,0 +1,17 @@
+# -*- mode: snippet -*-
+# name: beamer
+# key: beamer
+# --
+#+TITLE: $1
+#+AUTHOR: $2
+
+#+BEAMER_THEME: metropolis
+#+OPTIONS: H:2
+#+LATEX_HEADER: \usepackage[backend=bibtex]{biblatex}
+#+LATEX_HEADER: \usefonttheme{professionalfonts}
+#+LATEX_HEADER: \usefonttheme{serif} % default family is serif
+#+LATEX_HEADER: \usepackage[ebgaramond]{fontsetup}
+$0
+* References
+#+print_bibliography: :type article
+#+cite_export: biblatex

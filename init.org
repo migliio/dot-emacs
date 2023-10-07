@@ -6,10 +6,7 @@
 In this piece of code I add stuff to perform the startup of the Emacs init file to make it work properly.
 
 #+begin_src emacs-lisp
-(add-to-list 'load-path (concat user-emacs-directory "modules/"))
 (add-to-list 'load-path (concat user-emacs-directory "site-lisp/"))
-(add-to-list 'load-path (concat user-emacs-directory "site-lisp/git-email"))
-(add-to-list 'load-path (concat user-emacs-directory "site-lisp/org-fc"))
 #+end_src
 
 Start the emacs server when opening emacs
@@ -20,20 +17,6 @@ Start the emacs server when opening emacs
     (server-start))
 #+end_src
 
-* Startup performance
-
-I find myself closing and opening Emacs a plenty of times. I want it to be responsive and fast. I'm going to reduce the frequency of garbage collection and then I'll measure the startup time.
-
-#+begin_src emacs-lisp
-(setq gc-cons-threshold 100000000)
-(setq read-process-output-max (* 1024 1024)) ;; 1mb
-
-
-(add-hook 'after-init-hook #'(lambda ()
-                               ;; restore after startup
-                               (setq gc-cons-threshold 800000)))
-#+end_src
-  
 * Package management
 
 First of all, let's initialize the package management setting up ELPA, MELPA and org package repositories. After that, I want Emacs loading =use-package= to manage package configuration.
@@ -56,7 +39,7 @@ First of all, let's initialize the package management setting up ELPA, MELPA and
 * Keep emacs.d clean
 ** Customization settings
    
-Thanks to @daviwil I finally found a way to get rid of all transient files that appear in my ~dot-emacs~ git repository. In this way I'll have a better organized folder, with relevant files only.
+Let's have a better organized folder, with relevant files only.
 
 #+begin_src emacs-lisp
 ;; change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
@@ -71,116 +54,59 @@ Thanks to @daviwil I finally found a way to get rid of all transient files that 
 (load custom-file t)
 #+end_src
 
-* MacOS support
-
-In order to enable MacOS support I want to set the keyboard /Command/ key as the /Meta/ key and change the image scaling in order to resolve the fuzzy PDFs with Retina displays.
-
-#+begin_src emacs-lisp
-(when (eq system-type 'darwin)
-  (when (memq window-system '(mac ns))
-    (setq ns-pop-up-frames nil
-	  mac-option-modifier nil
-	  mac-command-modifier 'meta
-	  x-select-enable-clipboard t)
-    (when (fboundp 'mac-auto-operator-composition-mode)
-      (mac-auto-operator-composition-mode 1)))
-
-  ;; PDFs are fuzzy with Retina display  
-  ;; uses more memory; see https://github.com/politza/pdf-tools/issues/51
-  (when (memq window-system '(mac ns))
-    (setq pdf-view-use-scaling t
-	  pdf-view-use-imagemagick nil)))
-#+end_src
-
 * General configuration
 ** Useful defaults
 
 Clean the Emacs interface making it as minimal as possible, without getting rid of useful improvements. Adding some defaults on indentation, etc.
 
 #+begin_src emacs-lisp
-  ;; no startup screen
-  (setq inhibit-startup-screen t)
+;; disable some boring modes
+(if (display-graphic-p)
+    (dolist (mode
+	     '(tool-bar-mode
+	       scroll-bar-mode
+	       menu-bar-mode
+	       tooltip-mode
+	       blink-cursor-mode))
+      (funcall mode 0)))
 
-  ;; no message in the scratch buffer
-  (setq initial-scratch-message "")
+(setq-default inhibit-startup-screen t
+	      initial-scratch-message ""
+	      frame-title-format '("%b")
+	      ring-bell-function 'ignore
+	      global-visual-line-mode t
+	      winner-mode t
+	      tab-width 8
+	      c-basic-offset 8
+	      frame-resize-pixelwise t
+	      show-paren-mode t
+	      linum-format "%4d "
+	      use-short-answers t
+	      make-backup-files nil
+	      native-comp-async-report-warnings-errors nil
+	      global-auto-revert-mode t
+	      display-line-numbers-type 'relative
+	      process-connection-type nil
+	      ;;warning-minimum-level :emergency
+	      set-language-environment "UTF-8"
+	      system-time-locale "C")
 
-  ;; set the frame title format to display the name of the buffer associated with the current frame
-  (setq-default frame-title-format '("%b"))
+(add-hook 'window-setup-hook 'toggle-frame-maximized t)
 
-  ;; no ring bell
-  (setq ring-bell-function 'ignore)
+;; no indent in artist mode
+(add-hook 'artist-mode-hook (lambda () (setq indent-tabs-mode nil)))
 
-  ;; auto new line without actual '\n'
-  (global-visual-line-mode t)
+;; some useful global keybinds
+(global-set-key (kbd "C-c h") 'winner-undo)
+(global-set-key (kbd "C-c l") 'winner-redo)
+(global-set-key (kbd "C-c c k s") 'replace-string)
+(global-set-key (kbd "C-c c k c") 'comment-region)
+(global-set-key (kbd "C-c c k u") 'uncomment-region)
 
-  ;; use winner mode
-  (winner-mode t)
-
-  ;; indentation is 8 char
-  (setq-default tab-width 8)
-  (setq-default c-basic-offset 8)
-
-  ;; no confirmation when exiting and there are processes running in the background
-  (setq confirm-kill-processes nil)
-
-  ;; frame resize in pixel increments
-  (setq frame-resize-pixelwise t)
-
-  ;; no indent in artist mode
-  (add-hook 'artist-mode-hook (lambda () (setq indent-tabs-mode nil)))
-
-  ;; some useful global keybinds
-  (global-set-key (kbd "C-c h") 'winner-undo)
-  (global-set-key (kbd "C-c l") 'winner-redo)
-  (global-set-key (kbd "C-c c k s") 'replace-string)
-  (global-set-key (kbd "C-c c k c") 'comment-region)
-  (global-set-key (kbd "C-c c k u") 'uncomment-region)
-
-
-  ;; 'yes' and 'no' are tedious
-  (fset 'yes-or-no-p 'y-or-n-p)
-
-  ;; show parenthesis
-  (show-paren-mode 1)
-
-  ;; set linum format
-  (setq linum-format "%4d ")
-
-  ;; auto revert buffers
-  (global-auto-revert-mode t)
-
-  ;; enable some modes when programming
-  (add-hook 'prog-mode-hook
-	    #'display-line-numbers-mode
-	    #'linum-mode)
-
-  ;; relative line numbers
-  (setq display-line-numbers-type 'relative)
-
-  ;; avoid boring warnings
-  (setq warning-minimum-level :emergency)
-
-  ;; disable some boring modes
-  (if (display-graphic-p)
-      (dolist (mode
-	       '(tool-bar-mode
-		 scroll-bar-mode
-		 menu-bar-mode
-		 blink-cursor-mode))
-	(funcall mode 0)))
-
-  ;; solves a bug with xdg-open
-  (setq process-connection-type nil)
-
-  ;; system locale to use for formatting time values
-  (setq system-time-locale "C")
-
-  ;; use UTF-8 as a preferred coding system
-  (set-language-environment "UTF-8")
-
-  ;; avoid async shell commands warnings
-  (add-to-list 'display-buffer-alist
-	       (cons "\\*Async Shell Command\\*.*" (cons #'display-buffer-no-window nil)))
+;; enable some modes when programming
+(add-hook 'prog-mode-hook
+	  #'display-line-numbers-mode
+	  #'linum-mode)
 #+end_src
 
 ** Emacs auto-save
@@ -201,32 +127,11 @@ Put Emacs auto-save and backup files to /tmp/.
 #+end_src
 
 ** User interface
-*** Buffer management
-
-Adding some tweaks to manage buffers better.
-
-#+begin_src emacs-lisp
-(use-package transpose-frame
-  :bind (("C-c f t" . transpose-frame)
-	 ("C-c f f" . flip-frame)
-	 ("C-c f o" . flop-frame))
-  :ensure t)
-
-(use-package multiple-cursors
-  :ensure t
-  :bind (("C-S-c C-S-c" . mc/edit-lines)))
-#+end_src
-
 *** Theme
 
 Loading the preferred theme.
 
 #+begin_src emacs-lisp
-(use-package unicode-fonts
-  :ensure t
-  :after mu4e
-  :config (unicode-fonts-setup)(require 'persistent-soft))
-
 (use-package minions
   :ensure t
   :config
@@ -234,7 +139,7 @@ Loading the preferred theme.
 
 (if (display-graphic-p)
     (progn
-      (set-frame-font "Liberation Mono 15" nil t)
+      (set-frame-font "Liberation Mono 13" nil t)
       (set-fringe-mode 0)
       (use-package hc-zenburn-theme :ensure t :config (load-theme 'hc-zenburn t)))
   (set-face-background 'default "undefined"))
@@ -256,25 +161,19 @@ Loading the preferred theme.
   :config
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
-;; Show directories first in dired
-(setq ls-lisp-use-insert-directory-program nil)
-(setq ls-lisp-dirs-first t)
-
-;; Start searching files from "~"
-(setq default-directory "~/")
+;; some dired tweaks
+(setq ls-lisp-use-insert-directory-program nil
+      ls-lisp-dirs-first t
+      default-directory "~/")      
 
 ;; dired extra
 (require 'dired-x)
+(setq dired-dwim-target t
+      delete-by-moving-to-trash t)
 
 ;; omit hidden files
 (setq dired-omit-files "^\\...+$")
 (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
-
-;; prompt for deleting files directly
-(setq delete-by-moving-to-trash t)
-
-;; make emacs smart when multiple dired buffers are opened
-(setq dired-dwim-target t)
 
 ;; use ibuffer to switch between buffers
 (global-set-key (kbd "C-x C-b") 'ibuffer)
@@ -339,87 +238,6 @@ I use ~rg~ to find file content easily.
 #+end_src
 
 ** Personal knowledge management
-*** Zettelkasten
-
-#+begin_src emacs-lisp
-(use-package org-roam
-  :after org
-  :ensure t
-  :config
-  :init
-  (setq org-roam-v2-ack t)
-  :custom
-  (org-roam-directory (file-truename "~/Vault/pkm/slip-box/"))
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-	 ("C-c n f" . org-roam-node-find)
-	 ("C-c n g" . org-roam-graph)
-	 ("C-c n t" . org-roam-tag-add)
-	 ("C-c n i" . org-roam-node-insert)
-	 ("C-c n c" . org-roam-capture))
-  :config
-  (add-hook 'after-save-hook
-	    (defun org-rename-to-new-title ()
-	      (when-let*
-		  ((old-file (buffer-file-name))
-		   (is-roam-file (org-roam-file-p old-file))
-		   (file-node (save-excursion
-				(goto-char 1)
-				(org-roam-node-at-point)))
-		   (file-name  (file-name-base (org-roam-node-file file-node)))
-		   (file-time  (or (and (string-match "^\\([0-9]\\{14\\}\\)-" file-name)
-					(concat (match-string 1 file-name) "-"))
-				   ""))
-		   (slug (org-roam-node-slug file-node))
-		   (new-file (expand-file-name (concat file-time slug ".org")))
-		   (different-name? (not (string-equal old-file new-file))))
-
-		(rename-buffer new-file)
-		(rename-file old-file new-file)
-		(set-visited-file-name new-file)
-		(set-buffer-modified-p nil))))
-  (org-roam-db-autosync-mode)
-  (setq org-roam-node-display-template (concat "${title} " (propertize "${tags}" 'face 'org-tag)))
-  ;; org-roam templates
-  (setq org-roam-capture-templates
-	'(("d" "default" plain "\n#+date: %U\n\n\n-----\n\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+title: ${title}\n")
-	   :unnarrowed t)
-	  )))
-
-;; configuring org-roam-ui to visualize my knowledge graph
-(use-package websocket
-  :ensure t
-  :after org-roam)
-
-(use-package simple-httpd
-  :ensure t
-  :after org-roam)
-
-(use-package org-roam-ui
-  :ensure t
-  :after org-roam
-  :config
-  (setq org-roam-ui-sync-theme nil
-	org-roam-ui-follow t
-	org-roam-ui-update-on-save t))
-
-(use-package org-sidebar
-  :ensure t
-  :bind
-  (("C-c k b" . org-sidebar-backlinks)
-   ("C-c k s" . org-sidebar-toggle)
-   ("C-c k t" . org-sidebar-tree))
-  :config
-  (setq org-directory "~/Vault/pkm/pages"))
-
-(use-package citar-org-roam
-  :after (citar org-roam)
-  :config
-  (setq citar-org-roam-note-title-template "@${author} - ${title}")
-  (citar-org-roam-mode))
-#+end_src
-
 *** Org mode
 
 #+begin_src emacs-lisp
@@ -524,13 +342,15 @@ I use ~rg~ to find file content easily.
   ;; Export citations
   (setq org-cite-global-bibliography
 	'("/home/claudio/Vault/library/org/main/main.bib"))
-  (if (display-graphic-p)
-      (require 'oc-biblatex)
-    (setq org-cite-export-processors
-	  '((latex biblatex)))
-    (setq org-latex-pdf-process (list
-				 "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f")))
 
+  (when (display-graphic-p)
+      (progn
+	(require 'oc-biblatex)
+	(setq org-cite-export-processors
+	      '((latex biblatex)))
+	(setq org-latex-pdf-process (list
+				     "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
+	))
 
   ;; In org-mode, I want source blocks to be themed as they would in native mode
   (setq org-src-fontify-natively t
@@ -562,12 +382,26 @@ I use ~rg~ to find file content easily.
 	  ("a" "Agenda"
 	   ((agenda ""
 		    ((org-agenda-span 1)
-		     (org-deadline-warning-days 0)
+		     (org-agenda-skip-function
+		      (lambda ()
+			(or (org-agenda-skip-entry-if 'regexp ":framework:")
+			    (org-agenda-skip-entry-if 'done))))
+	   	     (org-deadline-warning-days 0)
 		     (org-scheduled-past-days 14)
 		     (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
 		     (org-agenda-format-date "%A %-e %B %Y")
 		     (org-agenda-overriding-header "Today's schedule:\n")))
+	    (agenda ""
+		    ((org-agenda-span 1)
+		     (org-agenda-skip-function
+		      (lambda ()
+			(or (org-agenda-skip-entry-if 'notregexp ":framework:")
+			    (org-agenda-skip-entry-if 'done))))
+	   	     (org-deadline-warning-days 0)
+		     (org-scheduled-past-days 14)
+		     (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+		     (org-agenda-format-date "%A %-e %B %Y")
+		     (org-agenda-overriding-header "Today's framework:\n")))
 	    (todo "PROG"
 		  ((org-agenda-time-grid nil)
 		   (org-agenda-span 1)
@@ -593,11 +427,14 @@ I use ~rg~ to find file content easily.
 			(org-agenda-overriding-header "\nUpcoming deadlines (+30d)\n")))
 	    (agenda ""
 		    ((org-agenda-start-on-weekday nil)
+		     (org-agenda-skip-function
+		      (lambda ()
+			(or (org-agenda-skip-entry-if 'regexp ":framework:")
+			    (org-agenda-skip-entry-if 'done))))
 		     (org-agenda-start-day "+1d")
 		     (org-agenda-span 5)
 		     (org-deadline-warning-days 0)
 		     (org-scheduled-past-days 0)
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
 		     (org-agenda-overriding-header "\nWeek at a glance:\n")))
 	    (todo "INBOX"
 		  ((org-agenda-time-grid nil)
@@ -610,19 +447,25 @@ I use ~rg~ to find file content easily.
 	  ("c" "Agenda with capture"
 	   ((agenda ""
 		    ((org-agenda-span 1)
+		     (org-agenda-skip-function
+		      (lambda ()
+			(or (org-agenda-skip-entry-if 'regexp ":framework:")
+			    (org-agenda-skip-entry-if 'done))))		     
 		     (org-deadline-warning-days 0)
 		     (org-scheduled-past-days 14)
 		     (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
 		     (org-agenda-format-date "%A %-e %B %Y")
 		     (org-agenda-overriding-header "Today's schedule:\n")))
 	    (agenda ""
 		    ((org-agenda-start-on-weekday nil)
+		     (org-agenda-skip-function
+		      (lambda ()
+			(or (org-agenda-skip-entry-if 'regexp ":framework:")
+			    (org-agenda-skip-entry-if 'done))))		     
 		     (org-agenda-start-day "+1d")
 		     (org-agenda-span 5)
 		     (org-deadline-warning-days 0)
 		     (org-scheduled-past-days 0)
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
 		     (org-agenda-overriding-header "\nWeek at a glance:\n")))))))
 
   ;; Enable DONE logging in org-mode
@@ -773,8 +616,8 @@ I use ~rg~ to find file content easily.
   :after org
   :custom (org-contacts-files '("~/Vault/pkm/pages/contacts.org")))
 
-(require 'org-fc)
-(setq org-fc-directories '("~/Vault/pkm/pages" "~/Vault/pkm/slip-box"))
+;; (require 'org-fc)
+;; (setq org-fc-directories '("~/Vault/pkm/pages" "~/Vault/pkm/slip-box"))
 
 (use-package ox-hugo
   :ensure t
@@ -807,17 +650,79 @@ Install org-noter to deal with PDF notes.
   (setq org-noter-auto-save-last-location t))
 #+end_src
 
-**** Org-mind-map
-
-Create mind maps starting from org mode files.
+*** Zettelkasten
 
 #+begin_src emacs-lisp
-(use-package org-mind-map
-  :init
-  (require 'ox-org)
+(use-package org-roam
+  :after org
   :ensure t
   :config
-  (setq org-mind-map-engine "dot"))
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory (file-truename "~/Vault/pkm/slip-box/"))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+	 ("C-c n f" . org-roam-node-find)
+	 ("C-c n g" . org-roam-graph)
+	 ("C-c n t" . org-roam-tag-add)
+	 ("C-c n i" . org-roam-node-insert)
+	 ("C-c n c" . org-roam-capture))
+  :config
+  (add-hook 'after-save-hook
+	    (defun org-rename-to-new-title ()
+	      (when-let*
+		  ((old-file (buffer-file-name))
+		   (is-roam-file (org-roam-file-p old-file))
+		   (file-node (save-excursion
+				(goto-char 1)
+				(org-roam-node-at-point)))
+		   (file-name  (file-name-base (org-roam-node-file file-node)))
+		   (file-time  (or (and (string-match "^\\([0-9]\\{14\\}\\)-" file-name)
+					(concat (match-string 1 file-name) "-"))
+				   ""))
+		   (slug (org-roam-node-slug file-node))
+		   (new-file (expand-file-name (concat file-time slug ".org")))
+		   (different-name? (not (string-equal old-file new-file))))
+
+		(rename-buffer new-file)
+		(rename-file old-file new-file)
+		(set-visited-file-name new-file)
+		(set-buffer-modified-p nil))))
+  (org-roam-db-autosync-mode)
+  (setq org-roam-node-display-template (concat "${title} " (propertize "${tags}" 'face 'org-tag)))
+  ;; org-roam templates
+  (setq org-roam-capture-templates
+	'(("d" "default" plain "\n#+date: %U\n\n-----\n\n\n"
+	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+			      "#+title: ${title}\n")
+	   :unnarrowed t)
+	  )))
+
+;; configuring org-roam-ui to visualize my knowledge graph
+(use-package websocket
+  :ensure t
+  :after org-roam)
+
+(use-package simple-httpd
+  :ensure t
+  :after org-roam)
+
+(use-package org-roam-ui
+  :ensure t
+  :after org-roam
+  :config
+  (setq org-roam-ui-sync-theme nil
+	org-roam-ui-follow t
+	org-roam-ui-update-on-save t))
+
+(use-package org-sidebar
+  :ensure t
+  :bind
+  (("C-c k b" . org-sidebar-backlinks)
+   ("C-c k s" . org-sidebar-toggle)
+   ("C-c k t" . org-sidebar-tree))
+  :config
+  (setq org-directory "~/Vault/pkm/pages"))
 #+end_src
 
 **** Citar
@@ -848,7 +753,14 @@ Using the superior citation manager.
   (setq citar-file-notes-extensions '("org")
 	citar-notes-paths '("~/Vault/pkm/slip-box"))
   (setq citar-symbol-separator "  "))
+
+(use-package citar-org-roam
+  :ensure t
+  :config
+  (citar-org-roam-mode)
+  (setq citar-org-roam-note-title-template "@${author} - ${title}"))
 #+end_src
+
 *** Deft
 
 Searching through roam entries could be a painful experience. =deft= fix this.
@@ -894,14 +806,6 @@ I like to define my own skeletons to quickly insert recurring patterns.
   "Conference talk log template for org files" nil
   ":PROPERTIES:\n:SPEAKER:\n:END:\n")
 
-(define-skeleton place-skeleton
-  "Metadata for places to visit" nil
-  ":PROPERTIES:
-:LINK:
-:VISITED:
-:COMMENT:
-:END:")
-
 (define-skeleton challenge-skeleton
   "Headings for hacking challenges" nil
   "**** Commands\n**** Walkthrough\n**** Resources")
@@ -940,7 +844,7 @@ Using magit as a front-end for git.
   (setq magit-send-email-workflow t)
   (setq git-commit-fill-column 75))
 
-(require 'git-email)
+;; (require 'git-email)
 #+end_src
 
 *** Spellchecking
@@ -1029,6 +933,177 @@ I use ~mu4e~ as e-mail client.
 		       (newline)))
 
 		   (setq message-citation-line-function 'mg/message-insert-citation-line)))
+#+end_src
+
+** EXWM
+
+Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
+
+#+begin_src emacs-lisp
+(defun efs/exwm-update-class ()
+  (exwm-workspace-rename-buffer exwm-class-name))
+
+(use-package exwm
+  :config
+  ;; default number of workspaces
+  (setq exwm-workspace-number 5)
+
+  (add-hook 'exwm-update-class-hook #'efs/exwm-update-class)
+
+  (start-process-shell-command "xmodmap" nil "xmodmap ~/.emacs.d/exwm/Xmodmap")
+
+  ;; set the screen resolution
+  (require 'exwm-randr)
+  (exwm-randr-enable)
+
+  ;; load the system tray before exwm-init
+  (require 'exwm-systemtray)
+  (exwm-systemtray-enable)
+  (setq exwm-systemtray--icon-min-size 13)
+
+  ;; assign workspaces to monitors
+  (setq exwm-randr-workspace-monitor-plist '(4 "HDMI1" 5 "HDMI1"))
+
+  ;; these keys should always pass through to Emacs
+  (setq exwm-input-prefix-keys
+    '(?\C-x
+      ?\C-u
+      ?\C-n
+      ?\C-t
+      ?\C-h
+      ?\C-p
+      ?\C-g
+      ?\M-x
+      ?\M-`
+      ?\M-&
+      ?\M-:
+      ?\C-\M-j  ;; buffer list
+      ?\C-\ ))  ;; ctrl+space
+
+  ;; ctrl+Q will enable the next key to be sent directly
+  (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
+
+  ;; set up global key bindings
+  ;; keep in mind that changing this list after EXWM initializes has no effect
+  (setq exwm-input-global-keys
+        `(
+          ;; reset to line-mode (C-c C-k switches to char-mode via exwm-input-release-keyboard)
+          ([?\s-r] . exwm-reset)
+
+	  ;; delete window
+	  ([?\s-k]
+           . delete-window)
+	  
+          ;; move between windows
+          ([s-left] . windmove-left)
+          ([s-right] . windmove-right)
+          ([s-up] . windmove-up)
+          ([s-down] . windmove-down)
+
+          ;; launch applications via shell command
+          ([?\s-\ ] . (lambda (command)
+                       (interactive (list (read-shell-command "$ ")))
+                       (start-process-shell-command command nil command)))
+
+          ;; switch workspace
+          ([?\s-w] . exwm-workspace-switch)
+          ([?\s-`] . (lambda () (interactive) (exwm-workspace-switch-create 0)))
+
+	  ;; utilities
+	  ([?\s-f] .
+	   (lambda ()
+             (interactive)
+             (start-process "" nil "/usr/bin/firefox")))
+	  ([?\s-i] .
+	   (lambda ()
+             (interactive)
+             (start-process "" nil "/usr/bin/setxkbmap" "it")))
+	  ([?\s-u] .
+	   (lambda ()
+             (interactive)
+             (start-process "" nil "/usr/bin/setxkbmap" "us")))
+
+          ;; 's-N': switch to certain workspace with super plus a number key (0 - 9)
+          ,@(mapcar (lambda (i)
+                      `(,(kbd (format "s-%d" i)) .
+                        (lambda ()
+                          (interactive)
+                          (exwm-workspace-switch-create ,i))))
+                    (number-sequence 0 9))))
+  (add-hook 'exwm-init-hook
+            (lambda ()
+              (progn
+                (start-process "blueberry-tray" nil "blueberry-tray")
+		(start-process "xset" nil "xset" "s 300 5")
+		(start-process "nm-applet" nil "nm-applet")
+		(start-process "redshift" nil "redshift")
+		(start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh")
+		(start-process "xss-lock" nil "xss-lock" "-n /usr/lib/xsecurelock/dimmer -l -- xsecurelock"))))
+  (exwm-enable))
+
+(use-package desktop-environment
+  :ensure t
+  :after (exwm)
+  :config
+  (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>") #'desktop-environment-volume-increment)
+  (exwm-input-set-key (kbd "<XF86AudioLowerVolume>") #'desktop-environment-volume-decrement)
+  (exwm-input-set-key (kbd "<XF86AudioMute>") #'desktop-environment-toggle-mute)
+  (exwm-input-set-key (kbd "s-l") #'desktop-environment-lock-screen)
+  (exwm-input-set-key (kbd "<XF86AudioPlay>") #'desktop-environment-toggle-music)
+  (exwm-input-set-key (kbd "<XF86AudioPause>") #'desktop-environment-toggle-music)
+  (exwm-input-set-key (kbd "<XF86AudioNext>") #'desktop-environment-music-next)
+  (exwm-input-set-key (kbd "s-s") #'desktop-environment-screenshot-part)
+  :custom
+  (desktop-environment-volume-get-command "pamixer --get-volume")
+  (desktop-environment-volume-set-command "pamixer %s")
+  (desktop-environment-volume-toggle-regexp nil)
+  (desktop-environment-volume-get-regexp "\\([0-9]+\\)")
+  (desktop-environment-volume-normal-increment "-i 5 --allow-boost")
+  (desktop-environment-volume-normal-decrement "-d 5")
+  (desktop-environment-volume-toggle-command "pamixer -t")
+  (desktop-environment-screenshot-directory "/home/claudio/Vault/pkm/assets")
+  (desktop-environment-screenshot-command "scrot -s")
+  (desktop-environment-screenshot-delay-argument nil)
+  (desktop-environment-screenshot-partial-command "import png:- | xclip -selection c -t image/png -verbose")
+  (desktop-environment-screenlock-command "xsecurelock"))
+
+(use-package bluetooth)
+
+(use-package time
+  :ensure t
+  :after (exwm)
+  :custom
+  (display-time-format "[%d/%b %H:%M]")
+  (display-time-use-mail-icon nil)
+  (display-time-mail-string "📫")
+  (display-time-mail-directory nil)
+  (display-time-mail-function
+   (lambda ()
+     (-some-p #'integerp (mapcar
+                          (lambda (maildir)
+                            (let ((display-time-mail-directory maildir))
+                              (display-time-mail-check-directory)))
+                          (file-expand-wildcards "~/Maildir/*/INBOX/new")))))
+
+
+  :config
+  (display-time-mode)
+  (display-battery-mode))
+#+end_src
+
+** Browser
+
+I use an emacs client to use the w3m text-based browser.
+
+#+begin_src emacs-lisp
+(use-package eww
+  :ensure nil
+  :config
+  (setq browse-url-handlers
+        '(("." . browse-url-firefox)))
+  :custom
+  (eww-use-external-browser-for-content-type
+   "\\`\\(video/\\|audio/\\|application/ogg\\|application/pdf\\)"))
 #+end_src
 
 ** RSS reader
@@ -1208,6 +1283,14 @@ Enable pythonenv inside Emacs.
   :ensure t)
 #+end_src
 
+*** Compilation
+
+Define compilation-specific tweaks to make the work faster.
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-x c c") 'compile)
+#+end_src
+
 ** Custom functions
 
 Adding some custom functions I use to make my life easier.
@@ -1240,4 +1323,23 @@ Adding some custom functions I use to make my life easier.
   (let ((org-agenda-window-setup 'current-window))
     (org-agenda nil "c"))
   (org-capture))
+
+;; enable pdf presentation mode
+(use-package hide-mode-line
+  :ensure t)
+
+(defun mg/pdf-presentation-mode ()
+  (interactive)
+  (toggle-frame-fullscreen)
+  (hide-mode-line-mode)
+  (pdf-view-fit-page-to-window))
+
+(defun mg/display-machine-info()
+  (interactive)
+  (message "System-level info: %s" (concat
+		 (format "CPU: %s - " (shell-command-to-string "~/.config/scripts/cpu.sh"))
+		 (format "Mem: %s - " (shell-command-to-string "~/.config/scripts/ram.sh"))
+		 (format "Disk: %s - " (shell-command-to-string "~/.config/scripts/disk.sh"))
+		 (format "Vol: %s " (shell-command-to-string "~/.config/scripts/volume.sh")))))
+(global-set-key (kbd "C-c f s") 'mg/display-machine-info)
 #+end_src
