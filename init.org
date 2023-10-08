@@ -90,6 +90,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 	      set-language-environment "UTF-8"
 	      system-time-locale "C")
 
+;; maximize emacs frame at startup
 (add-hook 'window-setup-hook 'toggle-frame-maximized t)
 
 ;; no indent in artist mode
@@ -405,13 +406,16 @@ I want to use =pdf-tools= to view and edit PDFs in a much better way.
    
 *** Undo tree
 
-I really love the =undo-tree= mode visualization, so I'm going to enable it.
+I really love the ~undo-tree~ mode visualization, so I'm going to enable it.
 
 #+begin_src emacs-lisp
 (use-package undo-tree
   :ensure t
+  :custom
+  (undo-tree-auto-save-history nil)
+  (undo-tree-visualizer-timestamps t)
+  (undo-tree-visualizer-relative-timestamps nil)
   :config
-  (setq undo-tree-auto-save-history nil)
   (global-undo-tree-mode 1))
 #+end_src
 
@@ -1468,7 +1472,7 @@ Define compilation-specific tweaks to make the work faster.
 #+begin_src emacs-lisp
 (global-set-key (kbd "C-x c c") 'compile)
 #+end_src
-** Custom functions
+* Misc custom functions
 
 Adding some custom functions I use to make my life easier.
 
