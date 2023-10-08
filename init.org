@@ -78,14 +78,13 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 	      winner-mode t
 	      tab-width 8
 	      c-basic-offset 8
-	      frame-resize-pixelwise t
+	      frame-resize-pixelwise t	      
 	      show-paren-mode t
 	      linum-format "%4d "
 	      use-short-answers t
 	      make-backup-files nil
 	      native-comp-async-report-warnings-errors nil
 	      global-auto-revert-mode t
-	      display-line-numbers-type 'relative
 	      process-connection-type nil
 	      warning-minimum-level :emergency
 	      set-language-environment "UTF-8"
@@ -95,6 +94,23 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 
 ;; no indent in artist mode
 (add-hook 'artist-mode-hook (lambda () (setq indent-tabs-mode nil)))
+
+;; do not copy face properties when yanking
+(add-to-list 'yank-excluded-properties 'face)
+
+;; define a more to display relatvie line numbers w/ hl line
+(define-minor-mode mg/line-numbers-highlight-line-mode
+  "Shows line numbers in relative mode and highlights the current line"
+  :initial nil
+  (if mg/line-numbers-highlight-line-mode
+      (progn
+        (display-line-numbers-mode 1)
+	(hl-line-mode 1)
+	(setq display-line-numbers-type 'relative))
+    (progn
+      (display-line-numbers-mode 0)
+      (hl-line-mode 0))))
+(bind-key "C-c f m h" #'mg/line-numbers-highlight-line-mode)
 
 ;; some useful global keybinds
 (use-package winner
@@ -106,8 +122,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 
 ;; enable some modes when programming
 (add-hook 'prog-mode-hook
-	  #'display-line-numbers-mode
-	  #'linum-mode)
+	  #'mg/line-numbers-highlight-line-mode)
 #+end_src
 
 ** Emacs auto-save
@@ -1253,10 +1268,6 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 
   (add-hook 'exwm-update-class-hook #'efs/exwm-update-class)
 
-  ;; start workspaces from 1
-  (setq exwm-workspace-index-map
-      (lambda (index) (number-to-string (1+ index))))
-
   ;; set the screen resolution
   (require 'exwm-randr)
   (exwm-randr-enable)
@@ -1332,10 +1343,10 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
           ([?\s-`] . (lambda () (interactive) (exwm-workspace-switch-create 0)))
 
 	  ;; utilities
-	  ([?\s-f] .
+	  ([?\s-b] .
 	   (lambda ()
              (interactive)
-             (start-process "" nil "/usr/bin/firefox")))
+             (start-process "" nil "/usr/bin/chromium")))
 	  ([?\s-i] .
 	   (lambda ()
              (interactive)
@@ -1354,7 +1365,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
                         (lambda ()
                           (interactive)
                           (exwm-workspace-switch-create ,i))))
-                    (number-sequence 1 9))))
+                    (number-sequence 0 9))))
   (add-hook 'exwm-init-hook
             (lambda ()
               (progn
@@ -1424,7 +1435,7 @@ I use an emacs client to use the w3m text-based browser.
   :ensure nil
   :config
   (setq browse-url-handlers
-        '(("." . browse-url-firefox)))
+        '(("." . browse-url-chromium)))
   :custom
   (eww-use-external-browser-for-content-type
    "\\`\\(video/\\|audio/\\|application/ogg\\|application/pdf\\)"))
