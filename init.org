@@ -326,133 +326,6 @@ Show buffer previews if SHOW-PREVIEW is not nil."
   (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 
-*** Snippets
-
-Using some snippets to make my writing experience faster.
-
-#+begin_src emacs-lisp
-(use-package yasnippet
-  :ensure t
-  :config
-  (setq yasnippet-snippets-dir '())
-  (setq yas-snippet-dirs
-	'("~/.emacs.d/private/cm.snippets"                                              ;; personal snippets
-          ))
-  (yas-global-mode 1))
-
-(use-package yasnippet-snippets
-  :after yasnippet
-  :ensure t)
-#+end_src
-
-*** CTAGS
-
-Using CTAGS for kernel development.
-
-#+begin_src emacs-lisp
-(use-package citre
-  :ensure t
-  :bind (("C-x c j" . citre-jump)
-	 ("C-x c J" . citre-jump-back)
-	 ("C-x c p" . citre-ace-peek)
-	 ("C-x c u" . citre-update-this-tags-file))
-    :config
-    (add-to-list 'load-path "~/Repositories/citre")
-    (citre-auto-enable-citre-mode-modes '(prog-mode)))
-#+end_src
-
-*** Tramp term
-
-Using tramp term to connect to ssh instances and edit files.
-
-#+begin_src emacs-lisp
-(use-package tramp
-  :ensure t
-  :init
-  (setq tramp-default-method "ssh"))
-#+end_src
-
-*** LSP
-
-Using ~lsp-mode~ to handle IDE-like features.
-
-#+begin_src emacs-lisp
-(use-package nix-mode
-  :ensure t
-  :mode "\\.nix\\'")
-
-(use-package lua-mode
-  :ensure t
-  :mode "\\.lua\\'")
-
-(use-package dockerfile-mode
-  :ensure t
-  :mode "\\.docker.file\\'" "\\Dockerfile\\'")
-
-(use-package gnuplot
-  :ensure t)
-
-(use-package eglot
-  :ensure t
-  :config
-  (add-to-list 'eglot-server-programs
-	       '((c-mode c++-mode)
-                 . ("clangd")))
-  (add-to-list 'eglot-server-programs '(nix-mode . ("rnix-lsp")))
-  (add-hook 'c-mode-hook 'eglot-ensure)
-  (add-hook 'python-mode-hook 'eglot-ensure))
-
-(use-package company
-  :ensure t
-  :config
-  (add-hook 'after-init-hook 'global-company-mode))
-
-(use-package docker-tramp
-  :ensure t)
-#+end_src
-
-*** Which key
-
-Using which key to remind what keybinds to use to perform actions.
-
-#+begin_src emacs-lisp
-(use-package which-key
-  :ensure t
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 0.3))
-#+end_src
-
-*** Terminal
-
-I use ~vterm~ as terminal inside Emacs.
-
-#+begin_src emacs-lisp
-(use-package vterm
-  :ensure t)
-
-(use-package multi-vterm
-  :ensure t
-  :bind (("C-c v" . multi-vterm)))
-#+end_src
-*** Pythonenv
-
-Enable pythonenv inside Emacs.
-
-#+begin_src emacs-lisp
-(use-package pyvenv
-  :ensure t)
-#+end_src
-
-*** Compilation
-
-Define compilation-specific tweaks to make the work faster.
-
-#+begin_src emacs-lisp
-(global-set-key (kbd "C-x c c") 'compile)
-#+end_src
-
 ** Files navigation
 
 #+begin_src emacs-lisp
@@ -1469,6 +1342,132 @@ Using elfeed as my preferred RSS feed manager.
 #+end_src
 
 ** Programming stuff
+*** Snippets
+
+Using some snippets to make my writing experience faster.
+
+#+begin_src emacs-lisp
+(use-package yasnippet
+  :ensure t
+  :config
+  (setq yasnippet-snippets-dir '())
+  (setq yas-snippet-dirs
+	'("~/.emacs.d/private/cm.snippets"                                              ;; personal snippets
+          ))
+  (yas-global-mode 1))
+
+(use-package yasnippet-snippets
+  :after yasnippet
+  :ensure t)
+#+end_src
+
+*** CTAGS
+
+Using CTAGS for kernel development.
+
+#+begin_src emacs-lisp
+(use-package citre
+  :ensure t
+  :bind (("C-x c j" . citre-jump)
+	 ("C-x c J" . citre-jump-back)
+	 ("C-x c p" . citre-ace-peek)
+	 ("C-x c u" . citre-update-this-tags-file))
+    :config
+    (add-to-list 'load-path "~/Repositories/citre")
+    (citre-auto-enable-citre-mode-modes '(prog-mode)))
+#+end_src
+
+*** Tramp term
+
+Using tramp term to connect to ssh instances and edit files.
+
+#+begin_src emacs-lisp
+(use-package tramp
+  :ensure t
+  :init
+  (setq tramp-default-method "ssh"))
+#+end_src
+
+*** LSP
+
+Using ~lsp-mode~ to handle IDE-like features.
+
+#+begin_src emacs-lisp
+(use-package nix-mode
+  :ensure t
+  :mode "\\.nix\\'")
+
+(use-package lua-mode
+  :ensure t
+  :mode "\\.lua\\'")
+
+(use-package dockerfile-mode
+  :ensure t
+  :mode "\\.docker.file\\'" "\\Dockerfile\\'")
+
+(use-package gnuplot
+  :ensure t)
+
+(use-package eglot
+  :ensure t
+  :config
+  (add-to-list 'eglot-server-programs
+	       '((c-mode c++-mode)
+                 . ("clangd")))
+  (add-to-list 'eglot-server-programs '(nix-mode . ("rnix-lsp")))
+  (add-hook 'c-mode-hook 'eglot-ensure)
+  (add-hook 'python-mode-hook 'eglot-ensure))
+
+(use-package company
+  :ensure t
+  :config
+  (add-hook 'after-init-hook 'global-company-mode))
+
+(use-package docker-tramp
+  :ensure t)
+#+end_src
+
+*** Which key
+
+Using which key to remind what keybinds to use to perform actions.
+
+#+begin_src emacs-lisp
+(use-package which-key
+  :ensure t
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 0.3))
+#+end_src
+
+*** Terminal
+
+I use ~vterm~ as terminal inside Emacs.
+
+#+begin_src emacs-lisp
+(use-package vterm
+  :ensure t)
+
+(use-package multi-vterm
+  :ensure t
+  :bind (("C-c v" . multi-vterm)))
+#+end_src
+*** Pythonenv
+
+Enable pythonenv inside Emacs.
+
+#+begin_src emacs-lisp
+(use-package pyvenv
+  :ensure t)
+#+end_src
+
+*** Compilation
+
+Define compilation-specific tweaks to make the work faster.
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-x c c") 'compile)
+#+end_src
 ** Custom functions
 
 Adding some custom functions I use to make my life easier.
