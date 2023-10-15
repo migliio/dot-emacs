@@ -60,74 +60,74 @@ Let's have a better organized folder, with relevant files only.
 Clean the Emacs interface making it as minimal as possible, without getting rid of useful improvements. Adding some defaults on indentation, etc.
 
 #+begin_src emacs-lisp
-;; disable some boring modes
-(if (display-graphic-p)
-    (dolist (mode
-	     '(tool-bar-mode
-	       scroll-bar-mode
-	       menu-bar-mode
-	       tooltip-mode
-	       blink-cursor-mode))
-      (funcall mode 0)))
+  ;; disable some boring modes
+  (if (display-graphic-p)
+      (dolist (mode
+	       '(tool-bar-mode
+		 scroll-bar-mode
+		 menu-bar-mode
+		 tooltip-mode
+		 blink-cursor-mode))
+	(funcall mode 0)))
 
-;; enable some modes
-(dolist (mode
-	 '(global-visual-line-mode
-	   show-paren-mode
-	   winner-mode))
-  (funcall mode 1))
+  ;; enable some modes
+  (dolist (mode
+	   '(global-visual-line-mode
+	     show-paren-mode
+	     winner-mode))
+    (funcall mode 1))
 
-(setq-default inhibit-startup-screen t
-	      initial-scratch-message ""
-	      frame-title-format '("%b")
-	      ring-bell-function 'ignore
-	      tab-width 8
-	      c-basic-offset 8
-	      frame-resize-pixelwise t	      
-	      linum-format "%4d "
-	      use-short-answers t
-	      make-backup-files nil
-	      native-comp-async-report-warnings-errors nil
-	      global-auto-revert-mode t
-	      process-connection-type nil
-	      warning-minimum-level :emergency
-	      set-language-environment "UTF-8"
-	      system-time-locale "C")
+  (setq-default inhibit-startup-screen t
+		initial-scratch-message ""
+		frame-title-format '("%b")
+		ring-bell-function 'ignore
+		tab-width 8
+		c-basic-offset 8
+		frame-resize-pixelwise t	      
+		linum-format "%4d "
+		use-short-answers t
+		make-backup-files nil
+		native-comp-async-report-warnings-errors nil
+		global-auto-revert-mode t
+		process-connection-type nil
+		warning-minimum-level :emergency
+		set-language-environment "UTF-8"
+		system-time-locale "C")
 
-;; maximize emacs frame at startup
-(add-hook 'window-setup-hook 'toggle-frame-maximized t)
+  ;; maximize emacs frame at startup
+  (add-hook 'window-setup-hook 'toggle-frame-maximized t)
 
-;; no indent in artist mode
-(add-hook 'artist-mode-hook (lambda () (setq indent-tabs-mode nil)))
+  ;; no indent in artist mode
+  (add-hook 'artist-mode-hook (lambda () (setq indent-tabs-mode nil)))
 
-;; do not copy face properties when yanking
-(add-to-list 'yank-excluded-properties 'face)
+  ;; do not copy face properties when yanking
+  (add-to-list 'yank-excluded-properties 'face)
 
-;; define a more to display relatvie line numbers w/ hl line
-(define-minor-mode mg/line-numbers-highlight-line-mode
-  "Shows line numbers in relative mode and highlights the current line"
-  :initial nil
-  (if mg/line-numbers-highlight-line-mode
+  ;; define a more to display relatvie line numbers w/ hl line
+  (define-minor-mode mg/line-numbers-highlight-line-mode
+    "Shows line numbers in relative mode and highlights the current line"
+    :initial nil
+    (if mg/line-numbers-highlight-line-mode
+	(progn
+	  (display-line-numbers-mode 1)
+	  (hl-line-mode 1)
+	  (setq display-line-numbers-type 'relative))
       (progn
-        (display-line-numbers-mode 1)
-	(hl-line-mode 1)
-	(setq display-line-numbers-type 'relative))
-    (progn
-      (display-line-numbers-mode 0)
-      (hl-line-mode 0))))
-(bind-key "C-c f m h" #'mg/line-numbers-highlight-line-mode)
+	(display-line-numbers-mode 0)
+	(hl-line-mode 0))))
+  (bind-key "C-c f m h" #'mg/line-numbers-highlight-line-mode)
 
-;; some useful global keybinds
-(use-package winner
-  :ensure nil)
+  ;; some useful global keybinds
+  (use-package winner
+    :ensure nil)
 
-(global-set-key (kbd "C-c f k s") 'replace-string)
-(global-set-key (kbd "C-c f k c") 'comment-region)
-(global-set-key (kbd "C-c f k u") 'uncomment-region)
+  (global-set-key (kbd "C-c f k s") 'replace-string)
+  (global-set-key (kbd "C-c f k c") 'comment-region)
+  (global-set-key (kbd "C-c f k u") 'uncomment-region)
 
-;; enable some modes when programming
-(add-hook 'prog-mode-hook
-	  #'mg/line-numbers-highlight-line-mode)
+  ;; enable some modes when programming
+  (add-hook 'prog-mode-hook
+	    #'mg/line-numbers-highlight-line-mode)
 #+end_src
 
 ** Emacs auto-save
@@ -282,32 +282,6 @@ Trying some in-buffer completion framework that is not broken.
       (start-process "" nil application-path)))
 
   (setq consult-narrow-key "<"))
-
-(use-package embark
-  :ensure t
-  :bind
-  (("C-." . embark-act)         ;; pick some comfortable binding
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-  :init
-  ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
-
-  ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-  ;; strategy, if you want to see the documentation from multiple providers.
-  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
-  :config
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none)))))
-
-;; Consult users will also want the embark-consult package.
-(use-package embark-consult
-  :ensure t
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 
 ** Files navigation
@@ -438,18 +412,21 @@ I use ~rg~ to find file content easily.
     :ensure t
     :bind (("C-c a" . org-agenda)
 	   ("C-c t" . org-insert-structure-template)
-	   ("C-c i" . org-capture)
+	   ("C-c c" . org-capture)
+	   ("C-c C-z" . org-add-note)
 	   ("C-c l" . org-store-link))
     :custom
-    (org-agenda-files (list "~/Vault/pkm/pages/journal.org" "~/Vault/pkm/pages/agenda.org" "/home/claudio/Vault/pkm/pages/projects.org"))
-    (org-id-extra-files '("~/Vault/pkm/pages"))
+    (org-agenda-files (list "~/Vault/pkm/pages/teaching.org" "~/Vault/pkm/pages/inbox.org" "~/Vault/pkm/pages/agenda.org" "/home/claudio/Vault/pkm/pages/projects.org"))
+    (org-id-extra-files '("~/Vault/pkm/pages/teaching.org" "~/Vault/pkm/pages/lectures.org"))
     (org-export-backends '(beamer html latex ascii ox-reveal ox-hugo ox-twbs))
     (org-startup-folded t)
+    (org-log-into-drawer t)
     (org-export-with-drawers nil)
+    (org-clock-clocked-in-display 'mode-line)
+    (org-clock-idle-time 10)
     (org-todo-keywords
-	  '((sequence "TODO(t)" "NEXT(n)" "PROG(p)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)" "INTR(i)")
-	    (sequence "INBOX" "|" "ARCHIVED")))
-    (org-stuck-projects '("+project/" ("NEXT" "PROG" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
+	  '((sequence "TODO(t)" "NEXT(n)" "HOLD(h)" "|" "DONE(d)")))
+    (org-stuck-projects '("+project/" ("NEXT" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
     (org-log-done 'time)
     (org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
     :config
@@ -462,51 +439,27 @@ I use ~rg~ to find file content easily.
       (let ((mg-org-note--filename (downcase mg-org-note--name)))
 	(expand-file-name (format "%s.org" mg-org-note--filename) "~/Vault/pkm/pages")))
     (setq org-capture-templates
-	  '(("f" "file" plain (file (lambda() (mg/create-pages-file)))
+	  '(("f" "File" plain (file (lambda() (mg/create-pages-file)))
 	     "%(format \"#+title: %s\n#+date: %U\n\" mg-org-note--name)")
-	    ("j" "journal")
-	    ("jp" "journal plain entry" plain
-	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-	     "**** %U: %?\n")
-	    ("js" "journal schedule entry" plain
-	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-	     "**** %U: today's schedule :schedule:\n***** %?\n")
-	    ("je" "journal event entry" plain
-	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")	   
-	     "**** %U: %? :schedule:event:\n:PROPERTIES:\n:WHERE:\n:NOTIFY_BEFORE:\n:END:\n%T\n***** Notes")
-	    ("ji" "journal inbox entry" plain
-	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")  	   
-	     "**** INBOX %U: %? :@inbox:\n")
-	    ("ja" "journal archive resource entry" plain
-	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-	     "**** %U: %? :archive:\n")
-	    ("jm" "journal meeting entry" plain
-	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-	     "**** Meeting with %? on %U :schedule:meeting:work:\n:PROPERTIES:\n:WHERE:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
-	    ("js" "journal seminar entry" plain
-	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-	     "**** Seminar hold by %? @<place> :schedule:work:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
-	    ("jc" "journal call entry" plain
-	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-	     "**** Call with %? @online on %U :schedule:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n***** Notes")
-	    ("jh" "journal home chores entry" plain
-	     (file+datetree+prompt "~/Vault/pkm/pages/journal.org")
-	     "**** %? @ home :schedule:personal:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\nSCHEDULED: %T\n")
-	    ("r" "resources")
-	    ("rc" "conference" entry
+	    ("i" "Inbox")
+	    ("it" "Todo entry" entry (file "~/Vault/pkm/pages/inbox.org")
+	     "* TODO %?\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+	    ("im" "Mail entry" entry (file "~/Vault/pkm/pages/inbox.org")
+	     "* TODO Process \"%a\" %?\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+	    ("a" "Agenda")
+	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
+	     "**** Meeting with %? :meeting:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:END:\n%^T\n***** Notes")
+	    ("ae" "Event entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
+	     "**** %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:END:\n%^T\n***** Notes")
+	    ("ae" "Call entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
+	     "**** Call with %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n***** Notes")
+	    ("r" "Resources")
+	    ("ra" "Conference attendance" entry
 	     (file "~/Vault/pkm/pages/conferences.org")
 	     "* %^{Conference name}\n:PROPERTIES:\n:WHERE: %?\n:WEBSITE: %?\n:END:\n")
-	    ("p" "personal")
-	    ("pc" "contact" entry
+	    ("rc" "Contact" entry
 	     (file "~/Vault/pkm/pages/contacts.org")
 	     "* %(org-contacts-template-name) %^g\n:PROPERTIES:\n:EMAIL: %(org-contacts-template-email)\n:COMPANY:\n:PHONE_NUMBER: %?\n:WEBSITE:\n:TWITTER:\n:NOTES:\n:END:\n")
-	    ("u" "university")
-	    ("uc" "course" plain
-	     (file "~/Vault/pkm/pages/courses.org")
-	     "** %^{Course name}\n:PROPERTIES:\n:LECTURER:\n:UNIVERSITY:\n:ACADEMIC_YEAR:\n:RESOURCES:\n:END:\n*** Lecture notes\n")
-	    ("ul" "lecture" plain
-	     (file "~/Vault/pkm/pages/courses.org")
-	     "** %^{Lecture #}\n:PROPERTIES:\n:TOPICS:\n:LECTURER:\n:DATE:\n:RESOURCES:\n:RELATED:\n:END:\n")
 	    ("t" "project" plain
 	     (file "~/Vault/pkm/pages/projects.org")
 	     "** %^{Project name}\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
@@ -523,7 +476,13 @@ I use ~rg~ to find file content easily.
 	    ("Pw" "weekly" plain
 	     (file "~/Vault/pkm/pages/planning.org")
 	     "**** %U: %? weekly plan :weekly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Task picking*\n  - [ ] Inbox refile\n# reviewing\n- *Review*\n")))
+    ;; setup some org-capture specific stuff
+    (defun mg/org-capture-inbox ()
+      (interactive)
+       (call-interactively 'org-store-link)
+       (org-capture nil "it"))
 
+    (define-key global-map (kbd "C-c i") 'mg/org-capture-inbox)
     ;; Org-agenda custom commands
     (setq org-agenda-block-separator "==============================================================================")
     (setq org-agenda-custom-commands
@@ -819,8 +778,7 @@ Install org-noter to deal with PDF notes.
 	   (file-path (consult--read
 		       candidates
 		       :prompt "Choose page: ")))
-      (org-open-file file-path)
-      (toggle-frame-)))
+      (org-open-file file-path)))
     (defun mg/pdf-presentation-mode ()
       (interactive)
       (toggle-frame-fullscreen)
@@ -910,36 +868,33 @@ Install org-noter to deal with PDF notes.
 Using the superior citation manager.
 
 #+begin_src emacs-lisp
-(use-package citar
-  :ensure t
-  :custom
-  (org-cite-global-bibliography '("~/Vault/library/org/main/main.bib"))
-  (org-cite-insert-processor 'citar)
-  (org-cite-follow-processor 'citar)
-  (org-cite-activate-processor 'citar)
-  (citar-bibliography org-cite-global-bibliography)
-  :bind
-  (("C-c c o" . citar-open)
-   ("C-c c e" . citar-open-entry)
-   ("C-c c n" . citar-open-notes)
-   ("C-c c l" . citar-open-links)
-   (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
-  :config
-  (setq citar-templates
-	'((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
-          (suffix . "          ${=key= id:15}    ${=type=:12}")
-          (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher}.\n")
-          (note . "@${author editor}, ${title}")))
-  (setq citar-file-notes-extensions '("org")
-	citar-notes-paths '("~/Vault/pkm/slip-box"))
-  (setq citar-symbol-separator "  "))
+  (use-package citar
+    :ensure t
+    :custom
+    (org-cite-global-bibliography '("~/Vault/library/org/main/main.bib"))
+    (org-cite-insert-processor 'citar)
+    (org-cite-follow-processor 'citar)
+    (org-cite-activate-processor 'citar)
+    (citar-bibliography org-cite-global-bibliography)
+    :bind
+    (("C-c n o" . citar-open)
+     (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
+    :config
+    (setq citar-templates
+	  '((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
+	    (suffix . "          ${=key= id:15}    ${=type=:12}")
+	    (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher}.\n")
+	    (note . "@${author editor}, ${title}")))
+    (setq citar-file-notes-extensions '("org")
+	  citar-notes-paths '("~/Vault/pkm/slip-box"))
+    (setq citar-symbol-separator "  "))
 
-(use-package citar-org-roam
-  :ensure t
-  :custom
-  (citar-org-roam-note-title-template "@${author} - ${title}")
-  :config
-  (citar-org-roam-mode))
+  (use-package citar-org-roam
+    :ensure t
+    :custom
+    (citar-org-roam-note-title-template "@${author} - ${title}")
+    :config
+    (citar-org-roam-mode))
 #+end_src
 
 *** Deft
@@ -1063,58 +1018,69 @@ I use beancount to track my finances.
 I use ~mu4e~ as e-mail client.
 
 #+begin_src emacs-lisp
-(if (display-graphic-p)
-    (use-package mu4e
-		 :ensure nil
-		 :commands (mu4e)
-		 :bind (("C-c m" . mu4e))
-		 :custom
-		 (mu4e-headers-thread-single-orphan-prefix '("└>" . " "))
-		 (mu4e-headers-thread-child-prefix '("└> " . " "))
-		 (mu4e-headers-thread-last-child-prefix '("└> " . " "))
-		 (mu4e-headers-thread-connection-prefix '("│ " . " "))
-		 (mu4e-headers-thread-orphan-prefix '("└>" . " "))
-		 (mu4e-headers-thread-root-prefix '("> " . " "))
-		 :config
-		 (setq mu4e-maildir (expand-file-name "~/Maildir")
-		       mu4e-use-fancy-chars nil
-		       mu4e-attachment-dir  "~/Downloads"
-		       message-send-mail-function 'message-send-mail-with-sendmail
-		       sendmail-program "/usr/bin/msmtp"
-		       message-kill-buffer-on-exit t
-		       mu4e-get-mail-command "mbsync -a"
-		       mu4e-update-interval 300
-		       mu4e-context-policy 'pick-first
-		       mu4e-headers-auto-update t
-		       mu4e-contexts
-		       `(,(make-mu4e-context
-			   :name "polimi"
-			   :enter-func (lambda () (mu4e-message "Switch to the polimi context"))
-			   :match-func (lambda (msg)
-					 (when msg
-					   (mu4e-message-contact-field-matches msg
-									       :to "claudio.migliorelli@mail.polimi.it")))
-			   :vars '((mu4e-sent-folder       . "/polimi/sent")
-				   (mu4e-drafts-folder     . "/polimi/drafts")
-				   (mu4e-trash-folder      . "/polimi/trash")
-				   (user-mail-address	   . "claudio.migliorelli@mail.polimi.it")
-				   (user-full-name	   . "Claudio Migliorelli" )
-				   (mu4e-maildir-shortcuts . (("/polimi/INBOX" . ?i)
-							      ("/polimi/sent" . ?s)
-							      ("/polimi/drafts" . ?d)
-							      ("/polimi/trash" . ?t)))
-				   (mu4e-sent-messages-behavior . delete)))))
-		 (with-eval-after-load "mm-decode"
-		   (add-to-list 'mm-discouraged-alternatives "text/html")
-		   (add-to-list 'mm-discouraged-alternatives "text/richtext"))
-		 (defun mg/message-insert-citation-line ()
-		   "Based off `message-insert-citation-line`."
-		   (when message-reply-headers
-		     (insert "On " (format-time-string "%a, %d %b %Y %H:%M:%S %z" (date-to-time (mail-header-date message-reply-headers))) " ")
-		     (insert (mail-header-from message-reply-headers) " wrote:")
-		     (newline)
-		     (newline)))
-		 (setq message-citation-line-function 'mg/message-insert-citation-line)))
+  (if (display-graphic-p)
+      (use-package mu4e
+		   :ensure nil
+		   :commands (mu4e)
+		   :after (org)
+		   :bind (("C-c m" . mu4e))
+		   :custom
+		   (mu4e-headers-thread-single-orphan-prefix '("└>" . " "))
+		   (mu4e-headers-thread-child-prefix '("└> " . " "))
+		   (mu4e-headers-thread-last-child-prefix '("└> " . " "))
+		   (mu4e-headers-thread-connection-prefix '("│ " . " "))
+		   (mu4e-headers-thread-orphan-prefix '("└>" . " "))
+		   (mu4e-headers-thread-root-prefix '("> " . " "))
+		   :config
+		   (define-key mu4e-headers-mode-map (kbd "C-c c") 'mu4e-org-store-and-capture)
+		   (define-key mu4e-view-mode-map    (kbd "C-c c") 'mu4e-org-store-and-capture)
+    
+		   (defun mg/org-capture-mail ()
+		     (interactive)
+		     (call-interactively 'org-store-link)
+		     (org-capture nil "im"))
+
+		   (define-key mu4e-headers-mode-map (kbd "C-c i") 'mg/org-capture-mail)
+		   (define-key mu4e-view-mode-map    (kbd "C-c i") 'mg/org-capture-mail)
+		   (setq mu4e-maildir (expand-file-name "~/Maildir")
+			 mu4e-use-fancy-chars nil
+			 mu4e-attachment-dir  "~/Downloads"
+			 message-send-mail-function 'message-send-mail-with-sendmail
+			 sendmail-program "/usr/bin/msmtp"
+			 message-kill-buffer-on-exit t
+			 mu4e-get-mail-command "mbsync -a"
+			 mu4e-update-interval 300
+			 mu4e-context-policy 'pick-first
+			 mu4e-headers-auto-update t
+			 mu4e-contexts
+			 `(,(make-mu4e-context
+			     :name "polimi"
+			     :enter-func (lambda () (mu4e-message "Switch to the polimi context"))
+			     :match-func (lambda (msg)
+					   (when msg
+					     (mu4e-message-contact-field-matches msg
+										 :to "claudio.migliorelli@mail.polimi.it")))
+			     :vars '((mu4e-sent-folder       . "/polimi/sent")
+				     (mu4e-drafts-folder     . "/polimi/drafts")
+				     (mu4e-trash-folder      . "/polimi/trash")
+				     (user-mail-address	   . "claudio.migliorelli@mail.polimi.it")
+				     (user-full-name	   . "Claudio Migliorelli" )
+				     (mu4e-maildir-shortcuts . (("/polimi/INBOX" . ?i)
+								("/polimi/sent" . ?s)
+								("/polimi/drafts" . ?d)
+								("/polimi/trash" . ?t)))
+				     (mu4e-sent-messages-behavior . delete)))))
+		   (with-eval-after-load "mm-decode"
+		     (add-to-list 'mm-discouraged-alternatives "text/html")
+		     (add-to-list 'mm-discouraged-alternatives "text/richtext"))
+		   (defun mg/message-insert-citation-line ()
+		     "Based off `message-insert-citation-line`."
+		     (when message-reply-headers
+		       (insert "On " (format-time-string "%a, %d %b %Y %H:%M:%S %z" (date-to-time (mail-header-date message-reply-headers))) " ")
+		       (insert (mail-header-from message-reply-headers) " wrote:")
+		       (newline)
+		       (newline)))
+		   (setq message-citation-line-function 'mg/message-insert-citation-line)))
 #+end_src
 
 ** EXWM
@@ -1361,12 +1327,8 @@ Using some snippets to make my writing experience faster.
 Using CTAGS for kernel development.
 
 #+begin_src emacs-lisp
-(use-package citre
-  :ensure t
-  :bind (("C-x c j" . citre-jump)
-	 ("C-x c J" . citre-jump-back)
-	 ("C-x c p" . citre-ace-peek)
-	 ("C-x c u" . citre-update-this-tags-file))
+  (use-package citre
+    :ensure t
     :config
     (add-to-list 'load-path "~/Repositories/citre")
     (citre-auto-enable-citre-mode-modes '(prog-mode)))
