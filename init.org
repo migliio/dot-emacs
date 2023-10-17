@@ -423,15 +423,25 @@ I use ~rg~ to find file content easily.
     (org-log-into-drawer t)
     (org-export-with-drawers nil)
     (org-clock-clocked-in-display 'mode-line)
-    (org-clock-idle-time 10)
+    (org-clock-idle-time 15)
     (org-todo-keywords
 	  '((sequence "TODO(t)" "NEXT(n)" "HOLD(h)" "|" "DONE(d)")))
     (org-stuck-projects '("+project/" ("NEXT" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
     (org-log-done 'time)
+    (org-agenda-hide-tags-regexp ".")
     (org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
+    (org-refile-use-outline-path 'file)
+    (org-outline-path-complete-in-steps nil)
     :config
     ;; ignore archived entries in org-clock-report
     (setq org-clock-sources '(agenda))
+    ;; log when a task is activated
+    (defun log-todo-next-creation-date (&rest ignore)
+      "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
+      (when (and (string= (org-get-todo-state) "NEXT")
+		 (not (org-entry-get nil "ACTIVATED")))
+	(org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d]"))))
+    (add-hook 'org-after-todo-state-change-hook #'log-todo-next-creation-date)
     ;; Org-capture templates
     (defun mg/create-pages-file ()
       "Create an org file in ~/Vault/pkm/pages/."
@@ -446,13 +456,15 @@ I use ~rg~ to find file content easily.
 	     "* TODO %?\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("im" "Mail entry" entry (file "~/Vault/pkm/pages/inbox.org")
 	     "* TODO Process \"%a\" %?\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+	    ("in" "Notes entry" entry (file "~/Vault/pkm/pages/notes.org")
+	     "* %U (%a)\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("a" "Agenda")
 	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
-	     "**** Meeting with %? :meeting:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:END:\n%^T\n***** Notes")
+	     "**** Meeting with %? :meeting:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
 	    ("ae" "Event entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
-	     "**** %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:END:\n%^T\n***** Notes")
+	     "**** %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTES:\nNOTIFY_BEFORE:\n:END:\n%^T\n")
 	    ("ae" "Call entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
-	     "**** Call with %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n***** Notes")
+	     "**** Call with %? :call:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
 	    ("r" "Resources")
 	    ("ra" "Conference attendance" entry
 	     (file "~/Vault/pkm/pages/conferences.org")
@@ -460,9 +472,11 @@ I use ~rg~ to find file content easily.
 	    ("rc" "Contact" entry
 	     (file "~/Vault/pkm/pages/contacts.org")
 	     "* %(org-contacts-template-name) %^g\n:PROPERTIES:\n:EMAIL: %(org-contacts-template-email)\n:COMPANY:\n:PHONE_NUMBER: %?\n:WEBSITE:\n:TWITTER:\n:NOTES:\n:END:\n")
-	    ("t" "project" plain
-	     (file "~/Vault/pkm/pages/projects.org")
-	     "** %^{Project name}\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+	    ("p" "Projects")
+	    ("pp" "Personal project" plain (file+headline "~/Vault/pkm/pages/projects.org" "Personal projects")
+	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+	    ("ps" "Study project" plain (file+headline "~/Vault/pkm/pages/projects.org" "Study")
+	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
 	    ("P" "plans")
 	    ("Py" "yearly" plain
 	     (file "~/Vault/pkm/pages/planning.org")
@@ -481,13 +495,17 @@ I use ~rg~ to find file content easily.
       (interactive)
        (call-interactively 'org-store-link)
        (org-capture nil "it"))
-
+    ;; setting up org-refile
+    (setq org-refile-targets '(("~/Vault/pkm/pages/projects.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
+			     ("~/Vault/pkm/pages/agenda.org" :regexp . "\\(?:Past\\)")))
     (define-key global-map (kbd "C-c i") 'mg/org-capture-inbox)
     ;; Org-agenda custom commands
     (setq org-agenda-block-separator "==============================================================================")
     (setq org-agenda-custom-commands
-	  '(
-	    ("a" "Agenda"
+	  '(("a" "Agenda"
+	     ((agenda ""
+		      ((org-agenda-skip-function '(org-agenda-skip-entry-if 'regexp ":framework:"))))))
+	    ("c" "Custom agenda"
 	     ((agenda ""
 		      ((org-agenda-span 1)
 		       (org-agenda-skip-function
@@ -551,30 +569,7 @@ I use ~rg~ to find file content easily.
 		     (org-scheduled-past-days 0)
 		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
 		     (org-agenda-overriding-header "INBOX tasks to refile:\n")))
-	      ))
-	    ("c" "Agenda with capture"
-	     ((agenda ""
-		      ((org-agenda-span 1)
-		       (org-agenda-skip-function
-			(lambda ()
-			  (or (org-agenda-skip-entry-if 'regexp ":framework:")
-			      (org-agenda-skip-entry-if 'done))))		     
-		       (org-deadline-warning-days 0)
-		       (org-scheduled-past-days 14)
-		       (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-		       (org-agenda-format-date "%A %-e %B %Y")
-		       (org-agenda-overriding-header "Today's schedule:\n")))
-	      (agenda ""
-		      ((org-agenda-start-on-weekday nil)
-		       (org-agenda-skip-function
-			(lambda ()
-			  (or (org-agenda-skip-entry-if 'regexp ":framework:")
-			      (org-agenda-skip-entry-if 'done))))		     
-		       (org-agenda-start-day "+1d")
-		       (org-agenda-span 5)
-		       (org-deadline-warning-days 0)
-		       (org-scheduled-past-days 0)
-		       (org-agenda-overriding-header "\nWeek at a glance:\n")))))))
+	      ))))
     (when (display-graphic-p)
 	(progn
 	  (require 'oc-biblatex)
@@ -1018,69 +1013,68 @@ I use beancount to track my finances.
 I use ~mu4e~ as e-mail client.
 
 #+begin_src emacs-lisp
-  (if (display-graphic-p)
-      (use-package mu4e
-		   :ensure nil
-		   :commands (mu4e)
-		   :after (org)
-		   :bind (("C-c m" . mu4e))
-		   :custom
-		   (mu4e-headers-thread-single-orphan-prefix '("└>" . " "))
-		   (mu4e-headers-thread-child-prefix '("└> " . " "))
-		   (mu4e-headers-thread-last-child-prefix '("└> " . " "))
-		   (mu4e-headers-thread-connection-prefix '("│ " . " "))
-		   (mu4e-headers-thread-orphan-prefix '("└>" . " "))
-		   (mu4e-headers-thread-root-prefix '("> " . " "))
-		   :config
-		   (define-key mu4e-headers-mode-map (kbd "C-c c") 'mu4e-org-store-and-capture)
-		   (define-key mu4e-view-mode-map    (kbd "C-c c") 'mu4e-org-store-and-capture)
-    
-		   (defun mg/org-capture-mail ()
-		     (interactive)
-		     (call-interactively 'org-store-link)
-		     (org-capture nil "im"))
+	    (if (display-graphic-p)
+		(use-package mu4e
+			     :ensure nil
+			     :commands (mu4e)
+			     :after (org)
+			     :bind (("C-c m" . mu4e))
+			     :config
+			     (define-key mu4e-headers-mode-map (kbd "C-c c") 'mu4e-org-store-and-capture)
+			     (define-key mu4e-view-mode-map    (kbd "C-c c") 'mu4e-org-store-and-capture)
 
-		   (define-key mu4e-headers-mode-map (kbd "C-c i") 'mg/org-capture-mail)
-		   (define-key mu4e-view-mode-map    (kbd "C-c i") 'mg/org-capture-mail)
-		   (setq mu4e-maildir (expand-file-name "~/Maildir")
-			 mu4e-use-fancy-chars nil
-			 mu4e-attachment-dir  "~/Downloads"
-			 message-send-mail-function 'message-send-mail-with-sendmail
-			 sendmail-program "/usr/bin/msmtp"
-			 message-kill-buffer-on-exit t
-			 mu4e-get-mail-command "mbsync -a"
-			 mu4e-update-interval 300
-			 mu4e-context-policy 'pick-first
-			 mu4e-headers-auto-update t
-			 mu4e-contexts
-			 `(,(make-mu4e-context
-			     :name "polimi"
-			     :enter-func (lambda () (mu4e-message "Switch to the polimi context"))
-			     :match-func (lambda (msg)
-					   (when msg
-					     (mu4e-message-contact-field-matches msg
-										 :to "claudio.migliorelli@mail.polimi.it")))
-			     :vars '((mu4e-sent-folder       . "/polimi/sent")
-				     (mu4e-drafts-folder     . "/polimi/drafts")
-				     (mu4e-trash-folder      . "/polimi/trash")
-				     (user-mail-address	   . "claudio.migliorelli@mail.polimi.it")
-				     (user-full-name	   . "Claudio Migliorelli" )
-				     (mu4e-maildir-shortcuts . (("/polimi/INBOX" . ?i)
-								("/polimi/sent" . ?s)
-								("/polimi/drafts" . ?d)
-								("/polimi/trash" . ?t)))
-				     (mu4e-sent-messages-behavior . delete)))))
-		   (with-eval-after-load "mm-decode"
-		     (add-to-list 'mm-discouraged-alternatives "text/html")
-		     (add-to-list 'mm-discouraged-alternatives "text/richtext"))
-		   (defun mg/message-insert-citation-line ()
-		     "Based off `message-insert-citation-line`."
-		     (when message-reply-headers
-		       (insert "On " (format-time-string "%a, %d %b %Y %H:%M:%S %z" (date-to-time (mail-header-date message-reply-headers))) " ")
-		       (insert (mail-header-from message-reply-headers) " wrote:")
-		       (newline)
-		       (newline)))
-		   (setq message-citation-line-function 'mg/message-insert-citation-line)))
+			     (defun mg/org-capture-mail ()
+			       (interactive)
+			       (call-interactively 'org-store-link)
+			       (org-capture nil "im"))
+
+			     (define-key mu4e-headers-mode-map (kbd "C-c i") 'mg/org-capture-mail)
+			     (define-key mu4e-view-mode-map    (kbd "C-c i") 'mg/org-capture-mail)
+			     (setq mu4e-maildir (expand-file-name "~/Maildir")
+				   mu4e-use-fancy-chars nil
+				   mu4e-attachment-dir  "~/Downloads"
+				   message-send-mail-function 'message-send-mail-with-sendmail
+				   sendmail-program "/usr/bin/msmtp"
+				   message-kill-buffer-on-exit t
+				   mu4e-get-mail-command "mbsync -a"
+				   mu4e-update-interval 300
+				   mu4e-context-policy 'pick-first
+				   mu4e-headers-auto-update t
+				   mu4e-contexts
+				   `(,(make-mu4e-context
+				       :name "polimi"
+				       :enter-func (lambda () (mu4e-message "Switch to the polimi context"))
+				       :match-func (lambda (msg)
+						     (when msg
+						       (mu4e-message-contact-field-matches msg
+											   :to "claudio.migliorelli@mail.polimi.it")))
+				       :vars '((mu4e-sent-folder       . "/polimi/sent")
+					       (mu4e-drafts-folder     . "/polimi/drafts")
+					       (mu4e-trash-folder      . "/polimi/trash")
+					       (user-mail-address	   . "claudio.migliorelli@mail.polimi.it")
+					       (user-full-name	   . "Claudio Migliorelli" )
+					       (mu4e-maildir-shortcuts . (("/polimi/INBOX" . ?i)
+									  ("/polimi/sent" . ?s)
+									  ("/polimi/drafts" . ?d)
+									  ("/polimi/trash" . ?t)))
+					       (mu4e-sent-messages-behavior . delete)))))
+			     (setq mu4e-headers-thread-single-orphan-prefix '("└>" . " ")
+				   mu4e-headers-thread-child-prefix '("└> " . " ")
+				   mu4e-headers-thread-last-child-prefix '("└> " . " ")
+				   mu4e-headers-thread-connection-prefix '("│ " . " ")
+				   mu4e-headers-thread-orphan-prefix '("└>" . " ")
+				   mu4e-headers-thread-root-prefix '("> " . " "))
+			     (with-eval-after-load "mm-decode"
+			       (add-to-list 'mm-discouraged-alternatives "text/html")
+			       (add-to-list 'mm-discouraged-alternatives "text/richtext"))
+			     (defun mg/message-insert-citation-line ()
+			       "Based off `message-insert-citation-line`."
+			       (when message-reply-headers
+				 (insert "On " (format-time-string "%a, %d %b %Y %H:%M:%S %z" (date-to-time (mail-header-date message-reply-headers))) " ")
+				 (insert (mail-header-from message-reply-headers) " wrote:")
+				 (newline)
+				 (newline)))
+			     (setq message-citation-line-function 'mg/message-insert-citation-line)))
 #+end_src
 
 ** EXWM
