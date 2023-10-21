@@ -3,18 +3,25 @@
 #+PROPERTY: header-args:emacs-lisp :tangle init.el
 * Init work
 
-In this piece of code I add stuff to perform the startup of the Emacs init file to make it work properly.
+In this piece of code I add stuff to perform the loading of lisp files located on the local machine.
 
 #+begin_src emacs-lisp
-(add-to-list 'load-path (concat user-emacs-directory "site-lisp/"))
+  (let ((base "/home/claudio/Repositories/dot-emacs/site-lisp/"))
+    (add-to-list 'load-path base)
+    (dolist (f (directory-files base))
+      (let ((name (concat base "/" f)))
+	(when (and (file-directory-p name) 
+		   (not (equal f ".."))
+		   (not (equal f ".")))
+	  (add-to-list 'load-path name)))))
 #+end_src
 
 Start the server when opening emacs.
 
 #+begin_src emacs-lisp
-(require 'server)
-(unless (server-running-p)
-  (server-start))
+  (require 'server)
+  (unless (server-running-p)
+    (server-start))
 #+end_src
 
 * Package management
@@ -22,18 +29,18 @@ Start the server when opening emacs.
 First of all, let's initialize the package management setting up ELPA, MELPA and org package repositories. After that, I want Emacs loading =use-package= to manage package configuration.
 
 #+begin_src emacs-lisp
-(require 'package)
-(setq package-enable-at-startup nil)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-(unless package--initialized (package-initialize))
+  (require 'package)
+  (setq package-enable-at-startup nil)
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+  (unless package--initialized (package-initialize))
 
-;;; setup use-package
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-(eval-when-compile
-  (require 'use-package))
-(setq use-package-always-ensure t)
+  ;;; setup use-package
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  (eval-when-compile
+    (require 'use-package))
+  (setq use-package-always-ensure t)
 #+end_src
 
 * Keep emacs.d clean
@@ -42,16 +49,16 @@ First of all, let's initialize the package management setting up ELPA, MELPA and
 Let's have a better organized folder, with relevant files only.
 
 #+begin_src emacs-lisp
-;; change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-(setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
-	  url-history-file (expand-file-name "url/history" user-emacs-directory))
+  ;; change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+  (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
+	url-history-file (expand-file-name "url/history" user-emacs-directory))
 
-;; keep customization settings in a temporary file
-(setq custom-file
-	  (if (boundp 'server-socket-dir)
-		  (expand-file-name "custom.el" server-socket-dir)
-		(expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
-(load custom-file t)
+  ;; keep customization settings in a temporary file
+  (setq custom-file
+	(if (boundp 'server-socket-dir)
+	    (expand-file-name "custom.el" server-socket-dir)
+	  (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
+  (load custom-file t)
 #+end_src
 
 * General configuration
@@ -121,9 +128,13 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
   (use-package winner
     :ensure nil)
 
-  (global-set-key (kbd "C-c f k s") 'replace-string)
-  (global-set-key (kbd "C-c f k c") 'comment-region)
-  (global-set-key (kbd "C-c f k u") 'uncomment-region)
+  (use-package action-on-region-str
+    :ensure nil
+    :bind
+    (("C-c f k s" . replace-string)
+     ("C-c f k c" . comment-region)
+     ("C-c f k u" . uncomment-region)
+     ("C-c f k i" . indent-region)))
 
   ;; enable some modes when programming
   (add-hook 'prog-mode-hook
@@ -135,8 +146,8 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 Put Emacs auto-save and backup files to /tmp/.
 
 #+begin_src emacs-lisp
-(defconst emacs-tmp-dir (expand-file-name (format "emacs%d" (user-uid)) temporary-file-directory))
-(setq
+  (defconst emacs-tmp-dir (expand-file-name (format "emacs%d" (user-uid)) temporary-file-directory))
+  (setq
    backup-by-copying t
    delete-old-versions t
    kept-new-versions 6
@@ -153,17 +164,21 @@ Put Emacs auto-save and backup files to /tmp/.
 Loading the preferred theme.
 
 #+begin_src emacs-lisp
-(use-package minions
-  :ensure t
-  :config
-  (minions-mode 1))
+  (use-package minions
+    :ensure t
+    :config
+    (minions-mode 1))
 
-(if (display-graphic-p)
-    (progn
-      (set-frame-font "Liberation Mono 13" nil t)
-      (set-fringe-mode 0)
-      (use-package hc-zenburn-theme :ensure t :config (load-theme 'hc-zenburn t)))
-  (set-face-background 'default "undefined"))
+  (if (display-graphic-p)
+      ;; (progn
+      ;;   (set-frame-font "Liberation Mono 13" nil t)
+      ;;   (set-fringe-mode 0)
+      ;;   (use-package hc-zenburn-theme :ensure t :config (load-theme 'hc-zenburn t)))
+      (progn
+	(load-theme 'modus-vivendi)
+	(set-fringe-mode 0)
+	(set-frame-font "Terminus 14" nil t))
+    (set-face-background 'default "undefined"))
 #+end_src
 	
 ** Completion
@@ -171,159 +186,159 @@ Loading the preferred theme.
 Trying some in-buffer completion framework that is not broken.
 
 #+begin_src emacs-lisp
-(use-package vertico
-  :ensure t
-  :config
-  (vertico-mode)
-  (add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy))
+  (use-package vertico
+    :ensure t
+    :config
+    (vertico-mode)
+    (add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy))
 
-(use-package marginalia
-  :ensure t
-  :init
-  (marginalia-mode))
+  (use-package marginalia
+    :ensure t
+    :init
+    (marginalia-mode))
 
-(use-package savehist
-  :ensure t
-  :init
-  (savehist-mode))
+  (use-package savehist
+    :ensure t
+    :init
+    (savehist-mode))
 
-(use-package orderless
-  :ensure t
-  :custom
-  (completion-styles '(orderless basic)))
+  (use-package orderless
+    :ensure t
+    :custom
+    (completion-styles '(orderless basic)))
 
-(use-package consult
-  :ensure t
-  :bind (("C-c M-x" . nconsult-mode-command)
-         ("C-c h" . consult-history)
-         ("C-c k" . consult-kmacro)
-         ([remap Info-search] . consult-info)
+  (use-package consult
+    :ensure t
+    :bind (("C-c M-x" . nconsult-mode-command)
+	   ("C-c h" . consult-history)
+	   ("C-c k" . consult-kmacro)
+	   ([remap Info-search] . consult-info)
 
-         ("C-x M-:" . consult-complex-command)
-         ("C-x b" . consult-buffer)
-         ("C-x 4 b" . consult-buffer-other-window)
-         ("C-x 5 b" . consult-buffer-other-frame)
-         ("C-x r b" . consult-bookmark)
-         ("C-x p b" . consult-project-buffer)
+	   ("C-x M-:" . consult-complex-command)
+	   ("C-x b" . consult-buffer)
+	   ("C-x 4 b" . consult-buffer-other-window)
+	   ("C-x 5 b" . consult-buffer-other-frame)
+	   ("C-x r b" . consult-bookmark)
+	   ("C-x p b" . consult-project-buffer)
 
-         ("C-x r l" . consult-register-load)
-         ("C-x r s" . consult-register-store)
-         ("C-x r r" . consult-register)
+	   ("C-x r l" . consult-register-load)
+	   ("C-x r s" . consult-register-store)
+	   ("C-x r r" . consult-register)
 
-         ("M-y" . consult-yank-pop)
+	   ("M-y" . consult-yank-pop)
 
-         ("M-g e" . consult-compile-error)
-         ("M-g f" . consult-flycheck)
-         ("M-g g" . consult-goto-line)
-         ("M-g M-g" . consult-goto-line)
-         ("M-g o" . consult-outline)
-         ("M-g m" . consult-mark)
-         ("M-g k" . consult-global-mark)
-         ("M-g i" . consult-imenu)
-         ("M-g I" . consult-imenu-multi)
+	   ("M-g e" . consult-compile-error)
+	   ("M-g f" . consult-flycheck)
+	   ("M-g g" . consult-goto-line)
+	   ("M-g M-g" . consult-goto-line)
+	   ("M-g o" . consult-outline)
+	   ("M-g m" . consult-mark)
+	   ("M-g k" . consult-global-mark)
+	   ("M-g i" . consult-imenu)
+	   ("M-g I" . consult-imenu-multi)
 
-         ("M-s d" . consult-find)
-         ("M-s D" . consult-locate)
-         ("M-s g" . consult-grep)
-         ("M-s G" . consult-git-grep)
-         ("M-s r" . consult-ripgrep)
-         ("M-s l" . consult-line)
-         ("M-s L" . consult-line-multi)
-         ("M-s k" . consult-keep-lines)
-         ("M-s u" . consult-focus-lines)
+	   ("M-s d" . consult-find)
+	   ("M-s D" . consult-locate)
+	   ("M-s g" . consult-grep)
+	   ("M-s G" . consult-git-grep)
+	   ("M-s r" . consult-ripgrep)
+	   ("M-s l" . consult-line)
+	   ("M-s L" . consult-line-multi)
+	   ("M-s k" . consult-keep-lines)
+	   ("M-s u" . consult-focus-lines)
 
-         ("M-s e" . consult-isearch-history)
-         :map isearch-mode-map
-         ("M-e" . consult-isearch-history)
-         ("M-s e" . consult-isearch-history)
-         ("M-s l" . consult-line)
-         ("M-s L" . consult-line-multi)
-         ;; Minibuffer history
-         :map minibuffer-local-map
-         ("M-s" . consult-history)
-         ("M-r" . consult-history))
+	   ("M-s e" . consult-isearch-history)
+	   :map isearch-mode-map
+	   ("M-e" . consult-isearch-history)
+	   ("M-s e" . consult-isearch-history)
+	   ("M-s l" . consult-line)
+	   ("M-s L" . consult-line-multi)
+	   ;; Minibuffer history
+	   :map minibuffer-local-map
+	   ("M-s" . consult-history)
+	   ("M-r" . consult-history))
 
 
-  :hook (completion-list-mode . consult-preview-at-point-mode)
-  :config
-  (setq completion-in-region-function
-        (lambda (&rest args)
-          (apply (if vertico-mode
-                     #'consult-completion-in-region
-                   #'completion--in-region)
-                 args)))
-  (consult-customize
-   consult-theme :preview-key '(:debounce 0.2 any)
-   consult-ripgrep consult-git-grep consult-grep
-   consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
-   consult--source-recent-file consult--source-project-recent-file
+    :hook (completion-list-mode . consult-preview-at-point-mode)
+    :config
+    (setq completion-in-region-function
+	  (lambda (&rest args)
+	    (apply (if vertico-mode
+		       #'consult-completion-in-region
+		     #'completion--in-region)
+		   args)))
+    (consult-customize
+     consult-theme :preview-key '(:debounce 0.2 any)
+     consult-ripgrep consult-git-grep consult-grep
+     consult-bookmark consult-recent-file consult-xref
+     consult--source-bookmark consult--source-file-register
+     consult--source-recent-file consult--source-project-recent-file
 
-   :preview-key '(:debounce 0.4 any))
-  :init
-  (setq register-preview-delay 0.5
-        register-preview-function #'consult-register-format)
+     :preview-key '(:debounce 0.4 any))
+    :init
+    (setq register-preview-delay 0.5
+	  register-preview-function #'consult-register-format)
 
-  (advice-add #'register-preview :override #'consult-register-window)
+    (advice-add #'register-preview :override #'consult-register-window)
 
-  (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
-  (defun mg/consult-xstarter ()
-    "Use consult to choose the application to run"
-    (interactive)
-    (require 'consult)
-    (let* ((candidates (split-string
-			(shell-command-to-string "xstarter -P")
-			"\n"
-			t))
-	   (application-path (consult--read
-			      candidates
-			      :prompt "Application to launch: ")))
-      (start-process "" nil application-path)))
+    (setq xref-show-xrefs-function #'consult-xref
+	  xref-show-definitions-function #'consult-xref)
+    (defun mg/consult-xstarter ()
+      "Use consult to choose the application to run"
+      (interactive)
+      (require 'consult)
+      (let* ((candidates (split-string
+			  (shell-command-to-string "xstarter -P")
+			  "\n"
+			  t))
+	     (application-path (consult--read
+				candidates
+				:prompt "Application to launch: ")))
+	(start-process "" nil application-path)))
 
-  (setq consult-narrow-key "<"))
+    (setq consult-narrow-key "<"))
 #+end_src
 
 ** Files navigation
 
 #+begin_src emacs-lisp
-(use-package projectile
-  :ensure t
-  :commands projectile-mode projectile-project-name
-  :init
-  (add-hook 'after-init-hook 'projectile-mode)
-  :custom
-  (setq projectile-indexing-method 'alien)
-  (setq projectile-project-search-path '("~/Repositories"))
-  (setq projectile-use-git-grep t)
-  (setq projectile-mode-line-prefix " Proj")
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+  (use-package projectile
+    :ensure t
+    :commands projectile-mode projectile-project-name
+    :init
+    (add-hook 'after-init-hook 'projectile-mode)
+    :custom
+    (setq projectile-indexing-method 'alien)
+    (setq projectile-project-search-path '("~/Repositories"))
+    (setq projectile-use-git-grep t)
+    (setq projectile-mode-line-prefix " Proj")
+    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
-;; some dired tweaks
-(use-package dired
-  :ensure nil
-  :custom
-  (setq ls-lisp-use-insert-directory-program nil
-	ls-lisp-dirs-first t
-	default-directory "~/")
-  ;; omit hidden files
-  (setq dired-omit-files "^\\...+$")
-  :init
-  (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1))))
+  ;; some dired tweaks
+  (use-package dired
+    :ensure nil
+    :custom
+    (setq ls-lisp-use-insert-directory-program nil
+	  ls-lisp-dirs-first t
+	  default-directory "~/")
+    ;; omit hidden files
+    (setq dired-omit-files "^\\...+$")
+    :init
+    (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1))))
 
-;; use dired-x
-(use-package dired-x
-  :ensure nil
-  :custom
-  (setq dired-dwim-target t
-	delete-by-moving-to-trash t))
+  ;; use dired-x
+  (use-package dired-x
+    :ensure nil
+    :custom
+    (setq dired-dwim-target t
+	  delete-by-moving-to-trash t))
 
-;; toggle disk usage
-(use-package disk-usage)
+  ;; toggle disk usage
+  (use-package disk-usage)
 
-(use-package ibuffer
-  :ensure nil
-  :bind (("C-x C-b" . ibuffer)))
+  (use-package ibuffer
+    :ensure nil
+    :bind (("C-x C-b" . ibuffer)))
 #+end_src
 
 ** File visualization
@@ -332,20 +347,20 @@ Trying some in-buffer completion framework that is not broken.
 I want to open some files with external programs and =open-with= addresses this problem.
 
 #+begin_src emacs-lisp
-(use-package openwith
-  :ensure t
-  :config
-  (setq openwith-associations '(
-				("\\.mp4\\'" "mpv" (file))
-				("\\.webm\\'" "mpv" (file))								
-				("\\.mkv\\'" "mpv" (file))
-				("\\.m4a\\'" "mpv --force-window" (file))
-				("\\.ppt\\'" "libreoffice" (file))
-				("\\.pptx\\'" "libreoffice" (file))
-				("\\.doc\\'" "libreoffice" (file))
-				("\\.docx\\'" "libreoffice" (file))
-				))
-  (openwith-mode t))
+  (use-package openwith
+    :ensure t
+    :config
+    (setq openwith-associations '(
+				  ("\\.mp4\\'" "mpv" (file))
+				  ("\\.webm\\'" "mpv" (file))								
+				  ("\\.mkv\\'" "mpv" (file))
+				  ("\\.m4a\\'" "mpv --force-window" (file))
+				  ("\\.ppt\\'" "libreoffice" (file))
+				  ("\\.pptx\\'" "libreoffice" (file))
+				  ("\\.doc\\'" "libreoffice" (file))
+				  ("\\.docx\\'" "libreoffice" (file))
+				  ))
+    (openwith-mode t))
 #+end_src
 	
 *** PDFs
@@ -353,12 +368,12 @@ I want to open some files with external programs and =open-with= addresses this 
 I want to use =pdf-tools= to view and edit PDFs in a much better way.
 
 #+begin_src emacs-lisp
-(use-package pdf-tools
-  :ensure t
-  :config
-  (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-tools-install))
-  (add-hook 'pdf-view-mode-hook
-	    (lambda () (setq header-line-format nil))))
+  (use-package pdf-tools
+    :ensure t
+    :config
+    (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-tools-install))
+    (add-hook 'pdf-view-mode-hook
+	      (lambda () (setq header-line-format nil))))
 #+end_src
    
 *** Undo tree
@@ -366,14 +381,14 @@ I want to use =pdf-tools= to view and edit PDFs in a much better way.
 I really love the ~undo-tree~ mode visualization, so I'm going to enable it.
 
 #+begin_src emacs-lisp
-(use-package undo-tree
-  :ensure t
-  :custom
-  (undo-tree-auto-save-history nil)
-  (undo-tree-visualizer-timestamps t)
-  (undo-tree-visualizer-relative-timestamps nil)
-  :config
-  (global-undo-tree-mode 1))
+  (use-package undo-tree
+    :ensure t
+    :custom
+    (undo-tree-auto-save-history nil)
+    (undo-tree-visualizer-timestamps t)
+    (undo-tree-visualizer-relative-timestamps nil)
+    :config
+    (global-undo-tree-mode 1))
 #+end_src
 
 *** Ripgrep
@@ -381,10 +396,10 @@ I really love the ~undo-tree~ mode visualization, so I'm going to enable it.
 I use ~rg~ to find file content easily.
 
 #+begin_src emacs-lisp
-(use-package deadgrep
-  :ensure t
-  :bind
-  (("C-c s" . deadgrep)))
+  (use-package deadgrep
+    :ensure t
+    :bind
+    (("C-c s" . deadgrep)))
 #+end_src
 
 ** Personal knowledge management
@@ -425,7 +440,7 @@ I use ~rg~ to find file content easily.
     (org-clock-clocked-in-display 'mode-line)
     (org-clock-idle-time 15)
     (org-todo-keywords
-	  '((sequence "TODO(t)" "NEXT(n)" "HOLD(h)" "|" "DONE(d)")))
+     '((sequence "TODO(t)" "NEXT(n)" "HOLD(h)" "|" "DONE(d)")))
     (org-stuck-projects '("+project/" ("NEXT" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
     (org-log-done 'time)
     (org-agenda-hide-tags-regexp ".")
@@ -440,7 +455,7 @@ I use ~rg~ to find file content easily.
       "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
       (when (and (string= (org-get-todo-state) "NEXT")
 		 (not (org-entry-get nil "ACTIVATED")))
-	(org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d]"))))
+	(org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d %a]"))))
     (add-hook 'org-after-todo-state-change-hook #'log-todo-next-creation-date)
     ;; Org-capture templates
     (defun mg/create-pages-file ()
@@ -460,11 +475,16 @@ I use ~rg~ to find file content easily.
 	     "* %U (%a)\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("a" "Agenda")
 	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
-	     "**** Meeting with %? :meeting:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
+	     "* Meeting with %? :meeting:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
 	    ("ae" "Event entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
-	     "**** %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTES:\nNOTIFY_BEFORE:\n:END:\n%^T\n")
+	     "* %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTES:\nNOTIFY_BEFORE:\n:END:\n%^T\n")
 	    ("ae" "Call entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
-	     "**** Call with %? :call:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
+	     "* Call with %? :call:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
+	    ("F" "Flashcards")
+	    ("Fm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Mathematics")
+	     "* %^{Question} :drill:\n[%?]")
+	    ("Fk" "Kernel flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Kernel")
+	     "* %^{Question} :drill:\n[%?]")
 	    ("r" "Resources")
 	    ("ra" "Conference attendance" entry
 	     (file "~/Vault/pkm/pages/conferences.org")
@@ -476,169 +496,166 @@ I use ~rg~ to find file content easily.
 	    ("pp" "Personal project" plain (file+headline "~/Vault/pkm/pages/projects.org" "Personal projects")
 	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
 	    ("ps" "Study project" plain (file+headline "~/Vault/pkm/pages/projects.org" "Study")
-	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
-	    ("P" "plans")
-	    ("Py" "yearly" plain
-	     (file "~/Vault/pkm/pages/planning.org")
-	     "* %U: %? yearly plan :yearly:plan:\n:PROPERTIES:\n- *Feelings*:: %^{Feelings|good|neutral|bad}\n- *Related*::\n- *Date*:: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Values review and life physolophy*\n- *5 Years Vision(s)*\n- *Goal definition*\n# reviewing\n- *Financial review*\n- *Time tracking review*")
-	    ("Pq" "quarterly" plain
-	     (file "~/Vault/pkm/pages/planning.org")
-	     "** %U: %? quarterly plan :quarterly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n# reviewing\n- *Projects review*\n- *Financial review*\n- *Time tracking review*")
-	    ("Pm" "monthly" plain
-	     (file "~/Vault/pkm/pages/planning.org")
-	     "*** %U: %? monthly plan :monthly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Projects and task picking*\n# reviewing\n- *Financial review*\n- *Time tracking review*\n- *Workout review*\n")
-	    ("Pw" "weekly" plain
-	     (file "~/Vault/pkm/pages/planning.org")
-	     "**** %U: %? weekly plan :weekly:plan:\n:PROPERTIES:\n:FEELINGS: %^{Feelings|good|neutral|bad}\n:RELATED:\n:DATE: %^{Date}u\n:END:\n# planning\n- *Overview*\n- *Task picking*\n  - [ ] Inbox refile\n# reviewing\n- *Review*\n")))
+	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")))
     ;; setup some org-capture specific stuff
     (defun mg/org-capture-inbox ()
       (interactive)
-       (call-interactively 'org-store-link)
-       (org-capture nil "it"))
+      (call-interactively 'org-store-link)
+      (org-capture nil "it"))
     ;; setting up org-refile
     (setq org-refile-targets '(("~/Vault/pkm/pages/projects.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
-			     ("~/Vault/pkm/pages/agenda.org" :regexp . "\\(?:Past\\)")))
+			       ("~/Vault/pkm/pages/agenda.org" :regexp . "\\(?:Past\\)")))
     (define-key global-map (kbd "C-c i") 'mg/org-capture-inbox)
     ;; Org-agenda custom commands
     (setq org-agenda-block-separator "==============================================================================")
     (setq org-agenda-custom-commands
 	  '(("a" "Agenda"
 	     ((agenda ""
-		      ((org-agenda-skip-function '(org-agenda-skip-entry-if 'regexp ":framework:"))))))
-	    ("c" "Custom agenda"
-	     ((agenda ""
-		      ((org-agenda-span 1)
-		       (org-agenda-skip-function
+		      ((org-agenda-skip-function
 			(lambda ()
 			  (or (org-agenda-skip-entry-if 'regexp ":framework:")
-			      (org-agenda-skip-entry-if 'done))))
-		       (org-deadline-warning-days 0)
-		       (org-scheduled-past-days 14)
-		       (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-		       (org-agenda-format-date "%A %-e %B %Y")
-		       (org-agenda-overriding-header "Today's schedule:\n")))
-	      (agenda ""
-		      ((org-agenda-span 1)
-		       (org-agenda-skip-function
-			(lambda ()
-			  (or (org-agenda-skip-entry-if 'notregexp ":framework:")
-			      (org-agenda-skip-entry-if 'done))))
-		       (org-deadline-warning-days 0)
-		       (org-scheduled-past-days 14)
-		       (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-		       (org-agenda-format-date "%A %-e %B %Y")
-		       (org-agenda-overriding-header "Today's framework:\n")))
-	      (todo "PROG"
-		    ((org-agenda-time-grid nil)
-		     (org-agenda-span 1)
-		     (org-deadline-warning-days 0)
-		     (org-scheduled-past-days 0)
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'notscheduled))
-		     (org-agenda-overriding-header "PROG tasks:\n")))
+			      (org-agenda-skip-entry-if 'deadline))))
+		      (org-agenda-span 1)
+		      (org-deadline-warning-days 0)))
 	      (todo "NEXT"
-		    ((org-agenda-time-grid nil)
-		     (org-agenda-span 1)
-		     (org-deadline-warning-days 0)
-		     (org-scheduled-past-days 0)
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'notscheduled))
-		     (org-agenda-overriding-header "NEXT tasks:\n")))
-	      (agenda "" ((org-agenda-time-grid nil)
-			  (org-agenda-start-day "+1d")
-			  (org-agenda-start-on-weekday nil)
-			  (org-agenda-span 30)
-			  (org-agenda-show-all-dates nil)
-			  (org-deadline-warning-days 0)
-			  (org-agenda-entry-types '(:deadline))
-			  (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-			  (org-agenda-overriding-header "\nUpcoming deadlines (+30d)\n")))
-	      (agenda ""
-		      ((org-agenda-start-on-weekday nil)
-		       (org-agenda-skip-function
-			(lambda ()
-			  (or (org-agenda-skip-entry-if 'regexp ":framework:")
-			      (org-agenda-skip-entry-if 'done))))
-		       (org-agenda-start-day "+1d")
-		       (org-agenda-span 5)
-		       (org-deadline-warning-days 0)
-		       (org-scheduled-past-days 0)
-		       (org-agenda-overriding-header "\nWeek at a glance:\n")))
-	      (todo "INBOX"
-		    ((org-agenda-time-grid nil)
-		     (org-agenda-span 1)
-		     (org-deadline-warning-days 0)
-		     (org-scheduled-past-days 0)
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-		     (org-agenda-overriding-header "INBOX tasks to refile:\n")))
-	      ))))
-    (when (display-graphic-p)
-	(progn
-	  (require 'oc-biblatex)
-	  (setq org-cite-export-processors
-		'((latex biblatex)))
-	  (setq org-latex-pdf-process (list
-				       "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
-	  ))
-    (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
-    (setq org-latex-create-formula-image-program 'dvisvgm)
-    (require 'ox-latex)
-    (add-to-list 'org-latex-classes
-		 '("res"
-		   "\\documentclass[margin]{res}\n
+		    ((org-agenda-skip-function
+		      '(org-agenda-skip-entry-if 'deadline))
+		     (org-agenda-prefix-format "  %i %-12:c [%e] ")
+		     (org-agenda-overriding-header "\nTasks\n")))
+	       (agenda "" ((org-agenda-time-grid nil)
+			   (org-agenda-start-day "+1d")
+			   (org-agenda-start-on-weekday nil)
+			   (org-agenda-span 30)
+			   (org-agenda-show-all-dates nil)
+			   (org-deadline-warning-days 0)
+			   (org-agenda-entry-types '(:deadline))
+			   (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
+			   (org-agenda-overriding-header "\nUpcoming deadlines (+30d)\n")))	      
+	      (tags-todo "inbox"
+			 ((org-agenda-prefix-format "  %?-12t% s")
+			  (org-agenda-overriding-header "\nInbox\n")))
+	      (tags "CLOSED>=\"<today>\""
+		    ((org-agenda-overriding-header "\nCompleted today\n")))))
+	     ("c" "Custom agenda"
+	      ((agenda ""
+		       ((org-agenda-span 1)
+			(org-agenda-skip-function
+			 (lambda ()
+			   (or (org-agenda-skip-entry-if 'regexp ":framework:")
+			       (org-agenda-skip-entry-if 'done))))
+			(org-deadline-warning-days 0)
+			(org-scheduled-past-days 14)
+			(org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+			(org-agenda-format-date "%A %-e %B %Y")
+			(org-agenda-overriding-header "Today's schedule:\n")))
+	       (agenda ""
+		       ((org-agenda-span 1)
+			(org-agenda-skip-function
+			 (lambda ()
+			   (or (org-agenda-skip-entry-if 'notregexp ":framework:")
+			       (org-agenda-skip-entry-if 'done))))
+			(org-deadline-warning-days 0)
+			(org-scheduled-past-days 14)
+			(org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+			(org-agenda-format-date "%A %-e %B %Y")
+			(org-agenda-overriding-header "Today's framework:\n")))
+	       (todo "NEXT"
+		     ((org-agenda-time-grid nil)
+		      (org-agenda-span 1)
+		      (org-deadline-warning-days 0)
+		      (org-scheduled-past-days 0)
+		      (org-agenda-skip-function '(org-agenda-skip-entry-if 'notscheduled))
+		      (org-agenda-overriding-header "NEXT tasks:\n")))
+	       (agenda "" ((org-agenda-time-grid nil)
+			   (org-agenda-start-day "+1d")
+			   (org-agenda-start-on-weekday nil)
+			   (org-agenda-span 30)
+			   (org-agenda-show-all-dates nil)
+			   (org-deadline-warning-days 0)
+			   (org-agenda-entry-types '(:deadline))
+			   (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
+			   (org-agenda-overriding-header "\nUpcoming deadlines (+30d)\n")))
+	       (agenda ""
+		       ((org-agenda-start-on-weekday nil)
+			(org-agenda-skip-function
+			 (lambda ()
+			   (or (org-agenda-skip-entry-if 'regexp ":framework:")
+			       (org-agenda-skip-entry-if 'done))))
+			(org-agenda-start-day "+1d")
+			(org-agenda-span 5)
+			(org-deadline-warning-days 0)
+			(org-scheduled-past-days 0)
+			(org-agenda-overriding-header "\nWeek at a glance:\n")))
+	       ))))
+	  (when (display-graphic-p)
+	    (progn
+	      (require 'oc-biblatex)
+	      (setq org-cite-export-processors
+		    '((latex biblatex)))
+	      (setq org-latex-pdf-process (list
+					   "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
+	      ))
+	  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+	  (setq org-latex-create-formula-image-program 'dvisvgm)
+	  (require 'ox-latex)
+	  (add-to-list 'org-latex-classes
+		       '("res"
+			 "\\documentclass[margin]{res}\n
   \\setlength{\textwidth}{5.1in}"
-		    ("\\section{%s}" . "\\section*{%s}")
-		    ("\\subsection{%s}" . "\\subsection*{%s}")
-		    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		    ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-    (add-to-list 'org-latex-classes
-		 '("memoir"
-		    "\\documentclass[article]{memoir}\n
+			 ("\\section{%s}" . "\\section*{%s}")
+			 ("\\subsection{%s}" . "\\subsection*{%s}")
+			 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+			 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+			 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+	  (add-to-list 'org-latex-classes
+		       '("memoir"
+			 "\\documentclass[article]{memoir}\n
   \\usepackage{color}
   \\usepackage{amssymb}
   \\usepackage{gensymb}
   \\usepackage{nicefrac}
   \\usepackage{units}"
-		    ("\\section{%s}" . "\\section*{%s}")
-		    ("\\subsection{%s}" . "\\subsection*{%s}")
-		    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		    ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-      (add-to-list 'org-latex-classes
-		 '("letter"
-		    "\\documentclass{letter}\n"
-		    ("\\section{%s}" . "\\section*{%s}")
-		    ("\\subsection{%s}" . "\\subsection*{%s}")
-		    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		    ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-    (add-to-list 'org-latex-classes	       
-		 '("tuftebook"
-		   "\\documentclass{tufte-book}\n
+			 ("\\section{%s}" . "\\section*{%s}")
+			 ("\\subsection{%s}" . "\\subsection*{%s}")
+			 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+			 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+			 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+	  (add-to-list 'org-latex-classes
+		       '("letter"
+			 "\\documentclass{letter}\n"
+			 ("\\section{%s}" . "\\section*{%s}")
+			 ("\\subsection{%s}" . "\\subsection*{%s}")
+			 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+			 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+			 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+	  (add-to-list 'org-latex-classes	       
+		       '("tuftebook"
+			 "\\documentclass{tufte-book}\n
   \\usepackage{color}
   \\usepackage{amssymb}
   \\usepackage{gensymb}
   \\usepackage{nicefrac}
   \\usepackage{units}"
-		   ("\\section{%s}" . "\\section*{%s}")
-		   ("\\subsection{%s}" . "\\subsection*{%s}")
-		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-    (add-to-list 'org-latex-classes
-		 '("tuftehandout"
-		   "\\documentclass{tufte-handout}
+			 ("\\section{%s}" . "\\section*{%s}")
+			 ("\\subsection{%s}" . "\\subsection*{%s}")
+			 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+			 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+	  (add-to-list 'org-latex-classes
+		       '("tuftehandout"
+			 "\\documentclass{tufte-handout}
   \\usepackage{color}
   \\usepackage{amssymb}
   \\usepackage{amsmath}
   \\usepackage{gensymb}
   \\usepackage{nicefrac}
   \\usepackage{units}"
-		   ("\\section{%s}" . "\\section*{%s}")
-		   ("\\subsection{%s}" . "\\subsection*{%s}")
-		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-    (add-to-list 'org-latex-classes
-		 '("tufnotes"
-		   "\\documentclass{tufte-handout}
+			 ("\\section{%s}" . "\\section*{%s}")
+			 ("\\subsection{%s}" . "\\subsection*{%s}")
+			 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+			 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+	  (add-to-list 'org-latex-classes
+		       '("tufnotes"
+			 "\\documentclass{tufte-handout}
 				     \\usepackage{xcolor}
 					   \\usepackage{graphicx} %% allow embedded images
 					   \\setkeys{Gin}{width=\\linewidth,totalheight=\\textheight,keepaspectratio}
@@ -683,47 +700,49 @@ I use ~rg~ to find file content easily.
 							   breakable,
 						    }"
 
-		   ("\\section{%s}" . "\\section*{%s}")
-		   ("\\subsection{%s}" . "\\subsection*{%s}")
-		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+			 ("\\section{%s}" . "\\section*{%s}")
+			 ("\\subsection{%s}" . "\\subsection*{%s}")
+			 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+			 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+			 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
-    ;; Set up org-babel
-    (setq org-ditaa-jar-path "/home/claudio/Repositories/dot-emacs/private/cm.tools/ditaa.jar")
-    (org-babel-do-load-languages
-     'org-babel-load-languages '((C . t)
-				 (shell . t)
-				 (python .t)
-				 (emacs-lisp . t)
-				 (org . t)
-				 (gnuplot . t)
-				 (latex . t)
-				 (ditaa . t)
-				 (scheme . t)
-				 (lisp . t)
-				 (haskell . t)
-				 (R . t))))
+	  ;; Set up org-babel
+	  (setq org-ditaa-jar-path "/home/claudio/Repositories/dot-emacs/private/cm.tools/ditaa.jar")
+	  (org-babel-do-load-languages
+	   'org-babel-load-languages '((C . t)
+				       (shell . t)
+				       (python .t)
+				       (emacs-lisp . t)
+				       (org . t)
+				       (gnuplot . t)
+				       (latex . t)
+				       (ditaa . t)
+				       (scheme . t)
+				       (lisp . t)
+				       (haskell . t)
+				       (R . t))))
 
-  (use-package org-wild-notifier
-    :ensure t
-    :custom
-    (org-wild-notifier-notification-title "Org agenda reminder")
-    (org-wild-notifier-alert-times-property "NOTIFY_BEFORE")
-    :config
-    (org-wild-notifier-mode))
+    (use-package org-wild-notifier
+      :ensure t
+      :custom
+      (org-wild-notifier-notification-title "Org agenda reminder")
+      (org-wild-notifier-alert-times-property "NOTIFY_BEFORE")
+      :config
+      (org-wild-notifier-mode))
 
-  (use-package org-contacts
-    :ensure t
-    :after org
-    :custom (org-contacts-files '("~/Vault/pkm/pages/contacts.org")))
+    (use-package org-contacts
+      :ensure t
+      :after org
+      :custom (org-contacts-files '("~/Vault/pkm/pages/contacts.org")))
 
-  ;; (require 'org-fc)
-  ;; (setq org-fc-directories '("~/Vault/pkm/pages" "~/Vault/pkm/slip-box"))
+    (use-package org-drill
+      :ensure t
+      :custom
+      (org-drill-add-random-noise-to-intervals-p t))
 
-  (use-package ox-hugo
-    :ensure t
-    :after ox)
+    (use-package ox-hugo
+      :ensure t
+      :after ox)
 #+end_src
 
 **** Encrypting
@@ -731,13 +750,13 @@ I use ~rg~ to find file content easily.
 Enabling =org-crypt= support as it is automatically installed with =org-mode= itself.
 
 #+begin_src emacs-lisp
-;; enable and set org-crypt
-(require 'org-crypt)
-(org-crypt-use-before-save-magic)
-(setq org-tags-exclude-from-inheritance (quote ("crypt")))
+  ;; enable and set org-crypt
+  (require 'org-crypt)
+  (org-crypt-use-before-save-magic)
+  (setq org-tags-exclude-from-inheritance (quote ("crypt")))
 
-;; GPG key to use for encryption
-(setq org-crypt-key nil)
+  ;; GPG key to use for encryption
+  (setq org-crypt-key nil)
 #+end_src
 
 **** Org-noter
@@ -745,11 +764,11 @@ Enabling =org-crypt= support as it is automatically installed with =org-mode= it
 Install org-noter to deal with PDF notes.
 
 #+begin_src emacs-lisp
-(use-package org-noter
-  :bind ("C-c r" . org-noter)
-  :ensure t
-  :custom
-  (org-noter-auto-save-last-location t))
+  (use-package org-noter
+    :bind ("C-c r" . org-noter)
+    :ensure t
+    :custom
+    (org-noter-auto-save-last-location t))
 #+end_src
 
 *** PKM utils
@@ -758,22 +777,56 @@ Install org-noter to deal with PDF notes.
   (use-package mg-pkm
     :ensure nil
     :init
+  
     (defun mg/open-pages-dir ()
       "Open pages directory in dired"
       (interactive)
       (dired "~/Vault/pkm/pages"))
+  
     (defun mg/open-pages-file ()
-    "Use consult to open a page under the pkm directory"
-    (interactive)
-    (require 'consult)
-    (let* ((candidates (split-string
-			(shell-command-to-string "ls -d ~/Vault/pkm/pages/*")
-			"\n"
-			t))
-	   (file-path (consult--read
-		       candidates
-		       :prompt "Choose page: ")))
-      (org-open-file file-path)))
+      "Use consult to open a page under the pkm directory"
+      (interactive)
+      (require 'consult)
+      (let* ((candidates (split-string
+			  (shell-command-to-string "ls -d ~/Vault/pkm/pages/*")
+			  "\n"
+			  t))
+	     (file-path (consult--read
+			 candidates
+			 :prompt "Choose page: ")))
+	(org-open-file file-path)))
+
+    (defun mg/search-store-link-heading-and-paste (rfile)
+      "Search an heading in rfile, do org-store-link on it and then yank the link"
+      (let* ((entries
+	      (mapcar (lambda (e)
+			(nth 4 e)) (org-map-entries (lambda () (org-heading-components)) t (list rfile))))
+	     (contact
+	      (consult--read
+	       entries
+	       :prompt "Choose contact: ")))
+	(when contact
+	  (save-excursion
+	    (with-current-buffer (find-file-noselect rfile)
+	      (goto-char (point-min))
+	      (when (re-search-forward (format "\\* %s" contact) nil t)
+		(progn
+		  (goto-char (line-beginning-position))
+		  (setq link (org-store-link 0))))))
+	  (insert link))))
+
+    (defun mg/search-store-link-contact-and-paste ()
+      "Search an heading in contacts file, do org-store-link and then yank the link"
+      (interactive)
+      (let ((contacts-file "~/Vault/pkm/pages/contacts.org"))
+	(mg/search-store-link-heading-and-paste contacts-file)))
+
+    (defun mg/search-store-link-place-and-paste ()
+      "Search an heading in contacts file, do org-store-link and then yank the link"
+      (interactive)
+      (let ((contacts-file "~/Vault/pkm/pages/places.org"))
+	(mg/search-store-link-heading-and-paste contacts-file)))
+
     (defun mg/pdf-presentation-mode ()
       (interactive)
       (toggle-frame-fullscreen)
@@ -787,75 +840,75 @@ Install org-noter to deal with PDF notes.
 *** Zettelkasten
 
 #+begin_src emacs-lisp
-(use-package org-roam
-  :after org
-  :ensure t
-  :init
-  (setq org-roam-v2-ack t)
-  :custom
-  (org-roam-directory (file-truename "~/Vault/pkm/slip-box/"))
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-	 ("C-c n f" . org-roam-node-find)
-	 ("C-c n g" . org-roam-graph)
-	 ("C-c n t" . org-roam-tag-add)
-	 ("C-c n i" . org-roam-node-insert)
-	 ("C-c n c" . org-roam-capture))
-  :config
-  (add-hook 'after-save-hook
-	    (defun org-rename-to-new-title ()
-	      (when-let*
-		  ((old-file (buffer-file-name))
-		   (is-roam-file (org-roam-file-p old-file))
-		   (file-node (save-excursion
-				(goto-char 1)
-				(org-roam-node-at-point)))
-		   (file-name  (file-name-base (org-roam-node-file file-node)))
-		   (file-time  (or (and (string-match "^\\([0-9]\\{14\\}\\)-" file-name)
-					(concat (match-string 1 file-name) "-"))
-				   ""))
-		   (slug (org-roam-node-slug file-node))
-		   (new-file (expand-file-name (concat file-time slug ".org")))
-		   (different-name? (not (string-equal old-file new-file))))
+  (use-package org-roam
+    :after org
+    :ensure t
+    :init
+    (setq org-roam-v2-ack t)
+    :custom
+    (org-roam-directory (file-truename "~/Vault/pkm/slip-box/"))
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+	   ("C-c n f" . org-roam-node-find)
+	   ("C-c n g" . org-roam-graph)
+	   ("C-c n t" . org-roam-tag-add)
+	   ("C-c n i" . org-roam-node-insert)
+	   ("C-c n c" . org-roam-capture))
+    :config
+    (add-hook 'after-save-hook
+	      (defun org-rename-to-new-title ()
+		(when-let*
+		    ((old-file (buffer-file-name))
+		     (is-roam-file (org-roam-file-p old-file))
+		     (file-node (save-excursion
+				  (goto-char 1)
+				  (org-roam-node-at-point)))
+		     (file-name  (file-name-base (org-roam-node-file file-node)))
+		     (file-time  (or (and (string-match "^\\([0-9]\\{14\\}\\)-" file-name)
+					  (concat (match-string 1 file-name) "-"))
+				     ""))
+		     (slug (org-roam-node-slug file-node))
+		     (new-file (expand-file-name (concat file-time slug ".org")))
+		     (different-name? (not (string-equal old-file new-file))))
 
-		(rename-buffer new-file)
-		(rename-file old-file new-file)
-		(set-visited-file-name new-file)
-		(set-buffer-modified-p nil))))
-  (org-roam-db-autosync-mode)
-  (setq org-roam-node-display-template (concat "${title} " (propertize "${tags}" 'face 'org-tag)))
-  ;; org-roam templates
-  (setq org-roam-capture-templates
-	'(("d" "default" plain "\n#+date: %U\n\n-----\n\n\n"
-	   :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			      "#+title: ${title}\n")
-	   :unnarrowed t)
-	  )))
+		  (rename-buffer new-file)
+		  (rename-file old-file new-file)
+		  (set-visited-file-name new-file)
+		  (set-buffer-modified-p nil))))
+    (org-roam-db-autosync-mode)
+    (setq org-roam-node-display-template (concat "${title} " (propertize "${tags}" 'face 'org-tag)))
+    ;; org-roam templates
+    (setq org-roam-capture-templates
+	  '(("d" "default" plain "\n#+date: %U\n\n-----\n\n\n"
+	     :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+				"#+title: ${title}\n")
+	     :unnarrowed t)
+	    )))
 
-;; configuring org-roam-ui to visualize my knowledge graph
-(use-package websocket
-  :ensure t
-  :after org-roam)
+  ;; configuring org-roam-ui to visualize my knowledge graph
+  (use-package websocket
+    :ensure t
+    :after org-roam)
 
-(use-package simple-httpd
-  :ensure t
-  :after org-roam)
+  (use-package simple-httpd
+    :ensure t
+    :after org-roam)
 
-(use-package org-roam-ui
-  :ensure t
-  :after org-roam
-  :config
-  (setq org-roam-ui-sync-theme nil
-	org-roam-ui-follow t
-	org-roam-ui-update-on-save t))
+  (use-package org-roam-ui
+    :ensure t
+    :after org-roam
+    :config
+    (setq org-roam-ui-sync-theme nil
+	  org-roam-ui-follow t
+	  org-roam-ui-update-on-save t))
 
-(use-package org-sidebar
-  :ensure t
-  :bind
-  (("C-c f b b" . org-sidebar-backlinks)
-   ("C-c f b s" . org-sidebar-toggle)
-   ("C-c f b t" . org-sidebar-tree))
-  :custom
-  (org-directory "~/Vault/pkm/pages"))
+  (use-package org-sidebar
+    :ensure t
+    :bind
+    (("C-c f b b" . org-sidebar-backlinks)
+     ("C-c f b s" . org-sidebar-toggle)
+     ("C-c f b t" . org-sidebar-tree))
+    :custom
+    (org-directory "~/Vault/pkm/pages"))
 #+end_src
 
 **** Citar
@@ -897,21 +950,21 @@ Using the superior citation manager.
 Searching through roam entries could be a painful experience. =deft= fix this.
 
 #+begin_src emacs-lisp
-(use-package deft
-  :ensure t
-  :bind ("C-c d" . deft)
-  :custom
-  (deft-directory "~/Vault/pkm/pages/")
-  (deft-extensions '("org"))
-  (deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n")
-  (deft-recursive t)  
-  :config
-  ;; set the deft directory and file extensions
-  (defun anks-deft-limiting-fn (orig-fun &rest args)
-    (let
-        ((deft-current-files (-take 30 deft-current-files)))
-      (apply orig-fun args)))
-  (advice-add 'deft-buffer-setup :around #'anks-deft-limiting-fn))
+  (use-package deft
+    :ensure t
+    :bind ("C-c d" . deft)
+    :custom
+    (deft-directory "~/Vault/pkm/pages/")
+    (deft-extensions '("org"))
+    (deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n")
+    (deft-recursive t)  
+    :config
+    ;; set the deft directory and file extensions
+    (defun anks-deft-limiting-fn (orig-fun &rest args)
+      (let
+	  ((deft-current-files (-take 30 deft-current-files)))
+	(apply orig-fun args)))
+    (advice-add 'deft-buffer-setup :around #'anks-deft-limiting-fn))
 #+end_src
 
 *** Markdown mode
@@ -919,10 +972,10 @@ Searching through roam entries could be a painful experience. =deft= fix this.
 I also modify files in markdown format.
 
 #+begin_src emacs-lisp
-(use-package markdown-mode
-  :ensure t
-  :mode ("README\\.md\\'" . gfm-mode)
-  :init (setq markdown-command "multimarkdown"))
+  (use-package markdown-mode
+    :ensure t
+    :mode ("README\\.md\\'" . gfm-mode)
+    :init (setq markdown-command "multimarkdown"))
 #+end_src
 	
 *** Skeletons
@@ -930,39 +983,39 @@ I also modify files in markdown format.
 I like to define my own skeletons to quickly insert recurring patterns.
 
 #+begin_src emacs-lisp
-(define-skeleton conference-attendance-skeleton
-  "Conference attendance log template for org files" nil
-  "*** Timetable\n*** Thoughts\n*** Notable talks")
+  (define-skeleton conference-attendance-skeleton
+    "Conference attendance log template for org files" nil
+    "*** Timetable\n*** Thoughts\n*** Notable talks")
 
-(define-skeleton talk-skeleton
-  "Conference talk log template for org files" nil
-  ":PROPERTIES:\n:SPEAKER:\n:END:\n")
+  (define-skeleton talk-skeleton
+    "Conference talk log template for org files" nil
+    ":PROPERTIES:\n:SPEAKER:\n:END:\n")
 
-(define-skeleton challenge-skeleton
-  "Headings for hacking challenges" nil
-  "**** Commands\n**** Walkthrough\n**** Resources")
+  (define-skeleton challenge-skeleton
+    "Headings for hacking challenges" nil
+    "**** Commands\n**** Walkthrough\n**** Resources")
 
-(define-skeleton exam-skeleton
-  "Exam log template for org files" nil
-  "- *Exam date(s)*:
-- *Exam type*:
-- *Feelings*:
-- *Mark(s)*:")
+  (define-skeleton exam-skeleton
+    "Exam log template for org files" nil
+    "- *Exam date(s)*:
+  - *Exam type*:
+  - *Feelings*:
+  - *Mark(s)*:")
 
-(define-skeleton pwn-ctf-skeleton
-  "Python template used to solve pwn challenges" nil
-  "from pwn import *
+  (define-skeleton pwn-ctf-skeleton
+    "Python template used to solve pwn challenges" nil
+    "from pwn import *
 
-context.terminal = ['tmux', 'splitw', '-v']
+  context.terminal = ['tmux', 'splitw', '-v']
 
-if \"REMOTE\" not in args:
-    r = process(\"\")
-    gdb.attach(r, \"\"\"
-    \"\"\")
+  if \"REMOTE\" not in args:
+      r = process(\"\")
+      gdb.attach(r, \"\"\"
+      \"\"\")
 
-    input(\"wait\")
-else:
-    r = remote(\"\", )")
+      input(\"wait\")
+  else:
+      r = remote(\"\", )")
 #+end_src
 
 *** Git
@@ -970,13 +1023,13 @@ else:
 Using magit as a front-end for git.
 
 #+begin_src emacs-lisp
-(use-package magit
-  :ensure t
-  :custom
-  (magit-send-email-workflow t)
-  (git-commit-fill-column 75))
+  (use-package magit
+    :ensure t
+    :custom
+    (magit-send-email-workflow t)
+    (git-commit-fill-column 75))
 
-;; (require 'git-email)
+  (require 'git-email)
 #+end_src
 
 *** Spellchecking
@@ -984,8 +1037,8 @@ Using magit as a front-end for git.
 Enabling spellchecking by default.
 
 #+begin_src emacs-lisp
-(dolist (hook '(text-mode-hook))
-  (add-hook hook (lambda () (flyspell-mode 1))))
+  (dolist (hook '(text-mode-hook))
+    (add-hook hook (lambda () (flyspell-mode 1))))
 #+end_src
 
 ** Bookmarks with ebuku
@@ -993,10 +1046,10 @@ Enabling spellchecking by default.
 I use buku as my bookmarks manager.
 
 #+begin_src emacs-lisp
-(use-package ebuku
-  :ensure t
-  :custom
-  (ebuku-buku-path "/usr/bin/buku"))
+  (use-package ebuku
+    :ensure t
+    :custom
+    (ebuku-buku-path "/usr/bin/buku"))
 #+end_src
 
 ** Finance
@@ -1004,8 +1057,8 @@ I use buku as my bookmarks manager.
 I use beancount to track my finances.
 
 #+begin_src emacs-lisp
-(require 'beancount)
-(add-to-list 'auto-mode-alist '("\\.beancount\\'" . beancount-mode))
+  (require 'beancount)
+  (add-to-list 'auto-mode-alist '("\\.beancount\\'" . beancount-mode))
 #+end_src
 
 ** Email
@@ -1013,68 +1066,68 @@ I use beancount to track my finances.
 I use ~mu4e~ as e-mail client.
 
 #+begin_src emacs-lisp
-	    (if (display-graphic-p)
-		(use-package mu4e
-			     :ensure nil
-			     :commands (mu4e)
-			     :after (org)
-			     :bind (("C-c m" . mu4e))
-			     :config
-			     (define-key mu4e-headers-mode-map (kbd "C-c c") 'mu4e-org-store-and-capture)
-			     (define-key mu4e-view-mode-map    (kbd "C-c c") 'mu4e-org-store-and-capture)
+  (if (display-graphic-p)
+      (use-package mu4e
+	:ensure nil
+	:commands (mu4e)
+	:after (org)
+	:bind (("C-c m" . mu4e))
+	:config
+	(define-key mu4e-headers-mode-map (kbd "C-c c") 'mu4e-org-store-and-capture)
+	(define-key mu4e-view-mode-map    (kbd "C-c c") 'mu4e-org-store-and-capture)
 
-			     (defun mg/org-capture-mail ()
-			       (interactive)
-			       (call-interactively 'org-store-link)
-			       (org-capture nil "im"))
+	(defun mg/org-capture-mail ()
+	  (interactive)
+	  (call-interactively 'org-store-link)
+	  (org-capture nil "im"))
 
-			     (define-key mu4e-headers-mode-map (kbd "C-c i") 'mg/org-capture-mail)
-			     (define-key mu4e-view-mode-map    (kbd "C-c i") 'mg/org-capture-mail)
-			     (setq mu4e-maildir (expand-file-name "~/Maildir")
-				   mu4e-use-fancy-chars nil
-				   mu4e-attachment-dir  "~/Downloads"
-				   message-send-mail-function 'message-send-mail-with-sendmail
-				   sendmail-program "/usr/bin/msmtp"
-				   message-kill-buffer-on-exit t
-				   mu4e-get-mail-command "mbsync -a"
-				   mu4e-update-interval 300
-				   mu4e-context-policy 'pick-first
-				   mu4e-headers-auto-update t
-				   mu4e-contexts
-				   `(,(make-mu4e-context
-				       :name "polimi"
-				       :enter-func (lambda () (mu4e-message "Switch to the polimi context"))
-				       :match-func (lambda (msg)
-						     (when msg
-						       (mu4e-message-contact-field-matches msg
-											   :to "claudio.migliorelli@mail.polimi.it")))
-				       :vars '((mu4e-sent-folder       . "/polimi/sent")
-					       (mu4e-drafts-folder     . "/polimi/drafts")
-					       (mu4e-trash-folder      . "/polimi/trash")
-					       (user-mail-address	   . "claudio.migliorelli@mail.polimi.it")
-					       (user-full-name	   . "Claudio Migliorelli" )
-					       (mu4e-maildir-shortcuts . (("/polimi/INBOX" . ?i)
-									  ("/polimi/sent" . ?s)
-									  ("/polimi/drafts" . ?d)
-									  ("/polimi/trash" . ?t)))
-					       (mu4e-sent-messages-behavior . delete)))))
-			     (setq mu4e-headers-thread-single-orphan-prefix '("└>" . " ")
-				   mu4e-headers-thread-child-prefix '("└> " . " ")
-				   mu4e-headers-thread-last-child-prefix '("└> " . " ")
-				   mu4e-headers-thread-connection-prefix '("│ " . " ")
-				   mu4e-headers-thread-orphan-prefix '("└>" . " ")
-				   mu4e-headers-thread-root-prefix '("> " . " "))
-			     (with-eval-after-load "mm-decode"
-			       (add-to-list 'mm-discouraged-alternatives "text/html")
-			       (add-to-list 'mm-discouraged-alternatives "text/richtext"))
-			     (defun mg/message-insert-citation-line ()
-			       "Based off `message-insert-citation-line`."
-			       (when message-reply-headers
-				 (insert "On " (format-time-string "%a, %d %b %Y %H:%M:%S %z" (date-to-time (mail-header-date message-reply-headers))) " ")
-				 (insert (mail-header-from message-reply-headers) " wrote:")
-				 (newline)
-				 (newline)))
-			     (setq message-citation-line-function 'mg/message-insert-citation-line)))
+	(define-key mu4e-headers-mode-map (kbd "C-c i") 'mg/org-capture-mail)
+	(define-key mu4e-view-mode-map    (kbd "C-c i") 'mg/org-capture-mail)
+	(setq mu4e-maildir (expand-file-name "~/Maildir")
+	      mu4e-use-fancy-chars nil
+	      mu4e-attachment-dir  "~/Downloads"
+	      message-send-mail-function 'message-send-mail-with-sendmail
+	      sendmail-program "/usr/bin/msmtp"
+	      message-kill-buffer-on-exit t
+	      mu4e-get-mail-command "mbsync -a"
+	      mu4e-update-interval 300
+	      mu4e-context-policy 'pick-first
+	      mu4e-headers-auto-update t
+	      mu4e-contexts
+	      `(,(make-mu4e-context
+		  :name "polimi"
+		  :enter-func (lambda () (mu4e-message "Switch to the polimi context"))
+		  :match-func (lambda (msg)
+				(when msg
+				  (mu4e-message-contact-field-matches msg
+								      :to "claudio.migliorelli@mail.polimi.it")))
+		  :vars '((mu4e-sent-folder       . "/polimi/sent")
+			  (mu4e-drafts-folder     . "/polimi/drafts")
+			  (mu4e-trash-folder      . "/polimi/trash")
+			  (user-mail-address	   . "claudio.migliorelli@mail.polimi.it")
+			  (user-full-name	   . "Claudio Migliorelli" )
+			  (mu4e-maildir-shortcuts . (("/polimi/INBOX" . ?i)
+						     ("/polimi/sent" . ?s)
+						     ("/polimi/drafts" . ?d)
+						     ("/polimi/trash" . ?t)))
+			  (mu4e-sent-messages-behavior . delete)))))
+	(setq mu4e-headers-thread-single-orphan-prefix '("└>" . " ")
+	      mu4e-headers-thread-child-prefix '("└> " . " ")
+	      mu4e-headers-thread-last-child-prefix '("└> " . " ")
+	      mu4e-headers-thread-connection-prefix '("│ " . " ")
+	      mu4e-headers-thread-orphan-prefix '("└>" . " ")
+	      mu4e-headers-thread-root-prefix '("> " . " "))
+	(with-eval-after-load "mm-decode"
+	  (add-to-list 'mm-discouraged-alternatives "text/html")
+	  (add-to-list 'mm-discouraged-alternatives "text/richtext"))
+	(defun mg/message-insert-citation-line ()
+	  "Based off `message-insert-citation-line`."
+	  (when message-reply-headers
+	    (insert "On " (format-time-string "%a, %d %b %Y %H:%M:%S %z" (date-to-time (mail-header-date message-reply-headers))) " ")
+	    (insert (mail-header-from message-reply-headers) " wrote:")
+	    (newline)
+	    (newline)))
+	(setq message-citation-line-function 'mg/message-insert-citation-line)))
 #+end_src
 
 ** EXWM
@@ -1082,182 +1135,182 @@ I use ~mu4e~ as e-mail client.
 Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 
 #+begin_src emacs-lisp
-(defun mg/exwm-update-class ()
-  (exwm-workspace-rename-buffer exwm-class-name))
+  (defun mg/exwm-update-class ()
+    (exwm-workspace-rename-buffer exwm-class-name))
 
-(use-package exwm
-  :config
-  (setq exwm-workspace-number 6)
-  (add-hook 'exwm-update-class-hook #'mg/exwm-update-class)
+  (use-package exwm
+    :config
+    (setq exwm-workspace-number 6)
+    (add-hook 'exwm-update-class-hook #'mg/exwm-update-class)
 
-  (require 'exwm-systemtray)
-  (exwm-systemtray-enable)
-  (setq exwm-systemtray-height 20)
+    (require 'exwm-systemtray)
+    (exwm-systemtray-enable)
+    (setq exwm-systemtray-height 15)
 
-  (require 'exwm-randr)
-  (exwm-randr-enable)
+    (require 'exwm-randr)
+    (exwm-randr-enable)
 
-  (setq exwm-randr-workspace-monitor-plist '(2 "HDMI1" 5 "HDMI1"))
+    (setq exwm-randr-workspace-monitor-plist '(2 "HDMI1" 5 "HDMI1"))
 
-  ;; these keys should always pass through emacs
-  (setq exwm-input-prefix-keys
-    '(?\C-x
-      ?\C-u
-      ?\C-n
-      ?\C-t
-      ?\C-h
-      ?\C-p
-      ?\C-g
-      ?\M-x
-      ?\M-`
-      ?\M-&
-      ?\M-:
-      ?\C-\M-j  ;; buffer list
-      ?\C-\ ))  ;; ctrl+space
+    ;; these keys should always pass through emacs
+    (setq exwm-input-prefix-keys
+	  '(?\C-x
+	    ?\C-u
+	    ?\C-n
+	    ?\C-t
+	    ?\C-h
+	    ?\C-p
+	    ?\C-g
+	    ?\M-x
+	    ?\M-`
+	    ?\M-&
+	    ?\M-:
+	    ?\C-\M-j  ;; buffer list
+	    ?\C-\ ))  ;; ctrl+space
 
-  ;; map sequences to be sent to X applications using emacs kebindings
-  (setq exwm-input-simulation-keys
-      '(([?\C-b] . [left])
-	([?\C-f] . [right])
-	([?\C-p] . [up])
-	([?\C-n] . [down])
-	([?\C-a] . [home])
-	([?\C-e] . [end])
-	([?\M-v] . [prior])
-	([?\C-v] . [next])
-	([?\C-d] . [delete])
-	([?\C-k] . [S-end delete])))
+    ;; map sequences to be sent to X applications using emacs kebindings
+    (setq exwm-input-simulation-keys
+	  '(([?\C-b] . [left])
+	    ([?\C-f] . [right])
+	    ([?\C-p] . [up])
+	    ([?\C-n] . [down])
+	    ([?\C-a] . [home])
+	    ([?\C-e] . [end])
+	    ([?\M-v] . [prior])
+	    ([?\C-v] . [next])
+	    ([?\C-d] . [delete])
+	    ([?\C-k] . [S-end delete])))
 
-  (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
+    (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
 
-  (setq exwm-layout-show-all-buffers t)
+    (setq exwm-layout-show-all-buffers t)
 
-  (exwm-input-set-key
-   (kbd "<XF86MonBrightnessUp>")
-   (lambda ()
-     (interactive)
-     (start-process-shell-command
-      "xbacklight" nil "xbacklight -inc 5")))
+    (exwm-input-set-key
+     (kbd "<XF86MonBrightnessUp>")
+     (lambda ()
+       (interactive)
+       (start-process-shell-command
+	"xbacklight" nil "xbacklight -inc 5")))
 
-  (exwm-input-set-key
-   (kbd "<XF86MonBrightnessDown>")
-   (lambda ()
-     (interactive)
-     (start-process-shell-command
-      "xbacklight" nil "xbacklight -dec 5")))
+    (exwm-input-set-key
+     (kbd "<XF86MonBrightnessDown>")
+     (lambda ()
+       (interactive)
+       (start-process-shell-command
+	"xbacklight" nil "xbacklight -dec 5")))
 
-  ;; set up global key bindings
-  ;; keep in mind that changing this list after EXWM initializes has no effect
-  (setq exwm-input-global-keys
-	`(
-	  ;; reset to line-mode (C-c C-k switches to char-mode via exwm-input-release-keyboard)
-	  ([?\s-r] . exwm-reset)
+    ;; set up global key bindings
+    ;; keep in mind that changing this list after EXWM initializes has no effect
+    (setq exwm-input-global-keys
+	  `(
+	    ;; reset to line-mode (C-c C-k switches to char-mode via exwm-input-release-keyboard)
+	    ([?\s-r] . exwm-reset)
 
-	  ;; delete window
-	  ([?\s-k]
-	   . delete-window)
+	    ;; delete window
+	    ([?\s-k]
+	     . delete-window)
 
-	  ;; move between windows
-	  ([s-left] . windmove-left)
-	  ([s-right] . windmove-right)
-	  ([s-up] . windmove-up)
-	  ([s-down] . windmove-down)
+	    ;; move between windows
+	    ([s-left] . windmove-left)
+	    ([s-right] . windmove-right)
+	    ([s-up] . windmove-up)
+	    ([s-down] . windmove-down)
 
-	  ;; move window to another workspace
-	  ([?\s-m] . exwm-workspace-move-window)
+	    ;; move window to another workspace
+	    ([?\s-m] . exwm-workspace-move-window)
 
-	  ;; launch applications via shell command
-	  ([?\s-\ ] .
-	   (lambda ()
-	     (interactive)
-	     (mg/consult-xstarter)))
+	    ;; launch applications via shell command
+	    ([?\s-\ ] .
+	     (lambda ()
+	       (interactive)
+	       (mg/consult-xstarter)))
 
-	  ;; switch workspace
-	  ([?\s-w] . exwm-workspace-switch)
-	  ([?\s-`] . (lambda () (interactive) (exwm-workspace-switch-create 0)))
+	    ;; switch workspace
+	    ([?\s-w] . exwm-workspace-switch)
+	    ([?\s-`] . (lambda () (interactive) (exwm-workspace-switch-create 0)))
 
-	  ;; utilities
-	  ([?\s-b] .
-	   (lambda ()
-	     (interactive)
-	     (start-process "" nil "/usr/bin/chromium")))
-	  ([?\s-i] .
-	   (lambda ()
-	     (interactive)
-	     (start-process "" nil "/usr/bin/setxkbmap" "it")))
-	  ([?\s-u] .
-	   (lambda ()
-	     (interactive)
-	     (start-process "" nil "/usr/bin/setxkbmap" "us")))
-	  ([?\s-p] .
-	   (lambda ()
-	     (interactive)
-	     (start-process "" nil "/usr/bin/shutdown" "now")))	  
+	    ;; utilities
+	    ([?\s-b] .
+	     (lambda ()
+	       (interactive)
+	       (start-process "" nil "/usr/bin/pulse-browser")))
+	    ([?\s-i] .
+	     (lambda ()
+	       (interactive)
+	       (start-process "" nil "/usr/bin/setxkbmap" "it")))
+	    ([?\s-u] .
+	     (lambda ()
+	       (interactive)
+	       (start-process "" nil "/usr/bin/setxkbmap" "us")))
+	    ([?\s-p] .
+	     (lambda ()
+	       (interactive)
+	       (start-process "" nil "/usr/bin/shutdown" "now")))	  
 
-	  ,@(mapcar (lambda (i)
-		      `(,(kbd (format "s-%d" i)) .
-			(lambda ()
-			  (interactive)
-			  (exwm-workspace-switch-create ,i))))
-		    (number-sequence 0 9))))
-  (add-hook 'exwm-init-hook
-	    (lambda ()
-	      (progn
-		(start-process "blueberry-tray" nil "blueberry-tray")
-		(start-process "xset" nil "xset" "s 300 5")
-		(start-process "nm-applet" nil "nm-applet")
-		(start-process "redshift" nil "redshift")
-		(start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)
-  (exwm-enable))
+	    ,@(mapcar (lambda (i)
+			`(,(kbd (format "s-%d" i)) .
+			  (lambda ()
+			    (interactive)
+			    (exwm-workspace-switch-create ,i))))
+		      (number-sequence 0 9))))
+    (add-hook 'exwm-init-hook
+	      (lambda ()
+		(progn
+		  (start-process "blueberry-tray" nil "blueberry-tray")
+		  (start-process "xset" nil "xset" "s 300 5")
+		  (start-process "nm-applet" nil "nm-applet")
+		  (start-process "redshift" nil "redshift")
+		  (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)
+    (exwm-enable))
 
-(use-package desktop-environment
-  :ensure t
-  :after (exwm)
-  :config
-  (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>") #'desktop-environment-volume-increment)
-  (exwm-input-set-key (kbd "<XF86AudioLowerVolume>") #'desktop-environment-volume-decrement)
-  (exwm-input-set-key (kbd "<XF86AudioMute>") #'desktop-environment-toggle-mute)
-  (exwm-input-set-key (kbd "s-l") #'desktop-environment-lock-screen)
-  (exwm-input-set-key (kbd "<XF86AudioPlay>") #'desktop-environment-toggle-music)
-  (exwm-input-set-key (kbd "<XF86AudioPause>") #'desktop-environment-toggle-music)
-  (exwm-input-set-key (kbd "<XF86AudioNext>") #'desktop-environment-music-next)
-  (exwm-input-set-key (kbd "s-s") #'desktop-environment-screenshot-part)
-  :custom
-  (desktop-environment-volume-get-command "pamixer --get-volume")
-  (desktop-environment-volume-set-command "pamixer %s")
-  (desktop-environment-volume-toggle-regexp nil)
-  (desktop-environment-volume-get-regexp "\\([0-9]+\\)")
-  (desktop-environment-volume-normal-increment "-i 5 --allow-boost")
-  (desktop-environment-volume-normal-decrement "-d 5")
-  (desktop-environment-volume-toggle-command "pamixer -t")
-  (desktop-environment-screenshot-directory "/home/claudio/Vault/pkm/assets")
-  (desktop-environment-screenshot-command "scrot -s")
-  (desktop-environment-screenshot-delay-argument nil)
-  (desktop-environment-screenshot-partial-command "import png:- | xclip -selection c -t image/png -verbose")
-  (desktop-environment-screenlock-command "xsecurelock"))
+  (use-package desktop-environment
+    :ensure t
+    :after (exwm)
+    :config
+    (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>") #'desktop-environment-volume-increment)
+    (exwm-input-set-key (kbd "<XF86AudioLowerVolume>") #'desktop-environment-volume-decrement)
+    (exwm-input-set-key (kbd "<XF86AudioMute>") #'desktop-environment-toggle-mute)
+    (exwm-input-set-key (kbd "s-l") #'desktop-environment-lock-screen)
+    (exwm-input-set-key (kbd "<XF86AudioPlay>") #'desktop-environment-toggle-music)
+    (exwm-input-set-key (kbd "<XF86AudioPause>") #'desktop-environment-toggle-music)
+    (exwm-input-set-key (kbd "<XF86AudioNext>") #'desktop-environment-music-next)
+    (exwm-input-set-key (kbd "s-s") #'desktop-environment-screenshot-part)
+    :custom
+    (desktop-environment-volume-get-command "pamixer --get-volume")
+    (desktop-environment-volume-set-command "pamixer %s")
+    (desktop-environment-volume-toggle-regexp nil)
+    (desktop-environment-volume-get-regexp "\\([0-9]+\\)")
+    (desktop-environment-volume-normal-increment "-i 5 --allow-boost")
+    (desktop-environment-volume-normal-decrement "-d 5")
+    (desktop-environment-volume-toggle-command "pamixer -t")
+    (desktop-environment-screenshot-directory "/home/claudio/Vault/pkm/assets")
+    (desktop-environment-screenshot-command "scrot -s")
+    (desktop-environment-screenshot-delay-argument nil)
+    (desktop-environment-screenshot-partial-command "import png:- | xclip -selection c -t image/png -verbose")
+    (desktop-environment-screenlock-command "xsecurelock"))
 
-(use-package bluetooth)
+  (use-package bluetooth)
 
-(use-package time
-  :ensure t
-  :after (exwm)
-  :custom
-  (display-time-format "[%d/%b %H:%M]")
-  (display-time-use-mail-icon nil)
-  (display-time-mail-string "📫")
-  (display-time-mail-directory nil)
-  (display-time-mail-function
-   (lambda ()
-     (-some-p #'integerp (mapcar
-			  (lambda (maildir)
-			    (let ((display-time-mail-directory maildir))
-			      (display-time-mail-check-directory)))
-			  (file-expand-wildcards "~/Maildir/*/INBOX/new")))))
+  (use-package time
+    :ensure t
+    :after (exwm)
+    :custom
+    (display-time-format "[%d/%b %H:%M]")
+    (display-time-use-mail-icon nil)
+    (display-time-mail-string "📫")
+    (display-time-mail-directory nil)
+    (display-time-mail-function
+     (lambda ()
+       (-some-p #'integerp (mapcar
+			    (lambda (maildir)
+			      (let ((display-time-mail-directory maildir))
+				(display-time-mail-check-directory)))
+			    (file-expand-wildcards "~/Maildir/*/INBOX/new")))))
 
 
-  :config
-  (display-time-mode)
-  (display-battery-mode))
+    :config
+    (display-time-mode)
+    (display-battery-mode))
 #+end_src
 
 ** Browser
@@ -1265,10 +1318,13 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 I use an emacs client to use the w3m text-based browser.
 
 #+begin_src emacs-lisp
-(use-package w3m
-  :ensure t
-  :bind
-  (("C-c f w" . w3m)))
+  (use-package eww
+    :ensure nil
+    :bind
+    (("C-c f w" . eww))
+    :custom
+    (eww-use-external-browser-for-content-type
+     "\\`\\(video/\\|audio/\\|application/ogg\\|application/pdf\\)"))
 #+end_src
 
 ** RSS reader
@@ -1276,24 +1332,24 @@ I use an emacs client to use the w3m text-based browser.
 Using elfeed as my preferred RSS feed manager.
 
 #+begin_src emacs-lisp
-(use-package elfeed
-  :ensure t
-  :bind (("C-c e" . elfeed))
-  :custom
-  (elfeed-feeds
-	'("https://news.ycombinator.com/rss"
-	  "https://seclists.org/rss/fulldisclosure.rss"
-	  "https://ournextlife.com/feed/"
-	  "https://www.frugalwoods.com/feed/"
-	  "https://moretothat.com/feed/"
-	  "https://calnewport.com/feed/"
-	  "https://xkcd.com/atom.xml"
-	  "https://feeds.feedburner.com/TheHackersNews?format=xml"
-	  "https://www.kernel.org/feeds/kdist.xml"
-	  "https://9to5linux.com/feed/atom"
-	  "https://fs.blog/feed/"
-	  "https://www.phoronix.com/rss.php"
-	  "https://www.schneier.com/feed/")))
+  (use-package elfeed
+    :ensure t
+    :bind (("C-c e" . elfeed))
+    :custom
+    (elfeed-feeds
+     '("https://news.ycombinator.com/rss"
+       "https://seclists.org/rss/fulldisclosure.rss"
+       "https://ournextlife.com/feed/"
+       "https://www.frugalwoods.com/feed/"
+       "https://moretothat.com/feed/"
+       "https://calnewport.com/feed/"
+       "https://xkcd.com/atom.xml"
+       "https://feeds.feedburner.com/TheHackersNews?format=xml"
+       "https://www.kernel.org/feeds/kdist.xml"
+       "https://9to5linux.com/feed/atom"
+       "https://fs.blog/feed/"
+       "https://www.phoronix.com/rss.php"
+       "https://www.schneier.com/feed/")))
 #+end_src
 
 ** Programming stuff
@@ -1302,18 +1358,18 @@ Using elfeed as my preferred RSS feed manager.
 Using some snippets to make my writing experience faster.
 
 #+begin_src emacs-lisp
-(use-package yasnippet
-  :ensure t
-  :config
-  (setq yasnippet-snippets-dir '())
-  (setq yas-snippet-dirs
-	'("~/.emacs.d/private/cm.snippets"                                              ;; personal snippets
-          ))
-  (yas-global-mode 1))
+  (use-package yasnippet
+    :ensure t
+    :config
+    (setq yasnippet-snippets-dir '())
+    (setq yas-snippet-dirs
+	  '("~/.emacs.d/private/cm.snippets"                                              ;; personal snippets
+	    ))
+    (yas-global-mode 1))
 
-(use-package yasnippet-snippets
-  :after yasnippet
-  :ensure t)
+  (use-package yasnippet-snippets
+    :after yasnippet
+    :ensure t)
 #+end_src
 
 *** CTAGS
@@ -1333,10 +1389,10 @@ Using CTAGS for kernel development.
 Using tramp term to connect to ssh instances and edit files.
 
 #+begin_src emacs-lisp
-(use-package tramp
-  :ensure t
-  :init
-  (setq tramp-default-method "ssh"))
+  (use-package tramp
+    :ensure t
+    :init
+    (setq tramp-default-method "ssh"))
 #+end_src
 
 *** LSP
@@ -1344,44 +1400,44 @@ Using tramp term to connect to ssh instances and edit files.
 Using ~lsp-mode~ to handle IDE-like features.
 
 #+begin_src emacs-lisp
-(use-package nix-mode
-  :ensure t
-  :mode "\\.nix\\'")
+  (use-package nix-mode
+    :ensure t
+    :mode "\\.nix\\'")
 
-(use-package lua-mode
-  :ensure t
-  :mode "\\.lua\\'")
+  (use-package lua-mode
+    :ensure t
+    :mode "\\.lua\\'")
 
-(use-package dockerfile-mode
-  :ensure t
-  :mode "\\.docker.file\\'" "\\Dockerfile\\'")
+  (use-package dockerfile-mode
+    :ensure t
+    :mode "\\.docker.file\\'" "\\Dockerfile\\'")
 
-(use-package racket-mode
-  :ensure t
-  :mode "\\.rkt\\'")
+  (use-package racket-mode
+    :ensure t
+    :mode "\\.rkt\\'")
 
-(use-package gnuplot
-  :ensure t)
+  (use-package gnuplot
+    :ensure t)
 
-(use-package eglot
-  :ensure t
-  :config
-  (add-to-list 'eglot-server-programs
-	       '((c-mode c++-mode)
-                 . ("clangd")))
-  (add-to-list 'eglot-server-programs
-	       '((racket-mode)
-		 . ("/home/claudio/.local/share/racket/8.10/bin/racket-language-server")))
-  (add-hook 'c-mode-hook 'eglot-ensure)
-  (add-hook 'python-mode-hook 'eglot-ensure))
+  (use-package eglot
+    :ensure t
+    :config
+    (add-to-list 'eglot-server-programs
+		 '((c-mode c++-mode)
+		   . ("clangd")))
+    (add-to-list 'eglot-server-programs
+		 '((racket-mode)
+		   . ("/home/claudio/.local/share/racket/8.10/bin/racket-language-server")))
+    (add-hook 'c-mode-hook 'eglot-ensure)
+    (add-hook 'python-mode-hook 'eglot-ensure))
 
-(use-package company
-  :ensure t
-  :config
-  (add-hook 'after-init-hook 'global-company-mode))
+  (use-package company
+    :ensure t
+    :config
+    (add-hook 'after-init-hook 'global-company-mode))
 
-(use-package docker-tramp
-  :ensure t)
+  (use-package docker-tramp
+    :ensure t)
 #+end_src
 
 *** Which key
@@ -1389,12 +1445,12 @@ Using ~lsp-mode~ to handle IDE-like features.
 Using which key to remind what keybinds to use to perform actions.
 
 #+begin_src emacs-lisp
-(use-package which-key
-  :ensure t
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 0.3))
+  (use-package which-key
+    :ensure t
+    :init (which-key-mode)
+    :diminish which-key-mode
+    :config
+    (setq which-key-idle-delay 0.3))
 #+end_src
 
 *** Terminal
@@ -1402,20 +1458,20 @@ Using which key to remind what keybinds to use to perform actions.
 I use ~vterm~ as terminal inside Emacs.
 
 #+begin_src emacs-lisp
-(use-package vterm
-  :ensure t)
+  (use-package vterm
+    :ensure t)
 
-(use-package multi-vterm
-  :ensure t
-  :bind (("C-c v" . multi-vterm)))
+  (use-package multi-vterm
+    :ensure t
+    :bind (("C-c v" . multi-vterm)))
 #+end_src
 *** Pythonenv
 
 Enable pythonenv inside Emacs.
 
 #+begin_src emacs-lisp
-(use-package pyvenv
-  :ensure t)
+  (use-package pyvenv
+    :ensure t)
 #+end_src
 
 *** Compilation
@@ -1423,53 +1479,53 @@ Enable pythonenv inside Emacs.
 Define compilation-specific tweaks to make the work faster.
 
 #+begin_src emacs-lisp
-(global-set-key (kbd "C-x c c") 'compile)
+  (global-set-key (kbd "C-x c c") 'compile)
 #+end_src
 * Misc custom functions
 
 Adding some custom functions I use to make my life easier.
 
 #+begin_src emacs-lisp
-;; copy a file in the current Dired directory
-(defun mg/dired-copy-file-here (file)
-  (interactive "fCopy file: ")
-  (copy-file file default-directory))
-(eval-after-load "dired"
-  '(define-key dired-mode-map "\M-c" 'dired-copy-file-here))
-(global-set-key (kbd "C-c f c") 'mg/copy-file)
+  ;; copy a file in the current Dired directory
+  (defun mg/dired-copy-file-here (file)
+    (interactive "fCopy file: ")
+    (copy-file file default-directory))
+  (eval-after-load "dired"
+    '(define-key dired-mode-map "\M-c" 'dired-copy-file-here))
+  (global-set-key (kbd "C-c f c") 'mg/copy-file)
 
-;; copy file name to clipboard
-(defun mg/copy-file-name-to-clipboard ()
-  "Copy the current buffer file name to the clipboard."
-  (interactive)
-  (let ((filename (if (equal major-mode 'dired-mode)
-                      default-directory
-					(buffer-file-name))))
-	(when filename
-      (kill-new filename)
-      (message "Copied buffer file name '%s' to the clipboard." filename))))
-(global-set-key (kbd "C-c f n") 'mg/copy-file-name-to-clipboard)
+  ;; copy file name to clipboard
+  (defun mg/copy-file-name-to-clipboard ()
+    "Copy the current buffer file name to the clipboard."
+    (interactive)
+    (let ((filename (if (equal major-mode 'dired-mode)
+			default-directory
+		      (buffer-file-name))))
+      (when filename
+	(kill-new filename)
+	(message "Copied buffer file name '%s' to the clipboard." filename))))
+  (global-set-key (kbd "C-c f n") 'mg/copy-file-name-to-clipboard)
 
-;; perform org-capture with a side org agenda
-(defun mg/agenda-w-capture ()
-  (interactive)
-  (split-window-right)
-  (let ((org-agenda-window-setup 'current-window))
-    (org-agenda nil "c"))
-  (org-capture))
+  ;; perform org-capture with a side org agenda
+  (defun mg/agenda-w-capture ()
+    (interactive)
+    (split-window-right)
+    (let ((org-agenda-window-setup 'current-window))
+      (org-agenda nil "c"))
+    (org-capture))
 
-;; enable pdf presentation mode
-(use-package hide-mode-line
-  :ensure t)
+  ;; enable pdf presentation mode
+  (use-package hide-mode-line
+    :ensure t)
 
-(defun mg/display-machine-info()
-  (interactive)
-  (message "System-level info => %s" (concat
-				    (format "BAT: %s- " (shell-command-to-string "~/.config/scripts/battery.sh"))
-				    (format "CPU: %s - " (shell-command-to-string "~/.config/scripts/cpu.sh"))			    
-				    (format "MEM: %s - " (shell-command-to-string "~/.config/scripts/ram.sh"))
-				    (format "DSK: %s - " (shell-command-to-string "~/.config/scripts/disk.sh"))
-				    (format "VOL: %s " (shell-command-to-string "~/.config/scripts/volume.sh")))))
-(global-set-key (kbd "C-c f s") 'mg/display-machine-info)
+  (defun mg/display-machine-info()
+    (interactive)
+    (message "System-level info => %s" (concat
+					(format "BAT: %s- " (shell-command-to-string "~/.config/scripts/battery.sh"))
+					(format "CPU: %s - " (shell-command-to-string "~/.config/scripts/cpu.sh"))			    
+					(format "MEM: %s - " (shell-command-to-string "~/.config/scripts/ram.sh"))
+					(format "DSK: %s - " (shell-command-to-string "~/.config/scripts/disk.sh"))
+					(format "VOL: %s " (shell-command-to-string "~/.config/scripts/volume.sh")))))
+  (global-set-key (kbd "C-c f s") 'mg/display-machine-info)
 
 #+end_src
