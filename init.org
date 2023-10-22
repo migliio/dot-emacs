@@ -128,13 +128,10 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
   (use-package winner
     :ensure nil)
 
-  (use-package action-on-region-str
-    :ensure nil
-    :bind
-    (("C-c f k s" . replace-string)
-     ("C-c f k c" . comment-region)
-     ("C-c f k u" . uncomment-region)
-     ("C-c f k i" . indent-region)))
+  (global-set-key (kbd "C-c f k s") #'replace-string)
+  (global-set-key (kbd "C-c f k c") #'comment-region)
+  (global-set-key (kbd "C-c f k u") #'uncomment-region)
+  (global-set-key (kbd "C-c f k i") #'indent-region)
 
   ;; enable some modes when programming
   (add-hook 'prog-mode-hook
@@ -477,14 +474,14 @@ I use ~rg~ to find file content easily.
 	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
 	     "* Meeting with %? :meeting:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
 	    ("ae" "Event entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
-	     "* %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTES:\nNOTIFY_BEFORE:\n:END:\n%^T\n")
+	     "* %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
 	    ("ae" "Call entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
 	     "* Call with %? :call:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
-	    ("F" "Flashcards")
-	    ("Fm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Mathematics")
-	     "* %^{Question} :drill:\n[%?]")
-	    ("Fk" "Kernel flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Kernel")
-	     "* %^{Question} :drill:\n[%?]")
+	    ("c" "Flashcards")
+	    ("cm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Mathematics")
+	     "* %U :drill:\n%^{Front}\n** Back\n%?")
+	    ("ck" "Kernel flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Kernel")
+	     "* %U :drill:\n%^{Front}\n** Back\n%?")
 	    ("r" "Resources")
 	    ("ra" "Conference attendance" entry
 	     (file "~/Vault/pkm/pages/conferences.org")
@@ -509,34 +506,7 @@ I use ~rg~ to find file content easily.
     ;; Org-agenda custom commands
     (setq org-agenda-block-separator "==============================================================================")
     (setq org-agenda-custom-commands
-	  '(("a" "Agenda"
-	     ((agenda ""
-		      ((org-agenda-skip-function
-			(lambda ()
-			  (or (org-agenda-skip-entry-if 'regexp ":framework:")
-			      (org-agenda-skip-entry-if 'deadline))))
-		      (org-agenda-span 1)
-		      (org-deadline-warning-days 0)))
-	      (todo "NEXT"
-		    ((org-agenda-skip-function
-		      '(org-agenda-skip-entry-if 'deadline))
-		     (org-agenda-prefix-format "  %i %-12:c [%e] ")
-		     (org-agenda-overriding-header "\nTasks\n")))
-	       (agenda "" ((org-agenda-time-grid nil)
-			   (org-agenda-start-day "+1d")
-			   (org-agenda-start-on-weekday nil)
-			   (org-agenda-span 30)
-			   (org-agenda-show-all-dates nil)
-			   (org-deadline-warning-days 0)
-			   (org-agenda-entry-types '(:deadline))
-			   (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-			   (org-agenda-overriding-header "\nUpcoming deadlines (+30d)\n")))	      
-	      (tags-todo "inbox"
-			 ((org-agenda-prefix-format "  %?-12t% s")
-			  (org-agenda-overriding-header "\nInbox\n")))
-	      (tags "CLOSED>=\"<today>\""
-		    ((org-agenda-overriding-header "\nCompleted today\n")))))
-	     ("c" "Custom agenda"
+	     '(("a" "Agenda"
 	      ((agenda ""
 		       ((org-agenda-span 1)
 			(org-agenda-skip-function
@@ -557,15 +527,13 @@ I use ~rg~ to find file content easily.
 			(org-deadline-warning-days 0)
 			(org-scheduled-past-days 14)
 			(org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-			(org-agenda-format-date "%A %-e %B %Y")
+			(org-agenda-format-date "%A %-e %B %Y")			
 			(org-agenda-overriding-header "Today's framework:\n")))
-	       (todo "NEXT"
-		     ((org-agenda-time-grid nil)
-		      (org-agenda-span 1)
-		      (org-deadline-warning-days 0)
-		      (org-scheduled-past-days 0)
-		      (org-agenda-skip-function '(org-agenda-skip-entry-if 'notscheduled))
-		      (org-agenda-overriding-header "NEXT tasks:\n")))
+	      (todo "NEXT"
+		    ((org-agenda-skip-function
+		      '(org-agenda-skip-entry-if 'deadline))
+		     (org-agenda-prefix-format "  %i %-12:c [%e] ")
+		     (org-agenda-overriding-header "\nNEXT Tasks:\n")))
 	       (agenda "" ((org-agenda-time-grid nil)
 			   (org-agenda-start-day "+1d")
 			   (org-agenda-start-on-weekday nil)
@@ -574,7 +542,12 @@ I use ~rg~ to find file content easily.
 			   (org-deadline-warning-days 0)
 			   (org-agenda-entry-types '(:deadline))
 			   (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-			   (org-agenda-overriding-header "\nUpcoming deadlines (+30d)\n")))
+			   (org-agenda-overriding-header "\nUpcoming deadlines (+30d):\n")))
+	      (tags-todo "inbox"
+			 ((org-agenda-prefix-format "  %?-12t% s")
+			  (org-agenda-overriding-header "\nInbox:\n")))
+	      (tags "CLOSED>=\"<today>\""
+		    ((org-agenda-overriding-header "\nCompleted today:\n")))
 	       (agenda ""
 		       ((org-agenda-start-on-weekday nil)
 			(org-agenda-skip-function
@@ -595,7 +568,10 @@ I use ~rg~ to find file content easily.
 	      (setq org-latex-pdf-process (list
 					   "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
 	      ))
-	  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+	  (setq org-format-latex-options
+		(plist-put org-format-latex-options :scale 1.5))
+	  (setq org-format-latex-options
+		(plist-put org-format-latex-options :background "Transparent"))
 	  (setq org-latex-create-formula-image-program 'dvisvgm)
 	  (require 'ox-latex)
 	  (add-to-list 'org-latex-classes
@@ -773,68 +749,76 @@ Install org-noter to deal with PDF notes.
 
 *** PKM utils
 
+Functions and utilities I do heavily use when working on pkm pages.
+
 #+begin_src emacs-lisp
-  (use-package mg-pkm
-    :ensure nil
-    :init
-  
-    (defun mg/open-pages-dir ()
-      "Open pages directory in dired"
-      (interactive)
-      (dired "~/Vault/pkm/pages"))
-  
-    (defun mg/open-pages-file ()
-      "Use consult to open a page under the pkm directory"
-      (interactive)
-      (require 'consult)
-      (let* ((candidates (split-string
-			  (shell-command-to-string "ls -d ~/Vault/pkm/pages/*")
-			  "\n"
-			  t))
-	     (file-path (consult--read
-			 candidates
-			 :prompt "Choose page: ")))
-	(org-open-file file-path)))
+  (defun mg/open-pages-dir ()
+    "Open pages directory in dired"
+    (interactive)
+    (dired "~/Vault/pkm/pages"))
 
-    (defun mg/search-store-link-heading-and-paste (rfile)
-      "Search an heading in rfile, do org-store-link on it and then yank the link"
-      (let* ((entries
-	      (mapcar (lambda (e)
-			(nth 4 e)) (org-map-entries (lambda () (org-heading-components)) t (list rfile))))
-	     (contact
-	      (consult--read
-	       entries
-	       :prompt "Choose contact: ")))
-	(when contact
-	  (save-excursion
-	    (with-current-buffer (find-file-noselect rfile)
-	      (goto-char (point-min))
-	      (when (re-search-forward (format "\\* %s" contact) nil t)
-		(progn
-		  (goto-char (line-beginning-position))
-		  (setq link (org-store-link 0))))))
-	  (insert link))))
+  (defun mg/open-pages-file ()
+    "Use consult to open a page under the pkm directory"
+    (interactive)
+    (require 'consult)
+    (let* ((candidates (split-string
+			(shell-command-to-string "ls -d ~/Vault/pkm/pages/*")
+			"\n"
+			t))
+	   (file-path (consult--read
+		       candidates
+		       :prompt "Choose page: ")))
+      (org-open-file file-path)))
 
-    (defun mg/search-store-link-contact-and-paste ()
-      "Search an heading in contacts file, do org-store-link and then yank the link"
-      (interactive)
-      (let ((contacts-file "~/Vault/pkm/pages/contacts.org"))
-	(mg/search-store-link-heading-and-paste contacts-file)))
+  (defun mg/search-store-link-heading-and-paste (rfile)
+    "Search an heading in rfile, do org-store-link on it and then yank the link"
+    (let* ((entries
+	    (mapcar (lambda (e)
+		      (nth 4 e)) (org-map-entries (lambda () (org-heading-components)) t (list rfile))))
+	   (contact
+	    (consult--read
+	     entries
+	     :prompt "Choose contact: ")))
+      (when contact
+	(save-excursion
+	  (with-current-buffer (find-file-noselect rfile)
+	    (goto-char (point-min))
+	    (when (re-search-forward (format "\\* %s" contact) nil t)
+	      (progn
+		(goto-char (line-beginning-position))
+		(setq link (org-store-link 0))))))
+	(insert link))))
 
-    (defun mg/search-store-link-place-and-paste ()
-      "Search an heading in contacts file, do org-store-link and then yank the link"
-      (interactive)
-      (let ((contacts-file "~/Vault/pkm/pages/places.org"))
-	(mg/search-store-link-heading-and-paste contacts-file)))
+  (defun mg/search-store-link-contact-and-paste ()
+    "Search an heading in contacts file, do org-store-link and then yank the link"
+    (interactive)
+    (let ((contacts-file "~/Vault/pkm/pages/contacts.org"))
+      (mg/search-store-link-heading-and-paste contacts-file)))
 
-    (defun mg/pdf-presentation-mode ()
-      (interactive)
-      (toggle-frame-fullscreen)
-      (hide-mode-line-mode)
-      (pdf-view-fit-page-to-window))
-    :bind (("C-c n p d" . mg/open-pages-dir)
-	   ("C-c n p f" . mg/open-pages-file)
-	   ("C-c n p p" . mg/pdf-presentation-mode)))
+  (defun mg/search-store-link-place-and-paste ()
+    "Search an heading in contacts file, do org-store-link and then yank the link"
+    (interactive)
+    (let ((places-file "~/Vault/pkm/pages/places.org"))
+      (mg/search-store-link-heading-and-paste places-file)))
+
+  (defun mg/search-store-link-course-and-paste ()
+    "Search an heading in contacts file, do org-store-link and then yank the link"
+    (interactive)
+    (let ((lectures-file "~/Vault/pkm/pages/lectures.org"))
+      (mg/search-store-link-heading-and-paste lectures-file)))
+
+  (defun mg/toggle-pdf-presentation-mode ()
+    (interactive)
+    (toggle-frame-fullscreen)
+    (hide-mode-line-mode)
+    (pdf-view-fit-page-to-window))
+
+  (global-set-key (kbd "C-c g p d") #'mg/open-pages-dir)
+  (global-set-key (kbd "C-c g p f") #'mg/open-pages-file)
+  (global-set-key (kbd "C-c g p p") #'mg/toggle-pdf-presentation-mode)
+  (global-set-key (kbd "C-c g l c") #'mg/search-store-link-contact-and-paste)
+  (global-set-key (kbd "C-c g l p") #'mg/search-store-link-place-and-paste)
+  (global-set-key (kbd "C-c g l l") #'mg/search-store-link-course-and-paste)
 #+end_src
 
 *** Zettelkasten
@@ -1184,6 +1168,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
     (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
 
     (setq exwm-layout-show-all-buffers t)
+    (setq exwm-workspace-show-all-buffers t)
 
     (exwm-input-set-key
      (kbd "<XF86MonBrightnessUp>")
@@ -1315,7 +1300,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 
 ** Browser
 
-I use an emacs client to use the w3m text-based browser.
+I use eww for quick search in a text-based format. Then, I also use engine-mode to quickly search stuff directly in emacs.
 
 #+begin_src emacs-lisp
   (use-package eww
@@ -1325,6 +1310,40 @@ I use an emacs client to use the w3m text-based browser.
     :custom
     (eww-use-external-browser-for-content-type
      "\\`\\(video/\\|audio/\\|application/ogg\\|application/pdf\\)"))
+
+  (use-package engine-mode
+    :ensure t
+    :config
+    (defun mg/engine-mode-exact-phrase-transform (search-term)
+      (if current-prefix-arg
+	  (concat "\"" search-term "\"")
+	search-term))
+    (defengine archwiki
+	       "https://wiki.archlinux.org/index.php?search=%s"
+	       :keybinding "a")
+    (defengine google
+		 "http://www.google.com/search?hl=en&ie=utf-8&oe=utf-8&q=%s"
+		 :keybinding "g"
+		 :term-transformation-hook mg/engine-mode-exact-phrase-transform)
+    (defengine google-maps
+	       "https://www.google.com/maps/search/%s/"
+	       :keybinding "M")
+    (defengine openstreetmap
+	       "https://www.openstreetmap.org/search?query=%s"
+	       :keybinding "m")
+    (defengine wordreference-iten
+	       "https://www.wordreference.com/iten/%s"
+	       :keybinding "i")
+    (defengine wordreference-enit
+	       "https://www.wordreference.com/enit/%s"
+	       :keybinding "e")
+    (defengine wikipedia
+	     "http://www.wikipedia.org/search-redirect.php?language=en&go=Go&search=%s"
+	     :keybinding "w")
+    (defengine youtube
+	       "http://www.youtube.com/results?aq=f&oq=&search_query=%s"
+	       :keybinding "y")
+    (engine-mode t))
 #+end_src
 
 ** RSS reader
