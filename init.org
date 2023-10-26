@@ -1,4 +1,4 @@
-+TITLE: GNU Emacs configuration file
+#+TITLE: GNU Emacs configuration file
 #+AUTHOR: Claudio Migliorelli (@miglio)
 #+PROPERTY: header-args:emacs-lisp :tangle init.el
 * Init work
@@ -133,6 +133,9 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
   (global-set-key (kbd "C-c f k u") #'uncomment-region)
   (global-set-key (kbd "C-c f k i") #'indent-region)
 
+  (global-set-key (kbd "C-c f b l") #'list-bookmarks)
+  (global-set-key (kbd "C-c f b s") #'bookmark-set)
+
   ;; enable some modes when programming
   (add-hook 'prog-mode-hook
 	    #'mg/line-numbers-highlight-line-mode)
@@ -165,12 +168,7 @@ Loading the preferred theme.
     :ensure t
     :config
     (minions-mode 1))
-
   (if (display-graphic-p)
-      ;; (progn
-      ;;   (set-frame-font "Liberation Mono 13" nil t)
-      ;;   (set-fringe-mode 0)
-      ;;   (use-package hc-zenburn-theme :ensure t :config (load-theme 'hc-zenburn t)))
       (progn
 	(load-theme 'modus-vivendi)
 	(set-fringe-mode 0)
@@ -472,11 +470,11 @@ I use ~rg~ to find file content easily.
 	     "* %U (%a)\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("a" "Agenda")
 	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
-	     "* Meeting with %? :meeting:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
+	     "* Meeting with %? :meeting:\n:PROPERTIES:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n%^T\n")
 	    ("ae" "Event entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
 	     "* %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
 	    ("ae" "Call entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
-	     "* Call with %? :call:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
+	     "* Call with %? :call:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:CATEGORY:\n:END:\n%^T\n")
 	    ("c" "Flashcards")
 	    ("cm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Mathematics")
 	     "* %U :drill:\n%^{Front}\n** Back\n%?")
@@ -757,6 +755,30 @@ Functions and utilities I do heavily use when working on pkm pages.
     (interactive)
     (dired "~/Vault/pkm/pages"))
 
+  (defun mg/check-and-toggle-deepwork-mode ()
+    "Check if deepwork-mode is enable, if so disable it, otherwise enable it"
+    (interactive)
+    (save-excursion
+      (with-current-buffer (find-file-noselect "/etc/hosts")
+	(goto-char (point-min))
+	(let ((default-directory "/sudo::/home/claudio/.scripts"))
+	  (progn
+	    (shell-command (concat "./deepwork_mode" (when (search-forward "#gsd" nil t)
+						       " --play")))))))
+    (kill-buffer "hosts")
+    (mg/check-deepwork-mode))
+
+  (defun mg/check-deepwork-mode ()
+    "Check if deepwork-mode is enable, if so disable it, otherwise enable it"
+    (interactive)
+    (save-excursion
+      (with-current-buffer (find-file-noselect "/etc/hosts")
+	(goto-char (point-min))
+	(if (search-forward "#gsd" nil t)
+	    (message "Deep work mode is enabled")
+	  (message "Deep work mode is disabled"))))
+    (kill-buffer "hosts"))
+
   (defun mg/open-pages-file ()
     "Use consult to open a page under the pkm directory"
     (interactive)
@@ -815,10 +837,13 @@ Functions and utilities I do heavily use when working on pkm pages.
 
   (global-set-key (kbd "C-c g p d") #'mg/open-pages-dir)
   (global-set-key (kbd "C-c g p f") #'mg/open-pages-file)
+  (global-set-key (kbd "C-x / f") #'mg/open-pages-file)
   (global-set-key (kbd "C-c g p p") #'mg/toggle-pdf-presentation-mode)
   (global-set-key (kbd "C-c g l c") #'mg/search-store-link-contact-and-paste)
   (global-set-key (kbd "C-c g l p") #'mg/search-store-link-place-and-paste)
   (global-set-key (kbd "C-c g l l") #'mg/search-store-link-course-and-paste)
+  (global-set-key (kbd "C-c g u d") #'mg/check-and-toggle-deepwork-mode)
+  (global-set-key (kbd "C-c g u c") #'mg/check-deepwork-mode)
 #+end_src
 
 *** Zettelkasten
@@ -888,9 +913,9 @@ Functions and utilities I do heavily use when working on pkm pages.
   (use-package org-sidebar
     :ensure t
     :bind
-    (("C-c f b b" . org-sidebar-backlinks)
-     ("C-c f b s" . org-sidebar-toggle)
-     ("C-c f b t" . org-sidebar-tree))
+    (("C-c g b b" . org-sidebar-backlinks)
+     ("C-c g b s" . org-sidebar-toggle)
+     ("C-c g b t" . org-sidebar-tree))
     :custom
     (org-directory "~/Vault/pkm/pages"))
 #+end_src
@@ -1230,7 +1255,17 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 	    ([?\s-p] .
 	     (lambda ()
 	       (interactive)
-	       (start-process "" nil "/usr/bin/shutdown" "now")))	  
+	       (start-process "" nil "/usr/bin/shutdown" "now")))
+	    ([?\s-f] .
+	     (lambda ()
+	       (interactive)
+	       (mg/check-and-toggle-deepwork-mode)))
+	    ([?\s-c] .
+	     (lambda ()
+	       (interactive)
+	       (start-process "" nil "/usr/bin/scrot" "-s /home/claudio/Vault/pkm/assets/$(date +%Y-%m-%d-%H-%M-%S)_screenshot.png")))
+
+
 
 	    ,@(mapcar (lambda (i)
 			`(,(kbd (format "s-%d" i)) .
@@ -1247,6 +1282,11 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 		  (start-process "redshift" nil "redshift")
 		  (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)
     (exwm-enable))
+
+  (use-package exwm-modeline
+    :ensure t
+    :config
+    (add-hook 'exwm-init-hook #'exwm-modeline-mode))
 
   (use-package desktop-environment
     :ensure t
@@ -1281,18 +1321,6 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
     :after (exwm)
     :custom
     (display-time-format "[%d/%b %H:%M]")
-    (display-time-use-mail-icon nil)
-    (display-time-mail-string "📫")
-    (display-time-mail-directory nil)
-    (display-time-mail-function
-     (lambda ()
-       (-some-p #'integerp (mapcar
-			    (lambda (maildir)
-			      (let ((display-time-mail-directory maildir))
-				(display-time-mail-check-directory)))
-			    (file-expand-wildcards "~/Maildir/*/INBOX/new")))))
-
-
     :config
     (display-time-mode)
     (display-battery-mode))
@@ -1345,7 +1373,7 @@ I use eww for quick search in a text-based format. Then, I also use engine-mode 
 	       :keybinding "y")
     (engine-mode t))
 #+end_src
-
+framework:
 ** RSS reader
 
 Using elfeed as my preferred RSS feed manager.
@@ -1415,10 +1443,8 @@ Using tramp term to connect to ssh instances and edit files.
 #+end_src
 
 *** LSP
+  (setq tab-always-indent 'complete)
 
-Using ~lsp-mode~ to handle IDE-like features.
-
-#+begin_src emacs-lisp
   (use-package nix-mode
     :ensure t
     :mode "\\.nix\\'")
@@ -1439,7 +1465,7 @@ Using ~lsp-mode~ to handle IDE-like features.
     :ensure t)
 
   (use-package eglot
-    :ensure t
+    :ensure nil
     :config
     (add-to-list 'eglot-server-programs
 		 '((c-mode c++-mode)
@@ -1454,9 +1480,7 @@ Using ~lsp-mode~ to handle IDE-like features.
     :ensure t
     :config
     (add-hook 'after-init-hook 'global-company-mode))
-
-  (use-package docker-tramp
-    :ensure t)
+    (add-hook 'after-init-hook 'global-company-mode))
 #+end_src
 
 *** Which key
@@ -1547,4 +1571,10 @@ Adding some custom functions I use to make my life easier.
 					(format "VOL: %s " (shell-command-to-string "~/.config/scripts/volume.sh")))))
   (global-set-key (kbd "C-c f s") 'mg/display-machine-info)
 
+  (defun mg/find-docker-and-enter-in-assets ()
+    "Find the running docker container and enter into the assets folder"
+    (interactive)
+    (let ((docker-id (replace-regexp-in-string "\n$" "" (shell-command-to-string "docker container ls | awk 'NR > 1 {print $1}' "))))
+      (find-file (concat "/docker:claudio@" docker-id ":/assets"))))
+  (global-set-key (kbd "C-c f d") 'mg/find-docker-and-enter-in-assets)
 #+end_src
