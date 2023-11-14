@@ -701,19 +701,6 @@ Functions and utilities I do heavily use when working on pkm pages.
 	  (message "Deep work mode is disabled"))))
     (kill-buffer "hosts"))
 
-  (defun mg/open-pages-file ()
-    "Use consult to open a page under the pkm directory"
-    (interactive)
-    (require 'consult)
-    (let* ((candidates (split-string
-			(shell-command-to-string "ls -d ~/Vault/pkm/pages/*")
-			"\n"
-			t))
-	   (file-path (consult--read
-		       candidates
-		       :prompt "Choose page: ")))
-      (org-open-file file-path)))
-
   (defun mg/find-page ()
     "Find a page under the pkm directory"
     (interactive)
@@ -1019,7 +1006,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
       "Choose the application to run"
       (interactive)
       (let* ((candidates (split-string
-			  (shell-command-to-string "xstarter -p")
+			  (shell-command-to-string "xstarter -P")
 			  "\n"
 			  t))
 	     (application-path (completing-read
@@ -1099,7 +1086,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 	    ([?\s-\ ] .
 	     (lambda ()
 	       (interactive)
-	       (mg/consult-xstarter)))
+	       (mg/starter)))
 
 	    ;; switch workspace
 	    ([?\s-w] . exwm-workspace-switch)
