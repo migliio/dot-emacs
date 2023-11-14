@@ -122,23 +122,23 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
       (progn
 	(display-line-numbers-mode 0)
 	(hl-line-mode 0))))
-  (bind-key "C-c f m h" #'mg/line-numbers-highlight-line-mode)
 
   ;; some useful global keybinds
   (use-package winner
     :ensure nil)
 
-  (global-set-key (kbd "C-c f k s") #'replace-string)
-  (global-set-key (kbd "C-c f k c") #'comment-region)
-  (global-set-key (kbd "C-c f k u") #'uncomment-region)
-  (global-set-key (kbd "C-c f k i") #'indent-region)
-
-  (global-set-key (kbd "C-c f b l") #'list-bookmarks)
-  (global-set-key (kbd "C-c f b s") #'bookmark-set)
-
   ;; enable some modes when programming
   (add-hook 'prog-mode-hook
 	    #'mg/line-numbers-highlight-line-mode)
+
+  (defun mg/new-empty-buffer ()
+    "create a new empty buffer"
+    (interactive)
+    (let ((mbuf (generate-new-buffer "untitled")))
+      (switch-to-buffer mbuf)
+      (funcall initial-major-mode)
+      mbuf
+      ))
 #+end_src
 
 ** Emacs auto-save
@@ -168,11 +168,12 @@ Loading the preferred theme.
     :ensure t
     :config
     (minions-mode 1))
+  
   (if (display-graphic-p)
       (progn
-	(load-theme 'modus-vivendi)
+	(set-frame-font "Liberation Mono 13" nil t)
 	(set-fringe-mode 0)
-	(set-frame-font "Terminus 14" nil t))
+	(use-package zenburn-theme :ensure t :config (load-theme 'zenburn t)))
     (set-face-background 'default "undefined"))
 #+end_src
 	
@@ -201,121 +202,19 @@ Trying some in-buffer completion framework that is not broken.
     :ensure t
     :custom
     (completion-styles '(orderless basic)))
-
-  (use-package consult
-    :ensure t
-    :bind (("C-c M-x" . nconsult-mode-command)
-	   ("C-c h" . consult-history)
-	   ("C-c k" . consult-kmacro)
-	   ([remap Info-search] . consult-info)
-
-	   ("C-x M-:" . consult-complex-command)
-	   ("C-x b" . consult-buffer)
-	   ("C-x 4 b" . consult-buffer-other-window)
-	   ("C-x 5 b" . consult-buffer-other-frame)
-	   ("C-x r b" . consult-bookmark)
-	   ("C-x p b" . consult-project-buffer)
-
-	   ("C-x r l" . consult-register-load)
-	   ("C-x r s" . consult-register-store)
-	   ("C-x r r" . consult-register)
-
-	   ("M-y" . consult-yank-pop)
-
-	   ("M-g e" . consult-compile-error)
-	   ("M-g f" . consult-flycheck)
-	   ("M-g g" . consult-goto-line)
-	   ("M-g M-g" . consult-goto-line)
-	   ("M-g o" . consult-outline)
-	   ("M-g m" . consult-mark)
-	   ("M-g k" . consult-global-mark)
-	   ("M-g i" . consult-imenu)
-	   ("M-g I" . consult-imenu-multi)
-
-	   ("M-s d" . consult-find)
-	   ("M-s D" . consult-locate)
-	   ("M-s g" . consult-grep)
-	   ("M-s G" . consult-git-grep)
-	   ("M-s r" . consult-ripgrep)
-	   ("M-s l" . consult-line)
-	   ("M-s L" . consult-line-multi)
-	   ("M-s k" . consult-keep-lines)
-	   ("M-s u" . consult-focus-lines)
-
-	   ("M-s e" . consult-isearch-history)
-	   :map isearch-mode-map
-	   ("M-e" . consult-isearch-history)
-	   ("M-s e" . consult-isearch-history)
-	   ("M-s l" . consult-line)
-	   ("M-s L" . consult-line-multi)
-	   ;; Minibuffer history
-	   :map minibuffer-local-map
-	   ("M-s" . consult-history)
-	   ("M-r" . consult-history))
-
-
-    :hook (completion-list-mode . consult-preview-at-point-mode)
-    :config
-    (setq completion-in-region-function
-	  (lambda (&rest args)
-	    (apply (if vertico-mode
-		       #'consult-completion-in-region
-		     #'completion--in-region)
-		   args)))
-    (consult-customize
-     consult-theme :preview-key '(:debounce 0.2 any)
-     consult-ripgrep consult-git-grep consult-grep
-     consult-bookmark consult-recent-file consult-xref
-     consult--source-bookmark consult--source-file-register
-     consult--source-recent-file consult--source-project-recent-file
-
-     :preview-key '(:debounce 0.4 any))
-    :init
-    (setq register-preview-delay 0.5
-	  register-preview-function #'consult-register-format)
-
-    (advice-add #'register-preview :override #'consult-register-window)
-
-    (setq xref-show-xrefs-function #'consult-xref
-	  xref-show-definitions-function #'consult-xref)
-    (defun mg/consult-xstarter ()
-      "Use consult to choose the application to run"
-      (interactive)
-      (require 'consult)
-      (let* ((candidates (split-string
-			  (shell-command-to-string "xstarter -P")
-			  "\n"
-			  t))
-	     (application-path (consult--read
-				candidates
-				:prompt "Application to launch: ")))
-	(start-process "" nil application-path)))
-
-    (setq consult-narrow-key "<"))
 #+end_src
 
 ** Files navigation
 
 #+begin_src emacs-lisp
-  (use-package projectile
-    :ensure t
-    :commands projectile-mode projectile-project-name
-    :init
-    (add-hook 'after-init-hook 'projectile-mode)
-    :custom
-    (setq projectile-indexing-method 'alien)
-    (setq projectile-project-search-path '("~/Repositories"))
-    (setq projectile-use-git-grep t)
-    (setq projectile-mode-line-prefix " Proj")
-    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
-
-  ;; some dired tweaks
   (use-package dired
     :ensure nil
+    :bind
+    (("c-x c-d" . dired))
     :custom
-    (setq ls-lisp-use-insert-directory-program nil
-	  ls-lisp-dirs-first t
-	  default-directory "~/")
+    (ls-lisp-use-insert-directory-program nil)
+    (ls-lisp-dirs-first t)
+    (default-directory "~/")
     ;; omit hidden files
     (setq dired-omit-files "^\\...+$")
     :init
@@ -329,11 +228,7 @@ Trying some in-buffer completion framework that is not broken.
 	  delete-by-moving-to-trash t))
 
   ;; toggle disk usage
-  (use-package disk-usage)
-
-  (use-package ibuffer
-    :ensure nil
-    :bind (("C-x C-b" . ibuffer)))
+  (use-package disk-usage)  
 #+end_src
 
 ** File visualization
@@ -380,7 +275,6 @@ I really love the ~undo-tree~ mode visualization, so I'm going to enable it.
     :ensure t
     :custom
     (undo-tree-auto-save-history nil)
-    (undo-tree-visualizer-timestamps t)
     (undo-tree-visualizer-relative-timestamps nil)
     :config
     (global-undo-tree-mode 1))
@@ -394,7 +288,24 @@ I use ~rg~ to find file content easily.
   (use-package deadgrep
     :ensure t
     :bind
-    (("C-c s" . deadgrep)))
+    (("C-c d" . deadgrep)))
+#+end_src
+
+*** Avy
+
+Move the cursor around like a velociraptor.
+
+#+begin_src emacs-lisp
+  (use-package avy
+    :ensure t
+    :after org
+    :config 
+    (eval-after-load
+	(define-key org-mode-map (kbd "C-c ,") nil)
+      (define-key org-mode-map (kbd "C-c ;") nil))
+    :bind
+    (("C-c ," . avy-goto-char)
+     ("C-c ;" . avy-goto-line)))
 #+end_src
 
 ** Personal knowledge management
@@ -421,14 +332,14 @@ I use ~rg~ to find file content easily.
   (use-package org
     :ensure t
     :bind (("C-c a" . org-agenda)
-	   ("C-c t" . org-insert-structure-template)
+	   ("C-c C-;" . org-insert-structure-template)
 	   ("C-c c" . org-capture)
 	   ("C-c C-z" . org-add-note)
 	   ("C-c l" . org-store-link))
     :custom
     (org-agenda-files (list "~/Vault/pkm/pages/teaching.org" "~/Vault/pkm/pages/inbox.org" "~/Vault/pkm/pages/agenda.org" "/home/claudio/Vault/pkm/pages/projects.org"))
     (org-id-extra-files '("~/Vault/pkm/pages/teaching.org" "~/Vault/pkm/pages/lectures.org"))
-    (org-export-backends '(beamer html latex ascii ox-reveal ox-hugo ox-twbs))
+    (org-export-backends '(beamer html latex ascii ox-hugo))
     (org-startup-folded t)
     (org-log-into-drawer t)
     (org-export-with-drawers nil)
@@ -477,9 +388,13 @@ I use ~rg~ to find file content easily.
 	     "* Call with %? :call:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:CATEGORY:\n:END:\n%^T\n")
 	    ("c" "Flashcards")
 	    ("cm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Mathematics")
-	     "* %U :drill:\n%^{Front}\n** Back\n%?")
+	     "* %U :mathematics:drill:\n%^{Front}\n** Back\n%?")
 	    ("ck" "Kernel flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Kernel")
-	     "* %U :drill:\n%^{Front}\n** Back\n%?")
+	     "* %U :kernel:drill:\n%^{Front}\n** Back\n%?")
+	    ("ct" "Theoretical computer science flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Theoretical computer science")
+	     "* %U :theoretical_computer_science:drill:\n%^{Front}\n** Back\n%?")
+	    ("ca" "Algoritms flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Algorithms")
+	     "* %U :algorithms:drill:\n%^{Front}\n** Back\n%?")
 	    ("r" "Resources")
 	    ("ra" "Conference attendance" entry
 	     (file "~/Vault/pkm/pages/conferences.org")
@@ -755,6 +670,13 @@ Functions and utilities I do heavily use when working on pkm pages.
     (interactive)
     (dired "~/Vault/pkm/pages"))
 
+  (defun mg/pkm-clean ()
+    "execute the pkm clean script directly from emacs"
+    (interactive)
+    (progn
+      (start-process "" nil "~/.scripts/pkm-clean")
+      (message "pkm clean executed")))
+
   (defun mg/check-and-toggle-deepwork-mode ()
     "Check if deepwork-mode is enable, if so disable it, otherwise enable it"
     (interactive)
@@ -792,15 +714,27 @@ Functions and utilities I do heavily use when working on pkm pages.
 		       :prompt "Choose page: ")))
       (org-open-file file-path)))
 
+  (defun mg/find-page ()
+    "Find a page under the pkm directory"
+    (interactive)
+    (let* ((candidates (split-string
+			(shell-command-to-string "ls -d ~/Vault/pkm/pages/*")
+			"\n"
+			t))
+	   (file-path (completing-read
+		       "Choose page: "
+		       candidates)))
+      (org-open-file file-path)))  
+
   (defun mg/search-store-link-heading-and-paste (rfile)
     "Search an heading in rfile, do org-store-link on it and then yank the link"
     (let* ((entries
 	    (mapcar (lambda (e)
 		      (nth 4 e)) (org-map-entries (lambda () (org-heading-components)) t (list rfile))))
 	   (contact
-	    (consult--read
-	     entries
-	     :prompt "Choose contact: ")))
+	    (completing-read
+	     "Choose contact: "
+	     entries)))
       (when contact
 	(save-excursion
 	  (with-current-buffer (find-file-noselect rfile)
@@ -834,16 +768,6 @@ Functions and utilities I do heavily use when working on pkm pages.
     (toggle-frame-fullscreen)
     (hide-mode-line-mode)
     (pdf-view-fit-page-to-window))
-
-  (global-set-key (kbd "C-c g p d") #'mg/open-pages-dir)
-  (global-set-key (kbd "C-c g p f") #'mg/open-pages-file)
-  (global-set-key (kbd "C-x / f") #'mg/open-pages-file)
-  (global-set-key (kbd "C-c g p p") #'mg/toggle-pdf-presentation-mode)
-  (global-set-key (kbd "C-c g l c") #'mg/search-store-link-contact-and-paste)
-  (global-set-key (kbd "C-c g l p") #'mg/search-store-link-place-and-paste)
-  (global-set-key (kbd "C-c g l l") #'mg/search-store-link-course-and-paste)
-  (global-set-key (kbd "C-c g u d") #'mg/check-and-toggle-deepwork-mode)
-  (global-set-key (kbd "C-c g u c") #'mg/check-deepwork-mode)
 #+end_src
 
 *** Zettelkasten
@@ -856,12 +780,12 @@ Functions and utilities I do heavily use when working on pkm pages.
     (setq org-roam-v2-ack t)
     :custom
     (org-roam-directory (file-truename "~/Vault/pkm/slip-box/"))
-    :bind (("C-c n l" . org-roam-buffer-toggle)
-	   ("C-c n f" . org-roam-node-find)
-	   ("C-c n g" . org-roam-graph)
-	   ("C-c n t" . org-roam-tag-add)
-	   ("C-c n i" . org-roam-node-insert)
-	   ("C-c n c" . org-roam-capture))
+    :bind (("C-c z l" . org-roam-buffer-toggle)
+	   ("C-c z f" . org-roam-node-find)
+	   ("C-c z g" . org-roam-graph)
+	   ("C-c z t" . org-roam-tag-add)
+	   ("C-c z i" . org-roam-node-insert)
+	   ("C-c z c" . org-roam-capture))
     :config
     (add-hook 'after-save-hook
 	      (defun org-rename-to-new-title ()
@@ -913,9 +837,9 @@ Functions and utilities I do heavily use when working on pkm pages.
   (use-package org-sidebar
     :ensure t
     :bind
-    (("C-c g b b" . org-sidebar-backlinks)
-     ("C-c g b s" . org-sidebar-toggle)
-     ("C-c g b t" . org-sidebar-tree))
+    (("C-c p s b" . org-sidebar-backlinks)
+     ("C-c p s t" . org-sidebar-toggle)
+     ("C-c p s o" . org-sidebar-tree))
     :custom
     (org-directory "~/Vault/pkm/pages"))
 #+end_src
@@ -934,7 +858,8 @@ Using the superior citation manager.
     (org-cite-activate-processor 'citar)
     (citar-bibliography org-cite-global-bibliography)
     :bind
-    (("C-c n o" . citar-open)
+    (("C-c z o" . citar-open)
+
      (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
     :config
     (setq citar-templates
@@ -954,28 +879,6 @@ Using the superior citation manager.
     (citar-org-roam-mode))
 #+end_src
 
-*** Deft
-
-Searching through roam entries could be a painful experience. =deft= fix this.
-
-#+begin_src emacs-lisp
-  (use-package deft
-    :ensure t
-    :bind ("C-c d" . deft)
-    :custom
-    (deft-directory "~/Vault/pkm/pages/")
-    (deft-extensions '("org"))
-    (deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n")
-    (deft-recursive t)  
-    :config
-    ;; set the deft directory and file extensions
-    (defun anks-deft-limiting-fn (orig-fun &rest args)
-      (let
-	  ((deft-current-files (-take 30 deft-current-files)))
-	(apply orig-fun args)))
-    (advice-add 'deft-buffer-setup :around #'anks-deft-limiting-fn))
-#+end_src
-
 *** Markdown mode
 
 I also modify files in markdown format.
@@ -987,60 +890,6 @@ I also modify files in markdown format.
     :init (setq markdown-command "multimarkdown"))
 #+end_src
 	
-*** Skeletons
-
-I like to define my own skeletons to quickly insert recurring patterns.
-
-#+begin_src emacs-lisp
-  (define-skeleton conference-attendance-skeleton
-    "Conference attendance log template for org files" nil
-    "*** Timetable\n*** Thoughts\n*** Notable talks")
-
-  (define-skeleton talk-skeleton
-    "Conference talk log template for org files" nil
-    ":PROPERTIES:\n:SPEAKER:\n:END:\n")
-
-  (define-skeleton challenge-skeleton
-    "Headings for hacking challenges" nil
-    "**** Commands\n**** Walkthrough\n**** Resources")
-
-  (define-skeleton exam-skeleton
-    "Exam log template for org files" nil
-    "- *Exam date(s)*:
-  - *Exam type*:
-  - *Feelings*:
-  - *Mark(s)*:")
-
-  (define-skeleton pwn-ctf-skeleton
-    "Python template used to solve pwn challenges" nil
-    "from pwn import *
-
-  context.terminal = ['tmux', 'splitw', '-v']
-
-  if \"REMOTE\" not in args:
-      r = process(\"\")
-      gdb.attach(r, \"\"\"
-      \"\"\")
-
-      input(\"wait\")
-  else:
-      r = remote(\"\", )")
-#+end_src
-
-*** Git
-
-Using magit as a front-end for git.
-
-#+begin_src emacs-lisp
-  (use-package magit
-    :ensure t
-    :custom
-    (magit-send-email-workflow t)
-    (git-commit-fill-column 75))
-
-  (require 'git-email)
-#+end_src
-
 *** Spellchecking
 
 Enabling spellchecking by default.
@@ -1082,6 +931,10 @@ I use ~mu4e~ as e-mail client.
 	:after (org)
 	:bind (("C-c m" . mu4e))
 	:config
+	(defun no-auto-fill ()
+	  "turn off auto-fill-mode."
+	  (auto-fill-mode -1))
+	(add-hook 'mu4e-compose-mode-hook #'no-auto-fill)
 	(define-key mu4e-headers-mode-map (kbd "C-c c") 'mu4e-org-store-and-capture)
 	(define-key mu4e-view-mode-map    (kbd "C-c c") 'mu4e-org-store-and-capture)
 
@@ -1099,6 +952,7 @@ I use ~mu4e~ as e-mail client.
 	      sendmail-program "/usr/bin/msmtp"
 	      message-kill-buffer-on-exit t
 	      mu4e-get-mail-command "mbsync -a"
+	      mu4e-compose-signature "\tClaudio\n"
 	      mu4e-update-interval 300
 	      mu4e-context-policy 'pick-first
 	      mu4e-headers-auto-update t
@@ -1160,6 +1014,18 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
     (exwm-randr-enable)
 
     (setq exwm-randr-workspace-monitor-plist '(2 "HDMI1" 5 "HDMI1"))
+
+    (defun mg/starter ()
+      "Choose the application to run"
+      (interactive)
+      (let* ((candidates (split-string
+			  (shell-command-to-string "xstarter -p")
+			  "\n"
+			  t))
+	     (application-path (completing-read
+				"Application to launch: "
+				candidates)))
+	(start-process "" nil application-path)))
 
     ;; these keys should always pass through emacs
     (setq exwm-input-prefix-keys
@@ -1334,7 +1200,7 @@ I use eww for quick search in a text-based format. Then, I also use engine-mode 
   (use-package eww
     :ensure nil
     :bind
-    (("C-c f w" . eww))
+    (("C-c w" . eww))
     :custom
     (eww-use-external-browser-for-content-type
      "\\`\\(video/\\|audio/\\|application/ogg\\|application/pdf\\)"))
@@ -1342,6 +1208,7 @@ I use eww for quick search in a text-based format. Then, I also use engine-mode 
   (use-package engine-mode
     :ensure t
     :config
+    (engine/set-keymap-prefix (kbd "C-c s"))
     (defun mg/engine-mode-exact-phrase-transform (search-term)
       (if current-prefix-arg
 	  (concat "\"" search-term "\"")
@@ -1373,7 +1240,7 @@ I use eww for quick search in a text-based format. Then, I also use engine-mode 
 	       :keybinding "y")
     (engine-mode t))
 #+end_src
-framework:
+
 ** RSS reader
 
 Using elfeed as my preferred RSS feed manager.
@@ -1399,7 +1266,7 @@ Using elfeed as my preferred RSS feed manager.
        "https://www.schneier.com/feed/")))
 #+end_src
 
-** Programming stuff
+** Coding stuff
 *** Snippets
 
 Using some snippets to make my writing experience faster.
@@ -1508,35 +1375,11 @@ I use ~vterm~ as terminal inside Emacs.
     :ensure t
     :bind (("C-c v" . multi-vterm)))
 #+end_src
-*** Pythonenv
-
-Enable pythonenv inside Emacs.
-
-#+begin_src emacs-lisp
-  (use-package pyvenv
-    :ensure t)
-#+end_src
-
-*** Compilation
-
-Define compilation-specific tweaks to make the work faster.
-
-#+begin_src emacs-lisp
-  (global-set-key (kbd "C-x c c") 'compile)
-#+end_src
 * Misc custom functions
 
 Adding some custom functions I use to make my life easier.
 
 #+begin_src emacs-lisp
-  ;; copy a file in the current Dired directory
-  (defun mg/dired-copy-file-here (file)
-    (interactive "fCopy file: ")
-    (copy-file file default-directory))
-  (eval-after-load "dired"
-    '(define-key dired-mode-map "\M-c" 'dired-copy-file-here))
-  (global-set-key (kbd "C-c f c") 'mg/copy-file)
-
   ;; copy file name to clipboard
   (defun mg/copy-file-name-to-clipboard ()
     "Copy the current buffer file name to the clipboard."
@@ -1547,15 +1390,6 @@ Adding some custom functions I use to make my life easier.
       (when filename
 	(kill-new filename)
 	(message "Copied buffer file name '%s' to the clipboard." filename))))
-  (global-set-key (kbd "C-c f n") 'mg/copy-file-name-to-clipboard)
-
-  ;; perform org-capture with a side org agenda
-  (defun mg/agenda-w-capture ()
-    (interactive)
-    (split-window-right)
-    (let ((org-agenda-window-setup 'current-window))
-      (org-agenda nil "c"))
-    (org-capture))
 
   ;; enable pdf presentation mode
   (use-package hide-mode-line
@@ -1569,12 +1403,71 @@ Adding some custom functions I use to make my life easier.
 					(format "MEM: %s - " (shell-command-to-string "~/.config/scripts/ram.sh"))
 					(format "DSK: %s - " (shell-command-to-string "~/.config/scripts/disk.sh"))
 					(format "VOL: %s " (shell-command-to-string "~/.config/scripts/volume.sh")))))
-  (global-set-key (kbd "C-c f s") 'mg/display-machine-info)
 
   (defun mg/find-docker-and-enter-in-assets ()
     "Find the running docker container and enter into the assets folder"
     (interactive)
     (let ((docker-id (replace-regexp-in-string "\n$" "" (shell-command-to-string "docker container ls | awk 'NR > 1 {print $1}' "))))
       (find-file (concat "/docker:claudio@" docker-id ":/assets"))))
-  (global-set-key (kbd "C-c f d") 'mg/find-docker-and-enter-in-assets)
+
+  (defun mg/insert-current-timestamp ()
+    "Insert current y-m-d timestamp"
+    (interactive)
+    (insert "[" (format-time-string "%y-%m-%d" (current-time)) "] "))
+#+end_src
+* Keybindings
+
+This is the list of keybindings I use, with a modal editing fashion.
+
+#+begin_src emacs-lisp
+  (use-package god-mode
+    :ensure t
+    :config
+    (global-set-key (kbd "<escape>") #'god-mode-all)
+    (add-to-list 'god-exempt-major-modes 'vterm-mode)
+    (defun mg/god-mode-update-indicators ()
+      (progn
+	(setq cursor-type (if (or god-local-mode buffer-read-only) 'box 'bar))
+	(setq mode-line-front-space
+	      (if (or god-local-mode buffer-read-only)
+		  "<C>"
+		"<I>"))))
+
+    (add-hook 'post-command-hook #'mg/god-mode-update-indicators)
+
+    (define-key god-local-mode-map (kbd "z") #'repeat)
+    (define-key god-local-mode-map (kbd "i") #'god-local-mode)
+
+    (global-set-key (kbd "C-x C-1") #'delete-other-windows)
+    (global-set-key (kbd "C-x C-2") #'split-window-below)
+    (global-set-key (kbd "C-x C-3") #'split-window-right)
+    (global-set-key (kbd "C-x C-0") #'delete-window)
+
+    (define-key god-local-mode-map (kbd "[") #'backward-paragraph)
+    (define-key god-local-mode-map (kbd "]") #'forward-paragraph))
+
+  (global-set-key (kbd "C-c p d") #'mg/open-pages-dir)
+  (global-set-key (kbd "C-c p f") #'mg/find-page)
+  (global-set-key (kbd "C-c p l c") #'mg/search-store-link-contact-and-paste)
+  (global-set-key (kbd "C-c p l p") #'mg/search-store-link-place-and-paste)
+  (global-set-key (kbd "C-c p l l") #'mg/search-store-link-course-and-paste)
+  (global-set-key (kbd "C-c p c") #'mg/pkm-clean)
+
+  ;; utils related bindings
+  (global-set-key (kbd "C-c u p") #'mg/toggle-pdf-presentation-mode)
+  (global-set-key (kbd "C-c u d t") #'mg/check-and-toggle-deepwork-mode)
+  (global-set-key (kbd "C-c u d c") #'mg/check-deepwork-mode)
+  (global-set-key (kbd "C-c u f") #'mg/copy-file-name-to-clipboard)
+  (global-set-key (kbd "C-c u s") #'mg/display-machine-info)
+  (global-set-key (kbd "C-c u r s") #'replace-string)
+  (global-set-key (kbd "C-c u r q") #'query-replace-regexp)
+  (global-set-key (kbd "C-c u r r") #'query-replace)
+  (global-set-key (kbd "C-c u r c") #'comment-region)
+  (global-set-key (kbd "C-c u r u") #'uncomment-region)
+  (global-set-key (kbd "C-c u r i") #'indent-region)
+  (global-set-key (kbd "C-c u c d") #'mg/find-docker-and-enter-in-assets)
+  (global-set-key (kbd "C-c u m") #'compile)
+  (global-set-key (kbd "C-c u t") #'mg/insert-current-timestamp)
+
+  (global-set-key (kbd "C-c n") #'mg/new-empty-buffer)
 #+end_src
