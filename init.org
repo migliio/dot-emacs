@@ -1297,15 +1297,12 @@ Using tramp term to connect to ssh instances and edit files.
 #+end_src
 
 *** LSP
+
+Setting up Emacs as an IDE, for the most comprehensive experience as possible.
+
+#+begin_src emacs-lisp
+
   (setq tab-always-indent 'complete)
-
-  (use-package nix-mode
-    :ensure t
-    :mode "\\.nix\\'")
-
-  (use-package lua-mode
-    :ensure t
-    :mode "\\.lua\\'")
 
   (use-package dockerfile-mode
     :ensure t
@@ -1314,6 +1311,14 @@ Using tramp term to connect to ssh instances and edit files.
   (use-package racket-mode
     :ensure t
     :mode "\\.rkt\\'")
+
+  (use-package python-mode
+    :ensure t
+    :mode "\\.py\\'")
+
+  (use-package cc-mode
+    :ensure nil
+    :mode "\\.c\\'" "\\.h\\'" "\\.cpp\\'")
 
   (use-package gnuplot
     :ensure t)
@@ -1326,15 +1331,14 @@ Using tramp term to connect to ssh instances and edit files.
 		   . ("clangd")))
     (add-to-list 'eglot-server-programs
 		 '((racket-mode)
-		   . ("/home/claudio/.local/share/racket/8.10/bin/racket-language-server")))
+		   . ("racket")))
     (add-hook 'c-mode-hook 'eglot-ensure)
     (add-hook 'python-mode-hook 'eglot-ensure))
 
   (use-package company
     :ensure t
     :config
-    (add-hook 'after-init-hook 'global-company-mode))
-    (add-hook 'after-init-hook 'global-company-mode))
+    (global-company-mode t))
 #+end_src
 
 *** Which key
@@ -1404,35 +1408,9 @@ Adding some custom functions I use to make my life easier.
 #+end_src
 * Keybindings
 
-This is the list of keybindings I use, with a modal editing fashion.
+This is the list of keybindings I use.
 
 #+begin_src emacs-lisp
-  (use-package god-mode
-    :ensure t
-    :config
-    (global-set-key (kbd "<escape>") #'god-mode-all)
-    (add-to-list 'god-exempt-major-modes 'vterm-mode)
-    (defun mg/god-mode-update-indicators ()
-      (progn
-	(setq cursor-type (if (or god-local-mode buffer-read-only) 'box 'bar))
-	(setq mode-line-front-space
-	      (if (or god-local-mode buffer-read-only)
-		  "<C>"
-		"<I>"))))
-
-    (add-hook 'post-command-hook #'mg/god-mode-update-indicators)
-
-    (define-key god-local-mode-map (kbd "z") #'repeat)
-    (define-key god-local-mode-map (kbd "i") #'god-local-mode)
-
-    (global-set-key (kbd "C-x C-1") #'delete-other-windows)
-    (global-set-key (kbd "C-x C-2") #'split-window-below)
-    (global-set-key (kbd "C-x C-3") #'split-window-right)
-    (global-set-key (kbd "C-x C-0") #'delete-window)
-
-    (define-key god-local-mode-map (kbd "[") #'backward-paragraph)
-    (define-key god-local-mode-map (kbd "]") #'forward-paragraph))
-
   (global-set-key (kbd "C-c p d") #'mg/open-pages-dir)
   (global-set-key (kbd "C-c p f") #'mg/find-page)
   (global-set-key (kbd "C-c p l c") #'mg/search-store-link-contact-and-paste)
