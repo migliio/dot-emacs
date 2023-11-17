@@ -1259,18 +1259,56 @@ Using elfeed as my preferred RSS feed manager.
 Using some snippets to make my writing experience faster.
 
 #+begin_src emacs-lisp
-  (use-package yasnippet
-    :ensure t
+  (use-package abbrev
+    :ensure nil
     :config
-    (setq yasnippet-snippets-dir '())
-    (setq yas-snippet-dirs
-	  '("~/.emacs.d/private/cm.snippets"                                              ;; personal snippets
-	    ))
-    (yas-global-mode 1))
+    (setq-default abbrev-mode t)
+    (setq save-abbrevs nil)
+    (clear-abbrev-table global-abbrev-table)
+    (define-abbrev-table 'global-abbrev-table
+      '(
+	("arg" "argument" )
+	("bc" "because" )
+	("bg" "background" )
+	("bt" "between" )
 
-  (use-package yasnippet-snippets
-    :after yasnippet
-    :ensure t)
+	("cnt" "can't" )
+	("ddnt" "didn't" )
+	("dnt" "don't" )
+
+	("afaik" "as far as I know" )
+	("atm" "at the moment" )
+	("ty" "thank you" )
+	("btw" "by the way" )
+	("wfh" "working from home")
+
+	("cfg" "context-free grammar" )
+	("cs" "computer science" )
+
+	("ipa" "IP address" )
+	("jvm" "Java Virtual Machine" )
+	("subdir" "subdirectory" )
+	("db" "database" )
+
+	("envp" "environment variable" )
+	("gui" "graphical user interface" )
+	("oop" "object oriented programing" )
+	("os" "operating system" )
+
+	("eq" "==" )
+	("r" "return" )
+	("utf8" "-*- coding: utf-8 -*-" )
+
+	("rgaz" "\\([A-Za-z0-9]+\\)")
+	("rgshy" "\\(?:xx\\)")
+	("rgbracket" "\\[\\([^]]+?\\)\\]")
+	("rgcurly" "“\\([^”]+?\\)”")
+	("rgdigits" "\\([0-9]+\\)")
+	("rgdate" "\\([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]\\)")
+	("rgdot" "\\(.\\)")
+	("rgstr" "\\([^\"]+?\\)")
+	("rgtag" "\\([</>=\" A-Za-z0-9]+\\)")
+	)))
 #+end_src
 
 *** CTAGS
