@@ -168,12 +168,13 @@ Loading the preferred theme.
     :ensure t
     :config
     (minions-mode 1))
-  
+
   (if (display-graphic-p)
       (progn
 	(set-frame-font "Liberation Mono 13" nil t)
 	(set-fringe-mode 0)
 	(use-package zenburn-theme :ensure t :config (load-theme 'zenburn t)))
+	;; (use-package ef-themes :ensure t :config (load-theme 'ef-elea-light t)))
     (set-face-background 'default "undefined"))
 #+end_src
 	
@@ -337,7 +338,7 @@ Move the cursor around like a velociraptor.
 	   ("C-c C-z" . org-add-note)
 	   ("C-c l" . org-store-link))
     :custom
-    (org-agenda-files (list "~/Vault/pkm/pages/teaching.org" "~/Vault/pkm/pages/inbox.org" "~/Vault/pkm/pages/agenda.org" "/home/claudio/Vault/pkm/pages/projects.org"))
+    (org-agenda-files (list "~/Vault/pkm/pages/teaching.org" "~/Vault/pkm/pages/inbox.org" "~/Vault/pkm/pages/agenda.org" "/home/claudio/Vault/pkm/pages/projects.org" "/home/claudio/Vault/pkm/pages/lectures.org"))
     (org-id-extra-files '("~/Vault/pkm/pages/teaching.org" "~/Vault/pkm/pages/lectures.org"))
     (org-export-backends '(beamer html latex ascii ox-hugo))
     (org-startup-folded t)
@@ -388,13 +389,15 @@ Move the cursor around like a velociraptor.
 	     "* Call with %? :call:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:CATEGORY:\n:END:\n%^T\n")
 	    ("c" "Flashcards")
 	    ("cm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Mathematics")
-	     "* %U :mathematics:drill:\n%^{Front}\n** Back\n%?")
+	     "* %U :mathematics:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")
 	    ("ck" "Kernel flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Kernel")
-	     "* %U :kernel:drill:\n%^{Front}\n** Back\n%?")
+	     "* %U :kernel:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")
 	    ("ct" "Theoretical computer science flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Theoretical computer science")
-	     "* %U :theoretical_computer_science:drill:\n%^{Front}\n** Back\n%?")
+	     "* %U :theoretical_computer_science:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")
 	    ("ca" "Algoritms flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Algorithms")
-	     "* %U :algorithms:drill:\n%^{Front}\n** Back\n%?")
+	     "* %U :algorithms:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")
+	    ("cp" "Programming flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Algorithms")
+	     "* %U :programming:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")	    
 	    ("r" "Resources")
 	    ("ra" "Conference attendance" entry
 	     (file "~/Vault/pkm/pages/conferences.org")
@@ -1254,6 +1257,18 @@ Using elfeed as my preferred RSS feed manager.
 #+end_src
 
 ** Coding stuff
+*** Utilities
+
+These are useful tweaks I use when coding.
+
+#+begin_src emacs-lisp
+  (use-package smartparens
+    :ensure t
+    :config
+    (require 'smartparens-config)
+    (smartparens-global-mode))
+#+end_src
+
 *** Snippets
 
 Using some snippets to make my writing experience faster.
@@ -1261,6 +1276,8 @@ Using some snippets to make my writing experience faster.
 #+begin_src emacs-lisp
   (use-package abbrev
     :ensure nil
+    :bind
+    (("C-x \"" . unexpand-abbrev))
     :config
     (setq-default abbrev-mode t)
     (setq save-abbrevs nil)
@@ -1292,11 +1309,9 @@ Using some snippets to make my writing experience faster.
 
 	("envp" "environment variable" )
 	("gui" "graphical user interface" )
-	("oop" "object oriented programing" )
+	("oop" "object oriented programming" )
 	("os" "operating system" )
 
-	("eq" "==" )
-	("r" "return" )
 	("utf8" "-*- coding: utf-8 -*-" )
 
 	("rgaz" "\\([A-Za-z0-9]+\\)")
@@ -1309,6 +1324,13 @@ Using some snippets to make my writing experience faster.
 	("rgstr" "\\([^\"]+?\\)")
 	("rgtag" "\\([</>=\" A-Za-z0-9]+\\)")
 	)))
+
+  (define-abbrev-table 'org-mode-abbrev-table
+    '(
+      ("lle" "**** \n:PROPERTIES:\n:TOPICS: \n:LECTURER: \n:DATE: \n:RESOURCES: \n:END:")
+      ("bbk" "** \n:PROPERTIES:\n:TITLE:\n:AUTHOR:\n:YEAR:\n:PAGES:\n:RATING:\n:LINK:\n:END:")
+      ))
+
 #+end_src
 
 *** CTAGS
