@@ -1,7 +1,0 @@
-# -*- mode: snippet -*- 
-# name: export snippet
-# key: exsni
-# --
-
-#+include:"~/Repositories/knock-files/org-headers/header_notes_document.org"
-#+bind: org-export-publishing-directory "./exports"

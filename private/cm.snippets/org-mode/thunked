@@ -1,7 +1,0 @@
-# -*- mode: snippet -*- 
-# name: thunked page
-# key: tthu
-# --
-
-/Thunked page/: all reference notes for the $1 course are taken at [[file:~/Vault/pkm/pages/courses.org]]. Inspect it for further details.
-$0

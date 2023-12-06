@@ -1,8 +1,0 @@
-# -*- mode: snippet -*-
-# name: spotify
-# key: spoti
-# --
-
-$1 * "Spotify" "Student monthly subscription"
-  Expenses:Leisure:Tech                         $0
-  Assets:Cards:N26

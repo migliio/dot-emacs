@@ -1,8 +1,0 @@
-# -*- mode: snippet -*-
-# name: income from parents
-# key: incomep
-# --
-
-$1 * "Income from parents"
-  Income:Parents:Salary                         $0
-  Assets:Cards:N26

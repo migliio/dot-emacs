@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-# name: include_export
-# key: inex
-# --
-:ignore:
-#+include: "$0" :lines "10-"

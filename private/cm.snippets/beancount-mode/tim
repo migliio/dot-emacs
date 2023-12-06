@@ -1,8 +1,0 @@
-# -*- mode: snippet -*-
-# name: tim subscription
-# key: tim
-# --
-
-$1 * "TIM" "Monthly Internet subscription"
-  Expenses:House:Utilities                   24.90 EUR
-  Assets:Cards:N26

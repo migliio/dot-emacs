@@ -1,8 +1,0 @@
-# -*- mode: snippet -*-
-# name: n26 subscription
-# key: n26
-# --
-
-$1 * "N26" "Smart monthly subscription"
-  Expenses:Taxes:Bank                           4.90 EUR
-  Assets:Cards:N26

@@ -1,6 +1,0 @@
-# -*- mode: snippet -*- 
-# name: transclude
-# key: tra
-# --
-
-#+transclude: $1

@@ -1,8 +1,0 @@
-# -*- mode: snippet -*-
-# name: trenord subscription
-# key: trenord
-# --
-
-$1 * "Trenord" "Train monthly ticket"
-  Expenses:Transport:Public                     59.00 EUR
-  Assets:Cards:N26
