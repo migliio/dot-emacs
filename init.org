@@ -301,9 +301,10 @@ Move the cursor around like a velociraptor.
     :ensure t
     :after org
     :config 
-    (eval-after-load
+    (eval-after-load 'org
+      (progn
 	(define-key org-mode-map (kbd "C-c ,") nil)
-      (define-key org-mode-map (kbd "C-c ;") nil))
+	(define-key org-mode-map (kbd "C-c ;") nil)))
     :bind
     (("C-c ," . avy-goto-char)
      ("C-c ;" . avy-goto-line)))
@@ -311,9 +312,8 @@ Move the cursor around like a velociraptor.
 
 ** Personal knowledge management
 *** Org mode
-:PROPERTIES:
-:ID:       3eb35b26-8859-4673-b884-89d794c053cb
-:END:
+
+Org mode is the single most used package of my Emacs workflow.
 
 #+begin_src emacs-lisp
   (use-package writeroom-mode
@@ -354,10 +354,8 @@ Move the cursor around like a velociraptor.
     (org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
     (org-refile-use-outline-path 'file)
     (org-outline-path-complete-in-steps nil)
+    (org-clock-sources '(agenda))
     :config
-    ;; ignore archived entries in org-clock-report
-    (setq org-clock-sources '(agenda))
-    ;; log when a task is activated
     (defun log-todo-next-creation-date (&rest ignore)
       "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
       (when (and (string= (org-get-todo-state) "NEXT")
@@ -714,7 +712,7 @@ Functions and utilities I do heavily use when working on pkm pages.
 	   (file-path (completing-read
 		       "Choose page: "
 		       candidates)))
-      (org-open-file file-path)))  
+      (find-file file-path)))
 
   (defun mg/search-store-link-heading-and-paste (rfile)
     "Search an heading in rfile, do org-store-link on it and then yank the link"
