@@ -41,6 +41,23 @@ First of all, let's initialize the package management setting up ELPA, MELPA and
   (eval-when-compile
     (require 'use-package))
   (setq use-package-always-ensure t)
+
+  ;; setup straight.el
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+	 (expand-file-name
+	  "straight/repos/straight.el/bootstrap.el"
+	  (or (bound-and-true-p straight-base-dir)
+	      user-emacs-directory)))
+	(bootstrap-version 7))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+	  (url-retrieve-synchronously
+	   "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	   'silent 'inhibit-cookies)
+	(goto-char (point-max))
+	(eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
 #+end_src
 
 * Keep emacs.d clean
@@ -67,78 +84,59 @@ Let's have a better organized folder, with relevant files only.
 Clean the Emacs interface making it as minimal as possible, without getting rid of useful improvements. Adding some defaults on indentation, etc.
 
 #+begin_src emacs-lisp
-  ;; disable some boring modes
-  (if (display-graphic-p)
-      (dolist (mode
-	       '(tool-bar-mode
-		 scroll-bar-mode
-		 menu-bar-mode
-		 tooltip-mode
-		 blink-cursor-mode))
-	(funcall mode 0)))
+  (use-package emacs
+    :init
+    (setq completion-cycle-threshold 3)
+    (setq tab-always-indent 'complete)
+    (if (display-graphic-p)
+	(dolist (mode
+		 '(tool-bar-mode
+		   scroll-bar-mode
+		   menu-bar-mode
+		   tooltip-mode
+		   blink-cursor-mode))
+	  (funcall mode 0)))
+    (dolist (mode
+	     '(global-visual-line-mode
+	       show-paren-mode
+	       winner-mode))
+      (funcall mode 1))
+    (setq-default inhibit-startup-screen t
+		  initial-scratch-message ""
+		  frame-title-format '("%b")
+		  ring-bell-function 'ignore
+		  tab-width 8
+		  c-basic-offset 8
+		  frame-resize-pixelwise t	      
+		  linum-format "%4d "
+		  use-short-answers t
+		  make-backup-files nil
+		  native-comp-async-report-warnings-errors nil
+		  global-auto-revert-mode t
+		  confirm-kill-processes nil
+		  process-connection-type nil
+		  warning-minimum-level :emergency
+		  set-language-environment "UTF-8"
+		  system-time-locale "C")
 
-  ;; enable some modes
-  (dolist (mode
-	   '(global-visual-line-mode
-	     show-paren-mode
-	     winner-mode))
-    (funcall mode 1))
+    (add-hook 'window-setup-hook 'toggle-frame-maximized t)
+    (add-hook 'artist-mode-hook (lambda () (setq indent-tabs-mode nil)))
+    (add-to-list 'yank-excluded-properties 'face)
 
-  (setq-default inhibit-startup-screen t
-		initial-scratch-message ""
-		frame-title-format '("%b")
-		ring-bell-function 'ignore
-		tab-width 8
-		c-basic-offset 8
-		frame-resize-pixelwise t	      
-		linum-format "%4d "
-		use-short-answers t
-		make-backup-files nil
-		native-comp-async-report-warnings-errors nil
-		global-auto-revert-mode t
-		process-connection-type nil
-		warning-minimum-level :emergency
-		set-language-environment "UTF-8"
-		system-time-locale "C")
-
-  ;; maximize emacs frame at startup
-  (add-hook 'window-setup-hook 'toggle-frame-maximized t)
-
-  ;; no indent in artist mode
-  (add-hook 'artist-mode-hook (lambda () (setq indent-tabs-mode nil)))
-
-  ;; do not copy face properties when yanking
-  (add-to-list 'yank-excluded-properties 'face)
-
-  ;; define a more to display relatvie line numbers w/ hl line
-  (define-minor-mode mg/line-numbers-highlight-line-mode
-    "Shows line numbers in relative mode and highlights the current line"
-    :initial nil
-    (if mg/line-numbers-highlight-line-mode
+    (define-minor-mode mg/line-numbers-highlight-line-mode
+      "Shows line numbers in relative mode and highlights the current line"
+      :initial nil
+      (if mg/line-numbers-highlight-line-mode
+	  (progn
+	    (display-line-numbers-mode 1)
+	    (hl-line-mode 1)
+	    (setq display-line-numbers-type 'relative))
 	(progn
-	  (display-line-numbers-mode 1)
-	  (hl-line-mode 1)
-	  (setq display-line-numbers-type 'relative))
-      (progn
-	(display-line-numbers-mode 0)
-	(hl-line-mode 0))))
-
-  ;; some useful global keybinds
-  (use-package winner
-    :ensure nil)
-
-  ;; enable some modes when programming
-  (add-hook 'prog-mode-hook
-	    #'mg/line-numbers-highlight-line-mode)
-
-  (defun mg/new-empty-buffer ()
-    "create a new empty buffer"
-    (interactive)
-    (let ((mbuf (generate-new-buffer "untitled")))
-      (switch-to-buffer mbuf)
-      (funcall initial-major-mode)
-      mbuf
-      ))
+	  (display-line-numbers-mode 0)
+	  (hl-line-mode 0))))
+    ;; enable some modes when programming
+    (add-hook 'prog-mode-hook
+	      #'mg/line-numbers-highlight-line-mode))
 #+end_src
 
 ** Emacs auto-save
@@ -203,6 +201,85 @@ Trying some in-buffer completion framework that is not broken.
     :ensure t
     :custom
     (completion-styles '(orderless basic)))
+
+  (use-package consult
+    :bind (;; C-c bindings in `mode-specific-map'
+	   ("C-c M-x" . consult-mode-command)
+	   ("C-c h" . consult-history)
+	   ("C-c k" . consult-kmacro)
+	   ("C-c m" . consult-man)
+	   ("C-c i" . consult-info)
+	   ([remap Info-search] . consult-info)
+	   ;; C-x bindings in `ctl-x-map'
+	   ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+	   ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+	   ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+	   ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+	   ("C-x t b" . consult-buffer-other-tab)    ;; orig. switch-to-buffer-other-tab
+	   ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+	   ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+	   ;; Custom M-# bindings for fast register access
+	   ("M-#" . consult-register-load)
+	   ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+	   ("C-M-#" . consult-register)
+	   ;; Other custom bindings
+	   ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+	   ;; M-g bindings in `goto-map'
+	   ("M-g e" . consult-compile-error)
+	   ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+	   ("M-g g" . consult-goto-line)             ;; orig. goto-line
+	   ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+	   ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+	   ("M-g m" . consult-mark)
+	   ("M-g k" . consult-global-mark)
+	   ("M-g i" . consult-imenu)
+	   ("M-g I" . consult-imenu-multi)
+	   ;; M-s bindings in `search-map'
+	   ("M-s d" . consult-find)                  ;; Alternative: consult-fd
+	   ("M-s c" . consult-locate)
+	   ("M-s g" . consult-grep)
+	   ("M-s G" . consult-git-grep)
+	   ("M-s r" . consult-ripgrep)
+	   ("M-s l" . consult-line)
+	   ("M-s L" . consult-line-multi)
+	   ("M-s k" . consult-keep-lines)
+	   ("M-s u" . consult-focus-lines)
+	   ("M-s e" . consult-isearch-history)
+	   :map isearch-mode-map
+	   ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+	   ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+	   ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+	   ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+	   :map minibuffer-local-map
+	   ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+	   ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+
+    :hook (completion-list-mode . consult-preview-at-point-mode)
+    :init
+    (setq register-preview-delay 0.5
+	  register-preview-function #'consult-register-format)
+    (advice-add #'register-preview :override #'consult-register-window)
+
+    (setq xref-show-xrefs-function #'consult-xref
+	  xref-show-definitions-function #'consult-xref)
+    :config
+    (consult-customize
+     consult-theme :preview-key '(:debounce 0.2 any)
+     consult-ripgrep consult-git-grep consult-grep
+     consult-bookmark consult-recent-file consult-xref
+     consult--source-bookmark consult--source-file-register
+     consult--source-recent-file consult--source-project-recent-file
+     :preview-key '(:debounce 0.4 any))
+    (setq consult-narrow-key "<"))
+
+  (use-package corfu
+    :ensure t
+    :custom
+    (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+    (corfu-auto t)                 ;; Enable auto completion
+    (corfu-preselect 'prompt)      ;; Preselect the prompt
+    :init
+    (global-corfu-mode))
 #+end_src
 
 ** Files navigation
@@ -300,7 +377,7 @@ Move the cursor around like a velociraptor.
   (use-package avy
     :ensure t
     :after org
-    :config 
+    :init
     (eval-after-load 'org
       (progn
 	(define-key org-mode-map (kbd "C-c ,") nil)
@@ -362,16 +439,8 @@ Org mode is the single most used package of my Emacs workflow.
 		 (not (org-entry-get nil "ACTIVATED")))
 	(org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d %a]"))))
     (add-hook 'org-after-todo-state-change-hook #'log-todo-next-creation-date)
-    ;; Org-capture templates
-    (defun mg/create-pages-file ()
-      "Create an org file in ~/Vault/pkm/pages/."
-      (setq mg-org-note--name (read-string "File name: "))
-      (let ((mg-org-note--filename (downcase mg-org-note--name)))
-	(expand-file-name (format "%s.org" mg-org-note--filename) "~/Vault/pkm/pages")))
     (setq org-capture-templates
-	  '(("f" "File" plain (file (lambda() (mg/create-pages-file)))
-	     "%(format \"#+title: %s\n#+date: %U\n\" mg-org-note--name)")
-	    ("i" "Inbox")
+	  '(("i" "Inbox")
 	    ("it" "Todo entry" entry (file "~/Vault/pkm/pages/inbox.org")
 	     "* TODO %?\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("im" "Mail entry" entry (file "~/Vault/pkm/pages/inbox.org")
@@ -395,7 +464,7 @@ Org mode is the single most used package of my Emacs workflow.
 	    ("ca" "Algoritms flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Algorithms")
 	     "* %U :algorithms:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")
 	    ("cp" "Programming flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Algorithms")
-	     "* %U :programming:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")	    
+	     "* %U :programming:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")
 	    ("r" "Resources")
 	    ("ra" "Conference attendance" entry
 	     (file "~/Vault/pkm/pages/conferences.org")
@@ -620,16 +689,6 @@ Org mode is the single most used package of my Emacs workflow.
       :config
       (org-wild-notifier-mode))
 
-    (use-package org-contacts
-      :ensure t
-      :after org
-      :custom (org-contacts-files '("~/Vault/pkm/pages/contacts.org")))
-
-    (use-package org-drill
-      :ensure t
-      :custom
-      (org-drill-add-random-noise-to-intervals-p t))
-
     (use-package ox-hugo
       :ensure t
       :after ox)
@@ -666,11 +725,6 @@ Install org-noter to deal with PDF notes.
 Functions and utilities I do heavily use when working on pkm pages.
 
 #+begin_src emacs-lisp
-  (defun mg/open-pages-dir ()
-    "Open pages directory in dired"
-    (interactive)
-    (dired "~/Vault/pkm/pages"))
-
   (defun mg/pkm-clean ()
     "execute the pkm clean script directly from emacs"
     (interactive)
@@ -702,55 +756,6 @@ Functions and utilities I do heavily use when working on pkm pages.
 	  (message "Deep work mode is disabled"))))
     (kill-buffer "hosts"))
 
-  (defun mg/find-page ()
-    "Find a page under the pkm directory"
-    (interactive)
-    (let* ((candidates (split-string
-			(shell-command-to-string "ls -d ~/Vault/pkm/pages/*")
-			"\n"
-			t))
-	   (file-path (completing-read
-		       "Choose page: "
-		       candidates)))
-      (find-file file-path)))
-
-  (defun mg/search-store-link-heading-and-paste (rfile)
-    "Search an heading in rfile, do org-store-link on it and then yank the link"
-    (let* ((entries
-	    (mapcar (lambda (e)
-		      (nth 4 e)) (org-map-entries (lambda () (org-heading-components)) t (list rfile))))
-	   (contact
-	    (completing-read
-	     "Choose contact: "
-	     entries)))
-      (when contact
-	(save-excursion
-	  (with-current-buffer (find-file-noselect rfile)
-	    (goto-char (point-min))
-	    (when (re-search-forward (format "\\* %s" contact) nil t)
-	      (progn
-		(goto-char (line-beginning-position))
-		(setq link (org-store-link 0))))))
-	(insert link))))
-
-  (defun mg/search-store-link-contact-and-paste ()
-    "Search an heading in contacts file, do org-store-link and then yank the link"
-    (interactive)
-    (let ((contacts-file "~/Vault/pkm/pages/contacts.org"))
-      (mg/search-store-link-heading-and-paste contacts-file)))
-
-  (defun mg/search-store-link-place-and-paste ()
-    "Search an heading in contacts file, do org-store-link and then yank the link"
-    (interactive)
-    (let ((places-file "~/Vault/pkm/pages/places.org"))
-      (mg/search-store-link-heading-and-paste places-file)))
-
-  (defun mg/search-store-link-course-and-paste ()
-    "Search an heading in contacts file, do org-store-link and then yank the link"
-    (interactive)
-    (let ((lectures-file "~/Vault/pkm/pages/lectures.org"))
-      (mg/search-store-link-heading-and-paste lectures-file)))
-
   (defun mg/toggle-pdf-presentation-mode ()
     (interactive)
     (toggle-frame-fullscreen)
@@ -758,78 +763,50 @@ Functions and utilities I do heavily use when working on pkm pages.
     (pdf-view-fit-page-to-window))
 #+end_src
 
-*** Zettelkasten
+*** Note taking system
 
 #+begin_src emacs-lisp
-  (use-package org-roam
-    :after org
+  (use-package denote
+    :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main")
     :ensure t
-    :init
-    (setq org-roam-v2-ack t)
-    :custom
-    (org-roam-directory (file-truename "~/Vault/pkm/slip-box/"))
-    :bind (("C-c z l" . org-roam-buffer-toggle)
-	   ("C-c z f" . org-roam-node-find)
-	   ("C-c z g" . org-roam-graph)
-	   ("C-c z t" . org-roam-tag-add)
-	   ("C-c z i" . org-roam-node-insert)
-	   ("C-c z c" . org-roam-capture))
+    :bind (("C-c n n" . denote)
+	   ("C-c n c" . denote-region) ; "contents" mnemonic
+	   ("C-c n N" . denote-type)
+	   ("C-c n d" . denote-date)
+	   ("C-c n z" . denote-signature) ; "zettelkasten" mnemonic
+	   ("C-c n s" . denote-subdirectory)
+	   ("C-c n t" . denote-template)
+	   ("C-c n i" . denote-link) ; "insert" mnemonic
+	   ("C-c n I" . denote-add-links)
+	   ("C-c n b" . denote-backlinks)
+	   ("C-c n f f" . denote-find-link)
+	   ("C-c n f b" . denote-find-backlink)
+	   ("C-c n r" . denote-rename-file)
+	   ("C-c n R" . denote-rename-file-using-front-matter))
     :config
-    (add-hook 'after-save-hook
-	      (defun org-rename-to-new-title ()
-		(when-let*
-		    ((old-file (buffer-file-name))
-		     (is-roam-file (org-roam-file-p old-file))
-		     (file-node (save-excursion
-				  (goto-char 1)
-				  (org-roam-node-at-point)))
-		     (file-name  (file-name-base (org-roam-node-file file-node)))
-		     (file-time  (or (and (string-match "^\\([0-9]\\{14\\}\\)-" file-name)
-					  (concat (match-string 1 file-name) "-"))
-				     ""))
-		     (slug (org-roam-node-slug file-node))
-		     (new-file (expand-file-name (concat file-time slug ".org")))
-		     (different-name? (not (string-equal old-file new-file))))
-
-		  (rename-buffer new-file)
-		  (rename-file old-file new-file)
-		  (set-visited-file-name new-file)
-		  (set-buffer-modified-p nil))))
-    (org-roam-db-autosync-mode)
-    (setq org-roam-node-display-template (concat "${title} " (propertize "${tags}" 'face 'org-tag)))
-    ;; org-roam templates
-    (setq org-roam-capture-templates
-	  '(("d" "default" plain "\n#+date: %U\n\n-----\n\n\n"
-	     :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-				"#+title: ${title}\n")
-	     :unnarrowed t)
-	    )))
-
-  ;; configuring org-roam-ui to visualize my knowledge graph
-  (use-package websocket
-    :ensure t
-    :after org-roam)
-
-  (use-package simple-httpd
-    :ensure t
-    :after org-roam)
-
-  (use-package org-roam-ui
-    :ensure t
-    :after org-roam
-    :config
-    (setq org-roam-ui-sync-theme nil
-	  org-roam-ui-follow t
-	  org-roam-ui-update-on-save t))
-
-  (use-package org-sidebar
-    :ensure t
-    :bind
-    (("C-c p s b" . org-sidebar-backlinks)
-     ("C-c p s t" . org-sidebar-toggle)
-     ("C-c p s o" . org-sidebar-tree))
-    :custom
-    (org-directory "~/Vault/pkm/pages"))
+    (setq denote-directory (expand-file-name "~/Vault/pkm")
+	  denote-known-keywords '("emacs" "security" "kernel" "mathematics" "algorithms")
+	  denote-infer-keywords t
+	  denote-sort-keywords t
+	  denote-file-type '(org txt md)
+	  denote-prompts '(title keywords file-type template signature)
+	  denote-excluded-directories-regexp nil
+	  denote-excluded-keywords-regexp nil
+	  denote-date-prompt-use-org-read-date t
+	  denote-date-format nil
+	  denote-backlinks-show-context t
+	  denote-dired-directories
+	  (list denote-directory
+		(thread-last denote-directory (expand-file-name "assets"))
+		(expand-file-name "~/Vault/library")))
+    ;; set denote templates
+    (setq denote-templates
+	  '((plain . "")
+	    (course . "* Course details\n- *Lecturer*:\n- *University*:\n- *Academic year*:\n- *Resources*:\n- *Description*:\n")
+	    (contact . "* Contact details\n- *E-mail*:\n- *Company*:\n- *Phone number*:\n- *Website*:\n- *Twitter*:\n* Additional information\n- ")))
+    (add-hook 'find-file-hook #'denote-link-buttonize-buffer)	
+    (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
+    (denote-rename-buffer-mode 1))
 #+end_src
 
 **** Citar
@@ -1097,7 +1074,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 	    ([?\s-b] .
 	     (lambda ()
 	       (interactive)
-	       (start-process "" nil "/usr/bin/pulse-browser")))
+	       (start-process "" nil "/usr/bin/firefox")))
 	    ([?\s-i] .
 	     (lambda ()
 	       (interactive)
@@ -1118,8 +1095,6 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 	     (lambda ()
 	       (interactive)
 	       (start-process "" nil "/usr/bin/scrot" "-s /home/claudio/Vault/pkm/assets/$(date +%Y-%m-%d-%H-%M-%S)_screenshot.png")))
-
-
 
 	    ,@(mapcar (lambda (i)
 			`(,(kbd (format "s-%d" i)) .
@@ -1255,6 +1230,19 @@ Using elfeed as my preferred RSS feed manager.
 #+end_src
 
 ** Coding stuff
+*** Git
+
+Using ~magit~ as git client for Emacs.
+
+#+begin_src emacs-lisp
+  (use-package magit
+    :ensure t
+    :defer t
+    :config
+    (setq magit-refresh-status-buffer t)
+    (setq git-commit-fill-column 72))
+#+end_src
+
 *** Utilities
 
 These are useful tweaks I use when coding.
@@ -1329,6 +1317,11 @@ Using some snippets to make my writing experience faster.
       ("bbk" "** \n:PROPERTIES:\n:TITLE:\n:AUTHOR:\n:YEAR:\n:PAGES:\n:RATING:\n:LINK:\n:END:")
       ))
 
+  (define-abbrev-table 'lisp-mode-abbrev-table
+    '(
+      ("monitor" "(setq exwm-randr-workspace-monitor-plist '(2 \"HDMI1\" 5 \"HDMI1\"))\n(exwm-randr--refresh)")
+      ))
+
 #+end_src
 
 *** CTAGS
@@ -1392,11 +1385,6 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible.
 		   . ("racket")))
     (add-hook 'c-mode-hook 'eglot-ensure)
     (add-hook 'python-mode-hook 'eglot-ensure))
-
-  (use-package company
-    :ensure t
-    :config
-    (global-company-mode t))
 #+end_src
 
 *** Which key
@@ -1491,6 +1479,4 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c u c d") #'mg/find-docker-and-enter-in-assets)
   (global-set-key (kbd "C-c u m") #'compile)
   (global-set-key (kbd "C-c u t") #'mg/insert-current-timestamp)
-
-  (global-set-key (kbd "C-c n") #'mg/new-empty-buffer)
 #+end_src
