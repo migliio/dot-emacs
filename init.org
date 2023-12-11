@@ -41,23 +41,6 @@ First of all, let's initialize the package management setting up ELPA, MELPA and
   (eval-when-compile
     (require 'use-package))
   (setq use-package-always-ensure t)
-
-  ;; setup straight.el
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-	 (expand-file-name
-	  "straight/repos/straight.el/bootstrap.el"
-	  (or (bound-and-true-p straight-base-dir)
-	      user-emacs-directory)))
-	(bootstrap-version 7))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-	  (url-retrieve-synchronously
-	   "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-	   'silent 'inhibit-cookies)
-	(goto-char (point-max))
-	(eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
 #+end_src
 
 * Keep emacs.d clean
@@ -115,6 +98,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 		  global-auto-revert-mode t
 		  confirm-kill-processes nil
 		  process-connection-type nil
+		  org-src-fontify-natively t
 		  warning-minimum-level :emergency
 		  set-language-environment "UTF-8"
 		  system-time-locale "C")
@@ -292,18 +276,17 @@ Trying some in-buffer completion framework that is not broken.
     :custom
     (ls-lisp-use-insert-directory-program nil)
     (ls-lisp-dirs-first t)
-    (default-directory "~/")
-    ;; omit hidden files
-    (setq dired-omit-files "^\\...+$")
-    :init
-    (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1))))
+    (default-directory "~/"))
 
-  ;; use dired-x
   (use-package dired-x
     :ensure nil
     :custom
-    (setq dired-dwim-target t
-	  delete-by-moving-to-trash t))
+    (dired-omit-files "^\\...+$")
+    (dired-dwim-target t)
+    (delete-by-moving-to-trash t)
+    (dired-omit-files "^\\.[^.].+$")
+    :init
+    (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1))))
 
   ;; toggle disk usage
   (use-package disk-usage)  
@@ -397,16 +380,6 @@ Org mode is the single most used package of my Emacs workflow.
     :ensure t
     :bind (("C-c w" . writeroom-mode)))
 
-  (use-package ox-twbs
-    :after org
-    :ensure t)
-
-  (use-package ox-reveal
-    :after org
-    :ensure t
-    :config
-    (setq org-reveal-root "file:///home/claudio/Repositories/reveal.js"))
-
   (use-package org
     :ensure t
     :bind (("C-c a" . org-agenda)
@@ -415,8 +388,7 @@ Org mode is the single most used package of my Emacs workflow.
 	   ("C-c C-z" . org-add-note)
 	   ("C-c l" . org-store-link))
     :custom
-    (org-agenda-files (list "~/Vault/pkm/pages/teaching.org" "~/Vault/pkm/pages/inbox.org" "~/Vault/pkm/pages/agenda.org" "/home/claudio/Vault/pkm/pages/projects.org" "/home/claudio/Vault/pkm/pages/lectures.org"))
-    (org-id-extra-files '("~/Vault/pkm/pages/teaching.org" "~/Vault/pkm/pages/lectures.org"))
+    (org-agenda-files (list "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "/home/claudio/Vault/pkm/20231210T224321--agenda__personal.org"))
     (org-export-backends '(beamer html latex ascii ox-hugo))
     (org-startup-folded t)
     (org-log-into-drawer t)
@@ -467,15 +439,16 @@ Org mode is the single most used package of my Emacs workflow.
 	     "* %U :programming:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")
 	    ("r" "Resources")
 	    ("ra" "Conference attendance" entry
-	     (file "~/Vault/pkm/pages/conferences.org")
+	     (file "~/Vault/pkm/20231210T222135--conferences__personal_research.org")
 	     "* %^{Conference name}\n:PROPERTIES:\n:WHERE: %?\n:WEBSITE: %?\n:END:\n")
-	    ("rc" "Contact" entry
-	     (file "~/Vault/pkm/pages/contacts.org")
-	     "* %(org-contacts-template-name) %^g\n:PROPERTIES:\n:EMAIL: %(org-contacts-template-email)\n:COMPANY:\n:PHONE_NUMBER: %?\n:WEBSITE:\n:TWITTER:\n:NOTES:\n:END:\n")
 	    ("p" "Projects")
-	    ("pp" "Personal project" plain (file+headline "~/Vault/pkm/pages/projects.org" "Personal projects")
+	    ("pl" "Learning project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "Learning")
 	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
-	    ("ps" "Study project" plain (file+headline "~/Vault/pkm/pages/projects.org" "Study")
+	    ("ph" "Home project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "Home")
+	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+	    ("pw" "Work project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "Work")
+	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+	    ("ps" "Study project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "Study")
 	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")))
     ;; setup some org-capture specific stuff
     (defun mg/org-capture-inbox ()
@@ -483,138 +456,138 @@ Org mode is the single most used package of my Emacs workflow.
       (call-interactively 'org-store-link)
       (org-capture nil "it"))
     ;; setting up org-refile
-    (setq org-refile-targets '(("~/Vault/pkm/pages/projects.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
+    (setq org-refile-targets '(("~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
 			       ("~/Vault/pkm/pages/agenda.org" :regexp . "\\(?:Past\\)")))
     (define-key global-map (kbd "C-c i") 'mg/org-capture-inbox)
     ;; Org-agenda custom commands
     (setq org-agenda-block-separator "==============================================================================")
     (setq org-agenda-custom-commands
-	     '(("a" "Agenda"
-	      ((agenda ""
-		       ((org-agenda-span 1)
-			(org-agenda-skip-function
-			 (lambda ()
-			   (or (org-agenda-skip-entry-if 'regexp ":framework:")
-			       (org-agenda-skip-entry-if 'done))))
-			(org-deadline-warning-days 0)
-			(org-scheduled-past-days 14)
-			(org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-			(org-agenda-format-date "%A %-e %B %Y")
-			(org-agenda-overriding-header "Today's schedule:\n")))
-	       (agenda ""
-		       ((org-agenda-span 1)
-			(org-agenda-skip-function
-			 (lambda ()
-			   (or (org-agenda-skip-entry-if 'notregexp ":framework:")
-			       (org-agenda-skip-entry-if 'done))))
-			(org-deadline-warning-days 0)
-			(org-scheduled-past-days 14)
-			(org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-			(org-agenda-format-date "%A %-e %B %Y")			
-			(org-agenda-overriding-header "Today's framework:\n")))
+	  '(("a" "Agenda"
+	     ((agenda ""
+		      ((org-agenda-span 1)
+		       (org-agenda-skip-function
+			(lambda ()
+			  (or (org-agenda-skip-entry-if 'regexp ":framework:")
+			      (org-agenda-skip-entry-if 'done))))
+		       (org-deadline-warning-days 0)
+		       (org-scheduled-past-days 14)
+		       (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+		       (org-agenda-format-date "%A %-e %B %Y")
+		       (org-agenda-overriding-header "Today's schedule:\n")))
+	      (agenda ""
+		      ((org-agenda-span 1)
+		       (org-agenda-skip-function
+			(lambda ()
+			  (or (org-agenda-skip-entry-if 'notregexp ":framework:")
+			      (org-agenda-skip-entry-if 'done))))
+		       (org-deadline-warning-days 0)
+		       (org-scheduled-past-days 14)
+		       (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+		       (org-agenda-format-date "%A %-e %B %Y")			
+		       (org-agenda-overriding-header "Today's framework:\n")))
 	      (todo "NEXT"
 		    ((org-agenda-skip-function
 		      '(org-agenda-skip-entry-if 'deadline))
 		     (org-agenda-prefix-format "  %i %-12:c [%e] ")
 		     (org-agenda-overriding-header "\nNEXT Tasks:\n")))
-	       (agenda "" ((org-agenda-time-grid nil)
-			   (org-agenda-start-day "+1d")
-			   (org-agenda-start-on-weekday nil)
-			   (org-agenda-span 30)
-			   (org-agenda-show-all-dates nil)
-			   (org-deadline-warning-days 0)
-			   (org-agenda-entry-types '(:deadline))
-			   (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-			   (org-agenda-overriding-header "\nUpcoming deadlines (+30d):\n")))
+	      (agenda "" ((org-agenda-time-grid nil)
+			  (org-agenda-start-day "+1d")
+			  (org-agenda-start-on-weekday nil)
+			  (org-agenda-span 30)
+			  (org-agenda-show-all-dates nil)
+			  (org-deadline-warning-days 0)
+			  (org-agenda-entry-types '(:deadline))
+			  (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
+			  (org-agenda-overriding-header "\nUpcoming deadlines (+30d):\n")))
 	      (tags-todo "inbox"
 			 ((org-agenda-prefix-format "  %?-12t% s")
 			  (org-agenda-overriding-header "\nInbox:\n")))
 	      (tags "CLOSED>=\"<today>\""
 		    ((org-agenda-overriding-header "\nCompleted today:\n")))
-	       (agenda ""
-		       ((org-agenda-start-on-weekday nil)
-			(org-agenda-skip-function
-			 (lambda ()
-			   (or (org-agenda-skip-entry-if 'regexp ":framework:")
-			       (org-agenda-skip-entry-if 'done))))
-			(org-agenda-start-day "+1d")
-			(org-agenda-span 5)
-			(org-deadline-warning-days 0)
-			(org-scheduled-past-days 0)
-			(org-agenda-overriding-header "\nWeek at a glance:\n")))
-	       ))))
-	  (when (display-graphic-p)
-	    (progn
-	      (require 'oc-biblatex)
-	      (setq org-cite-export-processors
-		    '((latex biblatex)))
-	      (setq org-latex-pdf-process (list
-					   "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
-	      ))
-	  (setq org-format-latex-options
-		(plist-put org-format-latex-options :scale 1.5))
-	  (setq org-format-latex-options
-		(plist-put org-format-latex-options :background "Transparent"))
-	  (setq org-latex-create-formula-image-program 'dvisvgm)
-	  (require 'ox-latex)
-	  (add-to-list 'org-latex-classes
-		       '("res"
-			 "\\documentclass[margin]{res}\n
+	      (agenda ""
+		      ((org-agenda-start-on-weekday nil)
+		       (org-agenda-skip-function
+			(lambda ()
+			  (or (org-agenda-skip-entry-if 'regexp ":framework:")
+			      (org-agenda-skip-entry-if 'done))))
+		       (org-agenda-start-day "+1d")
+		       (org-agenda-span 5)
+		       (org-deadline-warning-days 0)
+		       (org-scheduled-past-days 0)
+		       (org-agenda-overriding-header "\nWeek at a glance:\n")))
+	      ))))
+    (when (display-graphic-p)
+      (progn
+	(require 'oc-biblatex)
+	(setq org-cite-export-processors
+	      '((latex biblatex)))
+	(setq org-latex-pdf-process (list
+				     "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
+	))
+    (setq org-format-latex-options
+	  (plist-put org-format-latex-options :scale 1.5))
+    (setq org-format-latex-options
+	  (plist-put org-format-latex-options :background "Transparent"))
+    (setq org-latex-create-formula-image-program 'dvisvgm)
+    (require 'ox-latex)
+    (add-to-list 'org-latex-classes
+		 '("res"
+		   "\\documentclass[margin]{res}\n
   \\setlength{\textwidth}{5.1in}"
-			 ("\\section{%s}" . "\\section*{%s}")
-			 ("\\subsection{%s}" . "\\subsection*{%s}")
-			 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-			 ("\\paragraph{%s}" . "\\paragraph*{%s}")
-			 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-	  (add-to-list 'org-latex-classes
-		       '("memoir"
-			 "\\documentclass[article]{memoir}\n
+		   ("\\section{%s}" . "\\section*{%s}")
+		   ("\\subsection{%s}" . "\\subsection*{%s}")
+		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (add-to-list 'org-latex-classes
+		 '("memoir"
+		   "\\documentclass[article]{memoir}\n
   \\usepackage{color}
   \\usepackage{amssymb}
   \\usepackage{gensymb}
   \\usepackage{nicefrac}
   \\usepackage{units}"
-			 ("\\section{%s}" . "\\section*{%s}")
-			 ("\\subsection{%s}" . "\\subsection*{%s}")
-			 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-			 ("\\paragraph{%s}" . "\\paragraph*{%s}")
-			 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-	  (add-to-list 'org-latex-classes
-		       '("letter"
-			 "\\documentclass{letter}\n"
-			 ("\\section{%s}" . "\\section*{%s}")
-			 ("\\subsection{%s}" . "\\subsection*{%s}")
-			 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-			 ("\\paragraph{%s}" . "\\paragraph*{%s}")
-			 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-	  (add-to-list 'org-latex-classes	       
-		       '("tuftebook"
-			 "\\documentclass{tufte-book}\n
+		   ("\\section{%s}" . "\\section*{%s}")
+		   ("\\subsection{%s}" . "\\subsection*{%s}")
+		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (add-to-list 'org-latex-classes
+		 '("letter"
+		   "\\documentclass{letter}\n"
+		   ("\\section{%s}" . "\\section*{%s}")
+		   ("\\subsection{%s}" . "\\subsection*{%s}")
+		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (add-to-list 'org-latex-classes	       
+		 '("tuftebook"
+		   "\\documentclass{tufte-book}\n
   \\usepackage{color}
   \\usepackage{amssymb}
   \\usepackage{gensymb}
   \\usepackage{nicefrac}
   \\usepackage{units}"
-			 ("\\section{%s}" . "\\section*{%s}")
-			 ("\\subsection{%s}" . "\\subsection*{%s}")
-			 ("\\paragraph{%s}" . "\\paragraph*{%s}")
-			 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-	  (add-to-list 'org-latex-classes
-		       '("tuftehandout"
-			 "\\documentclass{tufte-handout}
+		   ("\\section{%s}" . "\\section*{%s}")
+		   ("\\subsection{%s}" . "\\subsection*{%s}")
+		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (add-to-list 'org-latex-classes
+		 '("tuftehandout"
+		   "\\documentclass{tufte-handout}
   \\usepackage{color}
   \\usepackage{amssymb}
   \\usepackage{amsmath}
   \\usepackage{gensymb}
   \\usepackage{nicefrac}
   \\usepackage{units}"
-			 ("\\section{%s}" . "\\section*{%s}")
-			 ("\\subsection{%s}" . "\\subsection*{%s}")
-			 ("\\paragraph{%s}" . "\\paragraph*{%s}")
-			 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-	  (add-to-list 'org-latex-classes
-		       '("tufnotes"
-			 "\\documentclass{tufte-handout}
+		   ("\\section{%s}" . "\\section*{%s}")
+		   ("\\subsection{%s}" . "\\subsection*{%s}")
+		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    (add-to-list 'org-latex-classes
+		 '("tufnotes"
+		   "\\documentclass{tufte-handout}
 				     \\usepackage{xcolor}
 					   \\usepackage{graphicx} %% allow embedded images
 					   \\setkeys{Gin}{width=\\linewidth,totalheight=\\textheight,keepaspectratio}
@@ -659,39 +632,40 @@ Org mode is the single most used package of my Emacs workflow.
 							   breakable,
 						    }"
 
-			 ("\\section{%s}" . "\\section*{%s}")
-			 ("\\subsection{%s}" . "\\subsection*{%s}")
-			 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-			 ("\\paragraph{%s}" . "\\paragraph*{%s}")
-			 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+		   ("\\section{%s}" . "\\section*{%s}")
+		   ("\\subsection{%s}" . "\\subsection*{%s}")
+		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
-	  ;; Set up org-babel
-	  (setq org-ditaa-jar-path "/home/claudio/Repositories/dot-emacs/private/cm.tools/ditaa.jar")
-	  (org-babel-do-load-languages
-	   'org-babel-load-languages '((C . t)
-				       (shell . t)
-				       (python .t)
-				       (emacs-lisp . t)
-				       (org . t)
-				       (gnuplot . t)
-				       (latex . t)
-				       (ditaa . t)
-				       (scheme . t)
-				       (lisp . t)
-				       (haskell . t)
-				       (R . t))))
+    (org-babel-do-load-languages
+     'org-babel-load-languages '((C . t)
+				 (shell . t)
+				 (python .t)
+				 (emacs-lisp . t)
+				 (org . t)
+				 (gnuplot . t)
+				 (latex . t)
+				 (scheme . t)
+				 (lisp . t)
+				 (haskell . t)
+				 (R . t))))
 
-    (use-package org-wild-notifier
-      :ensure t
-      :custom
-      (org-wild-notifier-notification-title "Org agenda reminder")
-      (org-wild-notifier-alert-times-property "NOTIFY_BEFORE")
-      :config
-      (org-wild-notifier-mode))
+  (use-package org-wild-notifier
+    :ensure t
+    :custom
+    (org-wild-notifier-notification-title "Org agenda reminder")
+    (org-wild-notifier-alert-times-property "NOTIFY_BEFORE")
+    :config
+    (org-wild-notifier-mode))
 
-    (use-package ox-hugo
-      :ensure t
-      :after ox)
+  (use-package org-fc
+    :defer t
+    :load-path "~/Repositories/dot-emacs/site-lisp/org-fc")
+
+  (use-package ox-hugo
+    :ensure t
+    :after ox)
 #+end_src
 
 **** Encrypting
@@ -763,50 +737,85 @@ Functions and utilities I do heavily use when working on pkm pages.
     (pdf-view-fit-page-to-window))
 #+end_src
 
+*** Contacts management
+
+Managing contacts with the ~bbdb~ package.
+
+#+begin_src emacs-lisp
+  (use-package bbdb
+  :commands bbdb
+  :bind (("C-x c b" . bbdb))
+  :custom
+  (bbdb-mua-pop-up-window-size 1)
+  (bbdb-file "~/Repositories/knock-files-private/bbdb/.bbdb")
+  :config
+  (bbdb-initialize 'mu4e
+	   'message
+	   'anniv)
+  (bbdb-mua-auto-update-init 'message 'mu4e))
+#+end_src
+
 *** Note taking system
 
 #+begin_src emacs-lisp
   (use-package denote
-    :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main")
     :ensure t
     :bind (("C-c n n" . denote)
-	   ("C-c n c" . denote-region) ; "contents" mnemonic
+	   ("C-c n x" . denote-region)
 	   ("C-c n N" . denote-type)
 	   ("C-c n d" . denote-date)
+	   ("C-c n y f" . denote-org-dblock-insert-files)
+	   ("C-c n y l" . denote-org-dblock-insert-links)
+	   ("C-c n y b" . denote-org-dblock-insert-backlinks)
 	   ("C-c n z" . denote-signature) ; "zettelkasten" mnemonic
 	   ("C-c n s" . denote-subdirectory)
 	   ("C-c n t" . denote-template)
 	   ("C-c n i" . denote-link) ; "insert" mnemonic
 	   ("C-c n I" . denote-add-links)
 	   ("C-c n b" . denote-backlinks)
-	   ("C-c n f f" . denote-find-link)
-	   ("C-c n f b" . denote-find-backlink)
+	   ("C-c n g f" . denote-find-link)
+	   ("C-c n g b" . denote-find-backlink)
 	   ("C-c n r" . denote-rename-file)
-	   ("C-c n R" . denote-rename-file-using-front-matter))
+	   ("C-c n R" . denote-rename-file-using-front-matter)
+	   ("C-c n j n" . denote-journal-extras-new-entry))
+    :custom
+    (denote-directory (expand-file-name "~/Vault/pkm"))
+    (denote-known-keywords '("emacs" "security" "kernel" "mathematics" "algorithms"))
+    (denote-infer-keywords t)
+    (denote-sort-keywords t)
+    (denote-file-type '(org txt md))
+    (denote-prompts '(title keywords file-type template signature))
+    (denote-excluded-directories-regexp nil)
+    (denote-excluded-keywords-regexp nil)
+    (denote-date-prompt-use-org-read-date t)
+    (denote-date-format nil)
+    (denote-backlinks-show-context t)
+    (denote-dired-directories
+     (list denote-directory
+	   (thread-last denote-directory (expand-file-name "assets"))))
+    (denote-templates
+     '((plain . "")
+       (course . "* Course details\n- *Lecturer*:\n- *University*:\n- *Academic year*:\n- *Resources*:\n- *Description*:\n* Lecture notes\n")
+       (contact . "* Contact details\n- *E-mail*:\n- *Company*:\n- *Phone number*:\n- *Website*:\n- *Twitter*:\n* Additional information\n- ")))
+    (denote-journal-extras-title-format 'day-date-month-year-24h)
+    (denote-date-prompt-use-org-read-date t)
     :config
-    (setq denote-directory (expand-file-name "~/Vault/pkm")
-	  denote-known-keywords '("emacs" "security" "kernel" "mathematics" "algorithms")
-	  denote-infer-keywords t
-	  denote-sort-keywords t
-	  denote-file-type '(org txt md)
-	  denote-prompts '(title keywords file-type template signature)
-	  denote-excluded-directories-regexp nil
-	  denote-excluded-keywords-regexp nil
-	  denote-date-prompt-use-org-read-date t
-	  denote-date-format nil
-	  denote-backlinks-show-context t
-	  denote-dired-directories
-	  (list denote-directory
-		(thread-last denote-directory (expand-file-name "assets"))
-		(expand-file-name "~/Vault/library")))
-    ;; set denote templates
-    (setq denote-templates
-	  '((plain . "")
-	    (course . "* Course details\n- *Lecturer*:\n- *University*:\n- *Academic year*:\n- *Resources*:\n- *Description*:\n")
-	    (contact . "* Contact details\n- *E-mail*:\n- *Company*:\n- *Phone number*:\n- *Website*:\n- *Twitter*:\n* Additional information\n- ")))
-    (add-hook 'find-file-hook #'denote-link-buttonize-buffer)	
+    (add-hook 'find-file-hook #'denote-link-buttonize-buffer)
     (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
+    (require 'denote-journal-extras)
     (denote-rename-buffer-mode 1))
+
+  (use-package denote-menu
+    :after (denote)
+    :ensure t
+    :bind (("C-c n m" . list-denotes)))
+
+  (use-package consult-notes
+    :after (denote consult)
+    :ensure t
+    :bind (("C-c n f" . consult-notes))
+    :config
+    (consult-notes-denote-mode))
 #+end_src
 
 **** Citar
@@ -823,7 +832,7 @@ Using the superior citation manager.
     (org-cite-activate-processor 'citar)
     (citar-bibliography org-cite-global-bibliography)
     :bind
-    (("C-c z o" . citar-open)
+    (("C-c n c o" . citar-open)
 
      (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
     :config
@@ -833,15 +842,32 @@ Using the superior citation manager.
 	    (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher}.\n")
 	    (note . "@${author editor}, ${title}")))
     (setq citar-file-notes-extensions '("org")
-	  citar-notes-paths '("~/Vault/pkm/slip-box"))
+	  citar-notes-paths '("~/Vault/pkm/"))
     (setq citar-symbol-separator "  "))
 
-  (use-package citar-org-roam
-    :ensure t
+  (use-package citar-denote
     :custom
-    (citar-org-roam-note-title-template "@${author} - ${title}")
-    :config
-    (citar-org-roam-mode))
+    ;; Use package defaults
+    (citar-open-always-create-notes nil)
+    (citar-denote-file-type 'org)
+    (citar-denote-subdir nil)
+    (citar-denote-keyword "bib")
+    (citar-denote-use-bib-keywords nil)
+    (citar-denote-title-format "title")
+    (citar-denote-title-format-authors 1)
+    (citar-denote-title-format-andstr "and")
+    :init
+    (citar-denote-mode)
+    ;; Bind all available commands
+    :bind (("C-c n c c" . citar-create-note)
+	   ("C-c n c n" . citar-denote-open-note)
+	   ("C-c n c d" . citar-denote-dwim)
+	   ("C-c n c e" . citar-denote-open-reference-entry)
+	   ("C-c n c a" . citar-denote-add-citekey)
+	   ("C-c n c k" . citar-denote-remove-citekey)
+	   ("C-c n c r" . citar-denote-find-reference)
+	   ("C-c n c f" . citar-denote-find-citation)
+	   ("C-c n c l" . citar-denote-link-reference)))
 #+end_src
 
 *** Markdown mode
@@ -889,73 +915,72 @@ I use beancount to track my finances.
 I use ~mu4e~ as e-mail client.
 
 #+begin_src emacs-lisp
-  (if (display-graphic-p)
-      (use-package mu4e
-	:ensure nil
-	:commands (mu4e)
-	:after (org)
-	:bind (("C-c m" . mu4e))
-	:config
-	(defun no-auto-fill ()
-	  "turn off auto-fill-mode."
-	  (auto-fill-mode -1))
-	(add-hook 'mu4e-compose-mode-hook #'no-auto-fill)
-	(define-key mu4e-headers-mode-map (kbd "C-c c") 'mu4e-org-store-and-capture)
-	(define-key mu4e-view-mode-map    (kbd "C-c c") 'mu4e-org-store-and-capture)
+  (use-package mu4e
+    :ensure nil
+    :commands (mu4e)
+    :after (org)
+    :bind (("C-c m" . mu4e))
+    :config
+    (defun no-auto-fill ()
+      "turn off auto-fill-mode."
+      (auto-fill-mode -1))
+    (add-hook 'mu4e-compose-mode-hook #'no-auto-fill)
+    (define-key mu4e-headers-mode-map (kbd "C-c c") 'mu4e-org-store-and-capture)
+    (define-key mu4e-view-mode-map    (kbd "C-c c") 'mu4e-org-store-and-capture)
 
-	(defun mg/org-capture-mail ()
-	  (interactive)
-	  (call-interactively 'org-store-link)
-	  (org-capture nil "im"))
+    (defun mg/org-capture-mail ()
+      (interactive)
+      (call-interactively 'org-store-link)
+      (org-capture nil "im"))
 
-	(define-key mu4e-headers-mode-map (kbd "C-c i") 'mg/org-capture-mail)
-	(define-key mu4e-view-mode-map    (kbd "C-c i") 'mg/org-capture-mail)
-	(setq mu4e-maildir (expand-file-name "~/Maildir")
-	      mu4e-use-fancy-chars nil
-	      mu4e-attachment-dir  "~/Downloads"
-	      message-send-mail-function 'message-send-mail-with-sendmail
-	      sendmail-program "/usr/bin/msmtp"
-	      message-kill-buffer-on-exit t
-	      mu4e-get-mail-command "mbsync -a"
-	      mu4e-compose-signature "\tClaudio\n"
-	      mu4e-update-interval 300
-	      mu4e-context-policy 'pick-first
-	      mu4e-headers-auto-update t
-	      mu4e-contexts
-	      `(,(make-mu4e-context
-		  :name "polimi"
-		  :enter-func (lambda () (mu4e-message "Switch to the polimi context"))
-		  :match-func (lambda (msg)
-				(when msg
-				  (mu4e-message-contact-field-matches msg
-								      :to "claudio.migliorelli@mail.polimi.it")))
-		  :vars '((mu4e-sent-folder       . "/polimi/sent")
-			  (mu4e-drafts-folder     . "/polimi/drafts")
-			  (mu4e-trash-folder      . "/polimi/trash")
-			  (user-mail-address	   . "claudio.migliorelli@mail.polimi.it")
-			  (user-full-name	   . "Claudio Migliorelli" )
-			  (mu4e-maildir-shortcuts . (("/polimi/INBOX" . ?i)
-						     ("/polimi/sent" . ?s)
-						     ("/polimi/drafts" . ?d)
-						     ("/polimi/trash" . ?t)))
-			  (mu4e-sent-messages-behavior . delete)))))
-	(setq mu4e-headers-thread-single-orphan-prefix '("└>" . " ")
-	      mu4e-headers-thread-child-prefix '("└> " . " ")
-	      mu4e-headers-thread-last-child-prefix '("└> " . " ")
-	      mu4e-headers-thread-connection-prefix '("│ " . " ")
-	      mu4e-headers-thread-orphan-prefix '("└>" . " ")
-	      mu4e-headers-thread-root-prefix '("> " . " "))
-	(with-eval-after-load "mm-decode"
-	  (add-to-list 'mm-discouraged-alternatives "text/html")
-	  (add-to-list 'mm-discouraged-alternatives "text/richtext"))
-	(defun mg/message-insert-citation-line ()
-	  "Based off `message-insert-citation-line`."
-	  (when message-reply-headers
-	    (insert "On " (format-time-string "%a, %d %b %Y %H:%M:%S %z" (date-to-time (mail-header-date message-reply-headers))) " ")
-	    (insert (mail-header-from message-reply-headers) " wrote:")
-	    (newline)
-	    (newline)))
-	(setq message-citation-line-function 'mg/message-insert-citation-line)))
+    (define-key mu4e-headers-mode-map (kbd "C-c i") 'mg/org-capture-mail)
+    (define-key mu4e-view-mode-map    (kbd "C-c i") 'mg/org-capture-mail)
+    (setq mu4e-maildir (expand-file-name "~/Maildir")
+	  mu4e-use-fancy-chars nil
+	  mu4e-attachment-dir  "~/Downloads"
+	  message-send-mail-function 'message-send-mail-with-sendmail
+	  sendmail-program "/usr/bin/msmtp"
+	  message-kill-buffer-on-exit t
+	  mu4e-get-mail-command "mbsync -a"
+	  mu4e-compose-signature "\tClaudio\n"
+	  mu4e-update-interval 300
+	  mu4e-context-policy 'pick-first
+	  mu4e-headers-auto-update t
+	  mu4e-contexts
+	  `(,(make-mu4e-context
+	      :name "polimi"
+	      :enter-func (lambda () (mu4e-message "Switch to the polimi context"))
+	      :match-func (lambda (msg)
+			    (when msg
+			      (mu4e-message-contact-field-matches msg
+								  :to "claudio.migliorelli@mail.polimi.it")))
+	      :vars '((mu4e-sent-folder       . "/polimi/sent")
+		      (mu4e-drafts-folder     . "/polimi/drafts")
+		      (mu4e-trash-folder      . "/polimi/trash")
+		      (user-mail-address	   . "claudio.migliorelli@mail.polimi.it")
+		      (user-full-name	   . "Claudio Migliorelli" )
+		      (mu4e-maildir-shortcuts . (("/polimi/INBOX" . ?i)
+						 ("/polimi/sent" . ?s)
+						 ("/polimi/drafts" . ?d)
+						 ("/polimi/trash" . ?t)))
+		      (mu4e-sent-messages-behavior . delete)))))
+    (setq mu4e-headers-thread-single-orphan-prefix '("└>" . " ")
+	  mu4e-headers-thread-child-prefix '("└> " . " ")
+	  mu4e-headers-thread-last-child-prefix '("└> " . " ")
+	  mu4e-headers-thread-connection-prefix '("│ " . " ")
+	  mu4e-headers-thread-orphan-prefix '("└>" . " ")
+	  mu4e-headers-thread-root-prefix '("> " . " "))
+    (with-eval-after-load "mm-decode"
+      (add-to-list 'mm-discouraged-alternatives "text/html")
+      (add-to-list 'mm-discouraged-alternatives "text/richtext"))
+    (defun mg/message-insert-citation-line ()
+      "Based off `message-insert-citation-line`."
+      (when message-reply-headers
+	(insert "On " (format-time-string "%a, %d %b %Y %H:%M:%S %z" (date-to-time (mail-header-date message-reply-headers))) " ")
+	(insert (mail-header-from message-reply-headers) " wrote:")
+	(newline)
+	(newline)))
+    (setq message-citation-line-function 'mg/message-insert-citation-line))
 #+end_src
 
 ** EXWM
@@ -1313,7 +1338,7 @@ Using some snippets to make my writing experience faster.
 
   (define-abbrev-table 'org-mode-abbrev-table
     '(
-      ("lle" "**** \n:PROPERTIES:\n:TOPICS: \n:LECTURER: \n:DATE: \n:RESOURCES: \n:END:")
+      ("lle" "** \n:PROPERTIES:\n:TOPICS: \n:LECTURER: \n:DATE: \n:RESOURCES: \n:END:")
       ("bbk" "** \n:PROPERTIES:\n:TITLE:\n:AUTHOR:\n:YEAR:\n:PAGES:\n:RATING:\n:LINK:\n:END:")
       ))
 
@@ -1359,6 +1384,10 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible.
     :ensure t
     :mode "\\.docker.file\\'" "\\Dockerfile\\'")
 
+  (use-package haskell-mode
+    :ensure t
+    :mode "\\.hs\\'")
+
   (use-package racket-mode
     :ensure t
     :mode "\\.rkt\\'")
@@ -1384,6 +1413,7 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible.
 		 '((racket-mode)
 		   . ("racket")))
     (add-hook 'c-mode-hook 'eglot-ensure)
+    (add-hook 'haskell-mode-hook 'eglot-ensure)
     (add-hook 'python-mode-hook 'eglot-ensure))
 #+end_src
 
