@@ -386,9 +386,11 @@ Org mode is the single most used package of my Emacs workflow.
 	   ("C-c C-;" . org-insert-structure-template)
 	   ("C-c c" . org-capture)
 	   ("C-c C-z" . org-add-note)
+	   ("C-c o p" . org-do-promote)
+	   ("C-c o d" . org-do-demote)	   
 	   ("C-c l" . org-store-link))
     :custom
-    (org-agenda-files (list "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "/home/claudio/Vault/pkm/20231210T224321--agenda__personal.org"))
+    (org-agenda-files (list "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "/home/claudio/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/journal"))
     (org-export-backends '(beamer html latex ascii ox-hugo))
     (org-startup-folded t)
     (org-log-into-drawer t)
@@ -413,30 +415,19 @@ Org mode is the single most used package of my Emacs workflow.
     (add-hook 'org-after-todo-state-change-hook #'log-todo-next-creation-date)
     (setq org-capture-templates
 	  '(("i" "Inbox")
-	    ("it" "Todo entry" entry (file "~/Vault/pkm/pages/inbox.org")
+	    ("it" "Todo entry" entry (file "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org")
 	     "* TODO %?\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
-	    ("im" "Mail entry" entry (file "~/Vault/pkm/pages/inbox.org")
+	    ("im" "Mail entry" entry (file "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org")
 	     "* TODO Process \"%a\" %?\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("in" "Notes entry" entry (file "~/Vault/pkm/pages/notes.org")
 	     "* %U (%a)\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("a" "Agenda")
-	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
+	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
 	     "* Meeting with %? :meeting:\n:PROPERTIES:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n%^T\n")
-	    ("ae" "Event entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
+	    ("ae" "Event entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
 	     "* %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
-	    ("ae" "Call entry" entry (file+headline "~/Vault/pkm/pages/agenda.org" "Future")
+	    ("ae" "Call entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
 	     "* Call with %? :call:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:CATEGORY:\n:END:\n%^T\n")
-	    ("c" "Flashcards")
-	    ("cm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Mathematics")
-	     "* %U :mathematics:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")
-	    ("ck" "Kernel flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Kernel")
-	     "* %U :kernel:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")
-	    ("ct" "Theoretical computer science flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Theoretical computer science")
-	     "* %U :theoretical_computer_science:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")
-	    ("ca" "Algoritms flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Algorithms")
-	     "* %U :algorithms:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")
-	    ("cp" "Programming flashcard" entry (file+headline "~/Vault/pkm/pages/flashcards.org" "Algorithms")
-	     "* %U :programming:drill:\n:PROPERTIES:\n:CAPTURED_FROM: %a\n:END:\n%^{Front}\n** Back\n%?")
 	    ("r" "Resources")
 	    ("ra" "Conference attendance" entry
 	     (file "~/Vault/pkm/20231210T222135--conferences__personal_research.org")
@@ -767,14 +758,14 @@ Managing contacts with the ~bbdb~ package.
 	   ("C-c n y f" . denote-org-dblock-insert-files)
 	   ("C-c n y l" . denote-org-dblock-insert-links)
 	   ("C-c n y b" . denote-org-dblock-insert-backlinks)
-	   ("C-c n z" . denote-signature) ; "zettelkasten" mnemonic
+	   ("C-c n z" . denote-signature)
 	   ("C-c n s" . denote-subdirectory)
 	   ("C-c n t" . denote-template)
-	   ("C-c n i" . denote-link) ; "insert" mnemonic
+	   ("C-c n i" . denote-link)
 	   ("C-c n I" . denote-add-links)
 	   ("C-c n b" . denote-backlinks)
 	   ("C-c n g f" . denote-find-link)
-	   ("C-c n g b" . denote-find-backlink)
+	   ("C-c n g b" . denote-finxd-backlink)
 	   ("C-c n r" . denote-rename-file)
 	   ("C-c n R" . denote-rename-file-using-front-matter)
 	   ("C-c n j n" . denote-journal-extras-new-entry))
@@ -783,7 +774,7 @@ Managing contacts with the ~bbdb~ package.
     (denote-known-keywords '("emacs" "security" "kernel" "mathematics" "algorithms"))
     (denote-infer-keywords t)
     (denote-sort-keywords t)
-    (denote-file-type '(org txt md))
+    (denote-file-type nil)
     (denote-prompts '(title keywords file-type template signature))
     (denote-excluded-directories-regexp nil)
     (denote-excluded-keywords-regexp nil)
@@ -792,10 +783,12 @@ Managing contacts with the ~bbdb~ package.
     (denote-backlinks-show-context t)
     (denote-dired-directories
      (list denote-directory
-	   (thread-last denote-directory (expand-file-name "assets"))))
+	   (thread-last denote-directory (expand-file-name "assets"))
+	   (thread-last denote-directory (expand-file-name "journal"))))
     (denote-templates
      '((plain . "")
        (course . "* Course details\n- *Lecturer*:\n- *University*:\n- *Academic year*:\n- *Resources*:\n- *Description*:\n* Lecture notes\n")
+       (journal . "* Daily log\n:PROPERTIES:\n:CATEGORY: SCHEDULE\n:END:\n** Morning deep work\n*** ...\n** Afternoon deep work\n*** ...\n** Afternoon shallow work\n*** ...\n* Learning and research\n** Resources found today\n** Key takeaways\n* Ideas vault\n#+BEGIN: denote-backlinks :sort-by-component nil :reverse-sort nil :id-only nil\n\n#+END:")
        (contact . "* Contact details\n- *E-mail*:\n- *Company*:\n- *Phone number*:\n- *Website*:\n- *Twitter*:\n* Additional information\n- ")))
     (denote-journal-extras-title-format 'day-date-month-year-24h)
     (denote-date-prompt-use-org-read-date t)
@@ -833,7 +826,6 @@ Using the superior citation manager.
     (citar-bibliography org-cite-global-bibliography)
     :bind
     (("C-c n c o" . citar-open)
-
      (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
     :config
     (setq citar-templates
@@ -1340,6 +1332,7 @@ Using some snippets to make my writing experience faster.
     '(
       ("lle" "** \n:PROPERTIES:\n:TOPICS: \n:LECTURER: \n:DATE: \n:RESOURCES: \n:END:")
       ("bbk" "** \n:PROPERTIES:\n:TITLE:\n:AUTHOR:\n:YEAR:\n:PAGES:\n:RATING:\n:LINK:\n:END:")
+      ("prop" ":PROPERTIES:\n...\n:END:")
       ))
 
   (define-abbrev-table 'lisp-mode-abbrev-table
@@ -1347,6 +1340,15 @@ Using some snippets to make my writing experience faster.
       ("monitor" "(setq exwm-randr-workspace-monitor-plist '(2 \"HDMI1\" 5 \"HDMI1\"))\n(exwm-randr--refresh)")
       ))
 
+  (define-abbrev-table 'beancount-mode-abbrev-table
+    '(
+      ("esse" " * \"Esselunga\" \"Grocery shopping\"\nExpenses:Food:Supermarket\nAssets:Cards:N26")
+      ("parents" " * \"Income from parents\"\nIncome:Parents:Salary\nAssets:Cards:N26")
+      ("spoti" " * \"Spotify\" \"Student monthly subscription\"\nExpenses:Leisure:Tech 5.99 EUR\nAssets:Cards:N26")
+      ("trenord" " * \"Trenord\" \"Ticket to Milan\"\nExpenses:Transport:Public\nAssets:Cards:N26")
+      ("atm" " * \"ATM\" \"Metro ticket @Milan\"\nExpenses:Transport:Public\nAssets:Cards:N26")
+      ("n26" " * \"N26\" \"Smart monthly subscription\"\nExpenses:Taxes:Bank\nAssets:Cards:N26")
+      ))
 #+end_src
 
 *** CTAGS
