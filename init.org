@@ -254,6 +254,7 @@ Trying some in-buffer completion framework that is not broken.
      consult--source-bookmark consult--source-file-register
      consult--source-recent-file consult--source-project-recent-file
      :preview-key '(:debounce 0.4 any))
+    (setq consult-preview-key nil)
     (setq consult-narrow-key "<"))
 
   (use-package corfu
@@ -423,7 +424,7 @@ Org mode is the single most used package of my Emacs workflow.
 	     "* %U (%a)\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("a" "Agenda")
 	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
-	     "* Meeting with %? :meeting:\n:PROPERTIES:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n%^T\n")
+	     "* Meeting with %? :meeting:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n%^T\n")
 	    ("ae" "Event entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
 	     "* %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
 	    ("ae" "Call entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
@@ -651,8 +652,11 @@ Org mode is the single most used package of my Emacs workflow.
     (org-wild-notifier-mode))
 
   (use-package org-fc
-    :defer t
-    :load-path "~/Repositories/dot-emacs/site-lisp/org-fc")
+    :ensure nil
+    :bind (("C-c o f n" . org-fc-type-normal-init)
+	   ("C-c o f r" . org-fc-review))
+    :config
+    (require 'org-fc))
 
   (use-package ox-hugo
     :ensure t
@@ -735,7 +739,8 @@ Managing contacts with the ~bbdb~ package.
 #+begin_src emacs-lisp
   (use-package bbdb
   :commands bbdb
-  :bind (("C-x c b" . bbdb))
+  :bind (("C-x c b" . bbdb)
+	 ("C-x c c" . bbdb-create))
   :custom
   (bbdb-mua-pop-up-window-size 1)
   (bbdb-file "~/Repositories/knock-files-private/bbdb/.bbdb")
@@ -759,7 +764,7 @@ Managing contacts with the ~bbdb~ package.
 	   ("C-c n y l" . denote-org-dblock-insert-links)
 	   ("C-c n y b" . denote-org-dblock-insert-backlinks)
 	   ("C-c n z" . denote-signature)
-	   ("C-c n s" . denote-subdirectory)
+	   ("C-c n s" . denote-sort-dired)
 	   ("C-c n t" . denote-template)
 	   ("C-c n i" . denote-link)
 	   ("C-c n I" . denote-add-links)
@@ -787,8 +792,8 @@ Managing contacts with the ~bbdb~ package.
 	   (thread-last denote-directory (expand-file-name "journal"))))
     (denote-templates
      '((plain . "")
-       (course . "* Course details\n- *Lecturer*:\n- *University*:\n- *Academic year*:\n- *Resources*:\n- *Description*:\n* Lecture notes\n")
-       (journal . "* Daily log\n:PROPERTIES:\n:CATEGORY: SCHEDULE\n:END:\n** Morning deep work\n*** ...\n** Afternoon deep work\n*** ...\n** Afternoon shallow work\n*** ...\n* Learning and research\n** Resources found today\n** Key takeaways\n* Ideas vault\n#+BEGIN: denote-backlinks :sort-by-component nil :reverse-sort nil :id-only nil\n\n#+END:")
+       (course . "* Course details\n- *Lecturer*:\n- *University*:\n- *Academic year*:\n- *Resources*:\n- *Description*:\n* Lecture notes\n* Flashcards\n")
+       (journal . "* Daily log\n:PROPERTIES:\n:CATEGORY: SCHEDULE\n:END:\n** Morning deep work\n*** ...\n** Afternoon deep work\n*** ...\n** Afternoon shallow work\n*** ...\n* Learning and research\n** Resources found today\n** Key takeaways\n* Ideas vault\n\n#+BEGIN: denote-backlinks :sort-by-component nil :reverse-sort nil :id-only nil\n\n#+END:")
        (contact . "* Contact details\n- *E-mail*:\n- *Company*:\n- *Phone number*:\n- *Website*:\n- *Twitter*:\n* Additional information\n- ")))
     (denote-journal-extras-title-format 'day-date-month-year-24h)
     (denote-date-prompt-use-org-read-date t)
@@ -804,10 +809,9 @@ Managing contacts with the ~bbdb~ package.
     :bind (("C-c n m" . list-denotes)))
 
   (use-package consult-notes
-    :after (denote consult)
     :ensure t
     :bind (("C-c n f" . consult-notes))
-    :config
+    :init
     (consult-notes-denote-mode))
 #+end_src
 
@@ -895,11 +899,11 @@ I use buku as my bookmarks manager.
 
 ** Finance
 
-I use beancount to track my finances.
+I use ledger to track my finances.
 
 #+begin_src emacs-lisp
-  (require 'beancount)
-  (add-to-list 'auto-mode-alist '("\\.beancount\\'" . beancount-mode))
+  (use-package ledger-mode
+    :ensure t)
 #+end_src
 
 ** Email
@@ -1333,6 +1337,8 @@ Using some snippets to make my writing experience faster.
       ("lle" "** \n:PROPERTIES:\n:TOPICS: \n:LECTURER: \n:DATE: \n:RESOURCES: \n:END:")
       ("bbk" "** \n:PROPERTIES:\n:TITLE:\n:AUTHOR:\n:YEAR:\n:PAGES:\n:RATING:\n:LINK:\n:END:")
       ("prop" ":PROPERTIES:\n...\n:END:")
+      ("eqn" "\\begin{equation}\n\n\\end{equation}")
+      ("eqnc" "\\begin{equation}\n\\begin{cases}\n\n\\end{cases}\n\\end{equation}")
       ))
 
   (define-abbrev-table 'lisp-mode-abbrev-table
@@ -1340,14 +1346,14 @@ Using some snippets to make my writing experience faster.
       ("monitor" "(setq exwm-randr-workspace-monitor-plist '(2 \"HDMI1\" 5 \"HDMI1\"))\n(exwm-randr--refresh)")
       ))
 
-  (define-abbrev-table 'beancount-mode-abbrev-table
+  (define-abbrev-table 'ledger-mode-abbrev-table
     '(
-      ("esse" " * \"Esselunga\" \"Grocery shopping\"\nExpenses:Food:Supermarket\nAssets:Cards:N26")
-      ("parents" " * \"Income from parents\"\nIncome:Parents:Salary\nAssets:Cards:N26")
-      ("spoti" " * \"Spotify\" \"Student monthly subscription\"\nExpenses:Leisure:Tech 5.99 EUR\nAssets:Cards:N26")
-      ("trenord" " * \"Trenord\" \"Ticket to Milan\"\nExpenses:Transport:Public\nAssets:Cards:N26")
-      ("atm" " * \"ATM\" \"Metro ticket @Milan\"\nExpenses:Transport:Public\nAssets:Cards:N26")
-      ("n26" " * \"N26\" \"Smart monthly subscription\"\nExpenses:Taxes:Bank\nAssets:Cards:N26")
+      ("esse" " * Esselunga | Grocery shopping\nExpenses:Food:Supermarket\nAssets:Cards:N26")
+      ("parents" " * Income from parents\nIncome:Parents:Salary\nAssets:Cards:N26")
+      ("spoti" " * Spotify | Student monthly subscription\nExpenses:Leisure:Tech 5.99 EUR\nAssets:Cards:N26")
+      ("trenord" " * Trenord | Ticket to Milan\nExpenses:Transport:Public\nAssets:Cards:N26")
+      ("atm" " * ATM | Metro ticket @Milan\"\nExpenses:Transport:Public\nAssets:Cards:N26")
+      ("n26" " * N26 | Smart monthly subscription\nExpenses:Taxes:Bank\nAssets:Cards:N26")
       ))
 #+end_src
 
