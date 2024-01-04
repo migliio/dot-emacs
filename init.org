@@ -153,8 +153,9 @@ Loading the preferred theme.
       (progn
 	(set-frame-font "Liberation Mono 13" nil t)
 	(set-fringe-mode 0)
-	;; (use-package zenburn-theme :ensure t :config (load-theme 'zenburn t)))
-	(use-package gruvbox-theme :config (load-theme 'gruvbox-dark-soft)))
+	;; (use-package gruvbox-theme :config (load-theme 'gruvbox-dark-soft t))
+	(load-theme 'modus-operandi t)
+	)
     (set-face-background 'default "undefined"))
 #+end_src
 
@@ -406,6 +407,15 @@ Org mode is the single most used package of my Emacs workflow.
     (org-outline-path-complete-in-steps nil)
     (org-clock-sources '(agenda))
     :config
+    ;; handle links with IDs
+    (defun mg/org-create-or-store-id ()
+      "Create an ID for the Org heading at point. If already existent, simply copy it."
+      (interactive)
+      (org-back-to-heading)
+      (let* ((id (org-id-get-create))
+	     (heading-title (org-get-heading t t t))
+	     (link (format "[[id:%s][%s]]" id heading-title)))
+	(kill-new link)))
     (defun log-todo-next-creation-date (&rest ignore)
       "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
       (when (and (string= (org-get-todo-state) "NEXT")
@@ -744,9 +754,6 @@ Managing contacts with the ~bbdb~ package.
   :custom
   (bbdb-mua-pop-up-window-size 1)
   (bbdb-file "~/Repositories/knock-files-private/bbdb/.bbdb")
-  (bbdb-mail-user-agent (quote message-user-agent))
-  (mu4e-view-mode-hook (quote (bbdb-mua-auto-update visual-line-mode)))
-  (mu4e-compose-complete-addresses t)
   (bbdb-mua-pop-up t)
   (bbdb-mua-pop-up-window-size 5)
   :config
@@ -776,6 +783,7 @@ Managing contacts with the ~bbdb~ package.
 	   ("C-c n g b" . denote-finxd-backlink)
 	   ("C-c n r" . denote-rename-file)
 	   ("C-c n R" . denote-rename-file-using-front-matter)
+	   ("C-c n j f" . mg/denote-find-journal)
 	   ("C-c n j n" . denote-journal-extras-new-entry))
     :custom
     (denote-directory (expand-file-name "~/Vault/pkm"))
@@ -795,10 +803,11 @@ Managing contacts with the ~bbdb~ package.
 	   (thread-last denote-directory (expand-file-name "journal"))))
     (denote-templates
      '((plain . "")
-       (course . "* Course details\n- *Lecturer*:\n- *University*:\n- *Academic year*:\n- *Resources*:\n- *Description*:\n* Lecture notes\n* COMMENT Flashcards\n")
-       (journal . "* Daily log\n:PROPERTIES:\n:CATEGORY: SCHEDULE\n:END:\n** Morning deep work\n*** ...\n** Afternoon deep work\n*** ...\n** Afternoon shallow work\n*** ...\n* Learning and research\n** Resources found today\n** Key takeaways\n* Ideas vault\n\n#+BEGIN: denote-backlinks :sort-by-component nil :reverse-sort nil :id-only nil\n\n#+END:")
-       (place . "* Details\n- *Link*:\n- *Visited*:\n* Notes\n")
-       (contact . "* Contact details\n- *E-mail*:\n- *Company*:\n- *Phone number*:\n- *Website*:\n- *Twitter*:\n- *BBDB entry*:\n* Additional information\n- ")))
+       (course . "* Course details\n- Lecturer ::\n- University ::\n- Academic year ::\n- Resources ::\n- Description ::\n* Lecture notes\n* COMMENT Flashcards\n")
+       (journal . "#+tags: { deep(d) shallow(s) } { @morning(m) @afternoon(a) @evening(e) }\n* Task picking\n:PROPERTIES:\n:CATEGORY: TODAY\n:END:\n** \n* Learning and research\n** Resources found today\n** Key takeaways\n* Ideas vault\n\n#+BEGIN: denote-backlinks :sort-by-component nil :reverse-sort nil :id-only nil\n\n#+END:")
+       (zettel . "#+references: \n\n\n-----\n")
+       (place . "* Details\n- Link ::\n- Visited ::\n- Description ::\n* Notes\n")
+       (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- BBDB entry ::\n- Additional information ::\n* Notes")))
     (denote-journal-extras-title-format 'day-date-month-year-24h)
     (denote-date-prompt-use-org-read-date t)
     :config
@@ -806,6 +815,11 @@ Managing contacts with the ~bbdb~ package.
       "Find files interactively starting from the denote-directory."
       (interactive)
       (let ((default-directory (concat denote-directory "/")))
+	(call-interactively 'find-file)))
+    (defun mg/denote-find-journal ()
+      "Find files interactively starting from the denote-directory."
+      (interactive)
+      (let ((default-directory (concat denote-directory "/journal/")))
 	(call-interactively 'find-file)))
     (add-hook 'find-file-hook #'denote-link-buttonize-buffer)
     (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
@@ -840,8 +854,6 @@ Using the superior citation manager.
 	    (suffix . "          ${=key= id:15}    ${=type=:12}")
 	    (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher}.\n")
 	    (note . "@${author editor}, ${title}")))
-    (setq citar-file-notes-extensions '("org")
-	  citar-notes-paths '("~/Vault/pkm/reference"))
     (setq citar-symbol-separator "  "))
 
   (use-package citar-denote
@@ -918,9 +930,10 @@ Using ~mu4e~ as e-mail client.
     :after (org)
     :bind (("C-c m" . mu4e))
     :config
+    (setq mu4e-compose-complete-addresses t)
     (add-hook 'mu4e-compose-mode-hook
-          (lambda () (setq fill-column 75)
-                      (auto-fill-mode 1)))
+	  (lambda () (setq fill-column 75)
+		      (auto-fill-mode 1)))
     (define-key mu4e-headers-mode-map (kbd "C-c c") 'mu4e-org-store-and-capture)
     (define-key mu4e-view-mode-map    (kbd "C-c c") 'mu4e-org-store-and-capture)
     (defun mg/org-capture-mail ()
@@ -1334,6 +1347,7 @@ Using some snippets to make my writing experience faster.
       ("prop" ":PROPERTIES:\n...\n:END:")
       ("eqn" "\\begin{equation}\n\n\\end{equation}")
       ("eqnc" "\\begin{equation}\n\\begin{cases}\n\n\\end{cases}\n\\end{equation}")
+      ("bkk" "** \n:PROPERTIES:\n:TITLE:\n:AUTHOR:\n:YEAR:\n:PAGES:\n:RATING:\n:LINK:\n:END:")
       ))
 
   (define-abbrev-table 'lisp-mode-abbrev-table
@@ -1341,12 +1355,23 @@ Using some snippets to make my writing experience faster.
       ("monitor" "(setq exwm-randr-workspace-monitor-plist '(2 \"HDMI1\" 5 \"HDMI1\"))\n(exwm-randr--refresh)")
       ))
 
+  (define-abbrev-table 'tex-mode-abbrev-table
+    '(
+      ("->" "\rightarrow")
+      ("=>" "\Rightarrow")
+      ("-<" "\leftarrow")
+      ("=<" "\Leftarrow")    
+      (">=" "\geq")
+      ("<=" "\leq")
+      ))
+
   (define-abbrev-table 'ledger-mode-abbrev-table
     '(
       ("esse" " * Esselunga | Grocery shopping\nExpenses:Food:Supermarket\nAssets:Cards:N26")
       ("parents" " * Income from parents\nIncome:Parents:Salary\nAssets:Cards:N26")
-      ("spoti" " * Spotify | Student monthly subscription\nExpenses:Leisure:Tech 5.99 EUR\nAssets:Cards:N26")
+      ("spoti" " * Spotify | Student monthly subscription\nExpenses:Leisure:Tech  5.99 EUR\nAssets:Cards:N26")
       ("trenord" " * Trenord | Ticket to Milan\nExpenses:Transport:Public\nAssets:Cards:N26")
+      ("tim" " * TIM | Monthly Internet subscription\nExpenses:House:Utilities\nAssets:Cards:N26")
       ("atm" " * ATM | Metro ticket @Milan\"\nExpenses:Transport:Public\nAssets:Cards:N26")
       ("n26smart" " * N26 | Smart monthly subscription\nExpenses:Taxes:Bank\nAssets:Cards:N26")
       ))
@@ -1403,6 +1428,14 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible.
     :ensure nil
     :mode "\\.c\\'" "\\.h\\'" "\\.cpp\\'")
 
+  (use-package edts
+    :ensure t)
+
+  (use-package erlang-mode
+    :ensure nil
+    :after (edts)
+    :mode "\\.erl\\'")
+
   (use-package gnuplot
     :ensure t)
 
@@ -1417,6 +1450,7 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible.
 		   . ("racket")))
     (add-hook 'c-mode-hook 'eglot-ensure)
     (add-hook 'haskell-mode-hook 'eglot-ensure)
+    (add-hook 'erlang-mode-hook 'eglot-ensure)  
     (add-hook 'python-mode-hook 'eglot-ensure))
 #+end_src
 
@@ -1490,11 +1524,8 @@ Adding some custom functions I use to make my life easier.
 This is the list of keybindings I use.
 
 #+begin_src emacs-lisp
-  (global-set-key (kbd "C-c p d") #'mg/open-pages-dir)
-  (global-set-key (kbd "C-c p f") #'mg/find-page)
-  (global-set-key (kbd "C-c p l c") #'mg/search-store-link-contact-and-paste)
-  (global-set-key (kbd "C-c p l p") #'mg/search-store-link-place-and-paste)
-  (global-set-key (kbd "C-c p l l") #'mg/search-store-link-course-and-paste)
+  ;; pkm custom functions
+  (global-set-key (kbd "C-c p l") #'mg/org-create-or-store-id)
   (global-set-key (kbd "C-c p c") #'mg/pkm-clean)
 
   ;; utils related bindings
