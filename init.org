@@ -153,9 +153,7 @@ Loading the preferred theme.
       (progn
 	(set-frame-font "Liberation Mono 13" nil t)
 	(set-fringe-mode 0)
-	;; (use-package gruvbox-theme :config (load-theme 'gruvbox-dark-soft t))
-	(load-theme 'modus-operandi t)
-	)
+	(use-package zenburn-theme :ensure t :config (load-theme 'zenburn t)))
     (set-face-background 'default "undefined"))
 #+end_src
 
@@ -390,7 +388,7 @@ Org mode is the single most used package of my Emacs workflow.
 	   ("C-c o d" . org-do-demote)	   
 	   ("C-c l" . org-store-link))
     :custom
-    (org-agenda-files (list "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "/home/claudio/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/journal"))
+    (org-agenda-files (list "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "~/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org" "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org"))
     (org-export-backends '(beamer html latex ascii ox-hugo))
     (org-startup-folded t)
     (org-log-into-drawer t)
@@ -425,11 +423,11 @@ Org mode is the single most used package of my Emacs workflow.
     (setq org-capture-templates
 	  '(("i" "Inbox")
 	    ("it" "Todo entry" entry (file "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org")
-	     "* TODO %?\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+	     "* TODO %? :inbox:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("im" "Mail entry" entry (file "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org")
-	     "* TODO Process \"%a\" %?\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+	     "* TODO Process \"%a\" %? :inbox:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("in" "Notes entry" entry (file "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org")
-	     "* %U (%a)\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+	     "* %U (%c) :inbox:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("a" "Agenda")
 	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
 	     "* Meeting with %? :meeting:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n%^T\n")
@@ -441,6 +439,13 @@ Org mode is the single most used package of my Emacs workflow.
 	    ("ra" "Conference attendance" entry
 	     (file "~/Vault/pkm/20231210T222135--conferences__personal_research.org")
 	     "* %^{Conference name}\n:PROPERTIES:\n:WHERE: %?\n:WEBSITE: %?\n:END:\n")
+	    ("P" "Planning")
+	    ("Py" "Year plan" plain (file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
+	     "* %^{Year} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Milestones ::\n- Values and life philosophy ::\n- 5 years vision(s) ::\n- Financial goals ::\n- [ ] Review ::\n")
+	    ("Pq" "Quarter plan" plain (file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
+	     "** %^{Quarter} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Long-term projects ::\n- Financial/expenses planning ::\n- [ ] Review ::\n")
+	    ("Pm" "Month plan" plain (file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
+	     "*** %^{Month} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Short-term projects ::\n- [ ] Review ::\n")
 	    ("p" "Projects")
 	    ("pl" "Learning project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "Learning")
 	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
@@ -450,11 +455,12 @@ Org mode is the single most used package of my Emacs workflow.
 	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
 	    ("ps" "Study project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "Study")
 	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")))
+
     ;; setup some org-capture specific stuff
-    (defun mg/org-capture-inbox ()
+    (defun mg/org-capture-notes ()
       (interactive)
-      (call-interactively 'org-store-link)
-      (org-capture nil "it"))
+      (call-interactively 'mg/org-create-or-store-id)
+      (org-capture nil "in"))
     ;; setting up org-refile
     (setq org-refile-targets '(("~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
 			       ("~/Vault/pkm/20231210T224321--agenda__personal.org" :regexp . "\\(?:Past\\)")))
@@ -784,6 +790,7 @@ Managing contacts with the ~bbdb~ package.
 	   ("C-c n r" . denote-rename-file)
 	   ("C-c n R" . denote-rename-file-using-front-matter)
 	   ("C-c n j f" . mg/denote-find-journal)
+	   ("C-c n j t" . mg/denote-journal-get-today)
 	   ("C-c n j n" . denote-journal-extras-new-entry))
     :custom
     (denote-directory (expand-file-name "~/Vault/pkm"))
@@ -804,7 +811,7 @@ Managing contacts with the ~bbdb~ package.
     (denote-templates
      '((plain . "")
        (course . "* Course details\n- Lecturer ::\n- University ::\n- Academic year ::\n- Resources ::\n- Description ::\n* Lecture notes\n* COMMENT Flashcards\n")
-       (journal . "#+tags: { deep(d) shallow(s) } { @morning(m) @afternoon(a) @evening(e) }\n* Task picking\n:PROPERTIES:\n:CATEGORY: TODAY\n:END:\n** \n* Learning and research\n** Resources found today\n** Key takeaways\n* Ideas vault\n\n#+BEGIN: denote-backlinks :sort-by-component nil :reverse-sort nil :id-only nil\n\n#+END:")
+       (journal . "#+tags: { deep(d) shallow(s) } { @morning(m) @afternoon(a) @evening(e) }\n* Task picking\n:PROPERTIES:\n:CATEGORY: TODAY\n:END:\n** \n* Learning and research\n- Resources found today ::\n- Key takeaways :: \n* Ideas vault\n\n#+BEGIN: denote-backlinks :sort-by-component nil :reverse-sort nil :id-only nil\n\n#+END:")
        (zettel . "#+references: \n\n\n-----\n")
        (place . "* Details\n- Link ::\n- Visited ::\n- Description ::\n* Notes\n")
        (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- BBDB entry ::\n- Additional information ::\n* Notes")))
@@ -816,6 +823,15 @@ Managing contacts with the ~bbdb~ package.
       (interactive)
       (let ((default-directory (concat denote-directory "/")))
 	(call-interactively 'find-file)))
+    (defun mg/denote-journal-get-today ()
+      "Get today's denote journal file."
+      (interactive)
+      (if (fboundp 'denote-journal-extras--entry-today)
+	  (let ((file-paths (denote-journal-extras--entry-today)))
+	    (if (and file-paths (listp file-paths) (file-exists-p (car file-paths)))
+		(find-file (car file-paths))  ; Open the first file in the list
+	      (message "No journal file found for today.")))
+	(message "Function denote-journal-extras--entry-today not found.")))  
     (defun mg/denote-find-journal ()
       "Find files interactively starting from the denote-directory."
       (interactive)
@@ -1115,7 +1131,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 	     (lambda ()
 	       (interactive)
 	       (start-process "" nil "/usr/bin/setxkbmap" "us")))
-	    ([?\s-p] .
+	    ([?\s-\S-p] .
 	     (lambda ()
 	       (interactive)
 	       (start-process "" nil "/usr/bin/shutdown" "now")))
@@ -1526,7 +1542,8 @@ This is the list of keybindings I use.
 #+begin_src emacs-lisp
   ;; pkm custom functions
   (global-set-key (kbd "C-c p l") #'mg/org-create-or-store-id)
-  (global-set-key (kbd "C-c p c") #'mg/pkm-clean)
+  (global-set-key (kbd "C-c p e") #'mg/pkm-clean)
+  (global-set-key (kbd "C-c p c") #'mg/org-capture-notes)
 
   ;; utils related bindings
   (global-set-key (kbd "C-c u p") #'mg/toggle-pdf-presentation-mode)
