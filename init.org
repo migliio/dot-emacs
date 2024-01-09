@@ -406,14 +406,29 @@ Org mode is the single most used package of my Emacs workflow.
     (org-clock-sources '(agenda))
     :config
     ;; handle links with IDs
+    (require 'subr-x)  ; Required for string-trim function
+    (defun extract-heading-name (heading)
+      "Extract the heading name, handling text before links, links, and task indicators."
+      ;; Remove task progress indicators like [1/1] and trim trailing spaces
+      (setq heading (string-trim (replace-regexp-in-string "\\[\\([0-9]+\\)/\\([0-9]+\\)\\]\\s-*" "" heading)))
+
+      ;; Function to extract and concatenate text before the link and the link description
+      (let ((start 0) (parts '()))
+	(while (string-match "\\(.*?\\)\\(\\[\\[.*?\\]\\[\\(.*?\\)\\]\\]\\)" heading start)
+	  (push (match-string 1 heading) parts)  ; Text before the link
+	  (push (match-string 3 heading) parts)  ; Link description
+	  (setq start (match-end 0)))
+	(push (substring heading start) parts)  ; Remaining text after last link
+	(string-join (reverse parts) "")))
     (defun mg/org-create-or-store-id ()
       "Create an ID for the Org heading at point. If already existent, simply copy it."
       (interactive)
-      (org-back-to-heading)
-      (let* ((id (org-id-get-create))
-	     (heading-title (org-get-heading t t t))
-	     (link (format "[[id:%s][%s]]" id heading-title)))
-	(kill-new link)))
+      (save-excursion
+	(org-back-to-heading)
+	(let* ((id (org-id-get-create))
+	       (heading-title (extract-heading-name (org-get-heading t t t)))
+	       (link (format "[[id:%s][%s]]" id heading-title)))
+	  (kill-new link))))
     (defun log-todo-next-creation-date (&rest ignore)
       "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
       (when (and (string= (org-get-todo-state) "NEXT")
@@ -423,11 +438,11 @@ Org mode is the single most used package of my Emacs workflow.
     (setq org-capture-templates
 	  '(("i" "Inbox")
 	    ("it" "Todo entry" entry (file "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org")
-	     "* TODO %? :inbox:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+	     "* TODO %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("im" "Mail entry" entry (file "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org")
-	     "* TODO Process \"%a\" %? :inbox:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+	     "* TODO Process \"%a\" %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("in" "Notes entry" entry (file "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org")
-	     "* %U (%c) :inbox:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+	     "* %U (%c) :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
 	    ("a" "Agenda")
 	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
 	     "* Meeting with %? :meeting:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n%^T\n")
