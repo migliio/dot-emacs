@@ -361,10 +361,8 @@ Move the cursor around like a velociraptor.
     :init
     (eval-after-load 'org
       (progn
-	(define-key org-mode-map (kbd "C-c ,") nil)
-	(define-key org-mode-map (kbd "C-c ;") nil)))
-    :bind
-    (("C-c ," . avy-goto-char)
+	(define-key org-mode-maporg-mode-map ,") nil)
+	(define-key org-mode-maporg-mode-map ;") nil)))org-mode-map ," . avy-goto-char)
      ("C-c ;" . avy-goto-line)))
 #+end_src
 
@@ -462,9 +460,9 @@ Org mode is the single most used package of my Emacs workflow.
 	    ("Pm" "Month plan" plain (file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
 	     "*** %^{Month} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Short-term projects ::\n- [ ] Review ::\n")
 	    ("p" "Projects")
-	    ("pl" "Learning project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "Learning")
+	    ("pl" "Learning project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Learning")
 	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
-	    ("ph" "Home project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "Home")
+	    ("ph" "Home project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Home")
 	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
 	    ("pw" "Work project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "Work")
 	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
@@ -478,7 +476,8 @@ Org mode is the single most used package of my Emacs workflow.
       (org-capture nil "in"))
     ;; setting up org-refile
     (setq org-refile-targets '(("~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
-			       ("~/Vault/pkm/20231210T224321--agenda__personal.org" :regexp . "\\(?:Past\\)")))
+			       ("~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
+			   b    ("~/Vault/pkm/20231210T224321--agenda__personal.org" :regexp . "\\(?:Past\\)")))
     (define-key global-map (kbd "C-c i") 'mg/org-capture-inbox)
     ;; Org-agenda custom commands
     (setq org-agenda-block-separator "==============================================================================")
@@ -826,7 +825,7 @@ Managing contacts with the ~bbdb~ package.
     (denote-templates
      '((plain . "")
        (course . "* Course details\n- Lecturer ::\n- University ::\n- Academic year ::\n- Resources ::\n- Description ::\n* Lecture notes\n* COMMENT Flashcards\n")
-       (journal . "#+tags: { deep(d) shallow(s) } { @morning(m) @afternoon(a) @evening(e) }\n* Task picking\n:PROPERTIES:\n:CATEGORY: TODAY\n:END:\n** \n* Learning and research\n- Resources found today ::\n- Key takeaways :: \n* Ideas vault\n\n#+BEGIN: denote-backlinks :sort-by-component nil :reverse-sort nil :id-only nil\n\n#+END:")
+       (journal . "#+tags: { deep(d) shallow(s) } { @morning(m) @afternoon(a) @evening(e) } cancelled(c)\n* Task picking\n:PROPERTIES:\n:CATEGORY: TODAY\n:END:\n** \n* Learning and research\n- Resources found today ::\n- Key takeaways :: \n* Ideas vault\n\n#+BEGIN: denote-backlinks :sort-by-component nil :reverse-sort nil :id-only nil\n\n#+END:")
        (zettel . "#+references: \n\n\n-----\n")
        (place . "* Details\n- Link ::\n- Visited ::\n- Description ::\n* Notes\n")
        (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- BBDB entry ::\n- Additional information ::\n* Notes")))
@@ -878,8 +877,7 @@ Using the superior citation manager.
     (citar-bibliography org-cite-global-bibliography)
     :bind
     (("C-c n c o" . citar-open)
-     (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
-    :config
+     (:map org-mode-map :package org ("C-c b" . #'orgorg-mode-map
     (setq citar-templates
 	  '((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
 	    (suffix . "          ${=key= id:15}    ${=type=:12}")
@@ -1313,6 +1311,18 @@ These are useful tweaks I use when coding.
     :config
     (require 'smartparens-config)
     (smartparens-global-mode))
+
+  (use-package multiple-cursors
+    :ensure t
+    :init
+    (eval-after-load 'org
+      (progn
+	(define-key org-mode-map (kbd "C-c <") nil)
+	(define-key org-mode-map (kbd "C-c C-<") nil)
+	(define-key org-mode-map (kbd "C-c >") nil)))
+    :bind (("C-c >" . mc/mark-next-like-this)
+	   ("C-c <" . mc/mark-previous-like-this)
+	   ("C-c C-<" . mc/mark-all-like-this)))
 #+end_src
 
 *** Snippets
@@ -1320,92 +1330,12 @@ These are useful tweaks I use when coding.
 Using some snippets to make my writing experience faster.
 
 #+begin_src emacs-lisp
-  (use-package abbrev
-    :ensure nil
-    :bind
-    (("C-x \"" . unexpand-abbrev))
+  (use-package yasnippet
+    :ensure t
+    :custom
+    (yas-snippet-dirs (list "~/.emacs.d/.snippets"))
     :config
-    (setq-default abbrev-mode t)
-    (setq save-abbrevs nil)
-    (clear-abbrev-table global-abbrev-table)
-    (define-abbrev-table 'global-abbrev-table
-      '(
-	("arg" "argument" )
-	("bc" "because" )
-	("bg" "background" )
-	("bt" "between" )
-
-	("cnt" "can't" )
-	("ddnt" "didn't" )
-	("dnt" "don't" )
-
-	("afaik" "as far as I know" )
-	("atm" "at the moment" )
-	("ty" "thank you" )
-	("btw" "by the way" )
-	("wfh" "working from home")
-
-	("cfg" "context-free grammar" )
-	("cs" "computer science" )
-
-	("ipa" "IP address" )
-	("jvm" "Java Virtual Machine" )
-	("subdir" "subdirectory" )
-	("db" "database" )
-
-	("envp" "environment variable" )
-	("gui" "graphical user interface" )
-	("oop" "object oriented programming" )
-	("os" "operating system" )
-
-	("utf8" "-*- coding: utf-8 -*-" )
-
-	("rgaz" "\\([A-Za-z0-9]+\\)")
-	("rgshy" "\\(?:xx\\)")
-	("rgbracket" "\\[\\([^]]+?\\)\\]")
-	("rgcurly" "“\\([^”]+?\\)”")
-	("rgdigits" "\\([0-9]+\\)")
-	("rgdate" "\\([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]\\)")
-	("rgdot" "\\(.\\)")
-	("rgstr" "\\([^\"]+?\\)")
-	("rgtag" "\\([</>=\" A-Za-z0-9]+\\)")
-	)))
-
-  (define-abbrev-table 'org-mode-abbrev-table
-    '(
-      ("lle" "** \n:PROPERTIES:\n:TOPICS: \n:LECTURER: \n:DATE: \n:RESOURCES: \n:END:")
-      ("bbk" "** \n:PROPERTIES:\n:TITLE:\n:AUTHOR:\n:YEAR:\n:PAGES:\n:RATING:\n:LINK:\n:END:")
-      ("prop" ":PROPERTIES:\n...\n:END:")
-      ("eqn" "\\begin{equation}\n\n\\end{equation}")
-      ("eqnc" "\\begin{equation}\n\\begin{cases}\n\n\\end{cases}\n\\end{equation}")
-      ("bkk" "** \n:PROPERTIES:\n:TITLE:\n:AUTHOR:\n:YEAR:\n:PAGES:\n:RATING:\n:LINK:\n:END:")
-      ))
-
-  (define-abbrev-table 'lisp-mode-abbrev-table
-    '(
-      ("monitor" "(setq exwm-randr-workspace-monitor-plist '(2 \"HDMI1\" 5 \"HDMI1\"))\n(exwm-randr--refresh)")
-      ))
-
-  (define-abbrev-table 'tex-mode-abbrev-table
-    '(
-      ("->" "\rightarrow")
-      ("=>" "\Rightarrow")
-      ("-<" "\leftarrow")
-      ("=<" "\Leftarrow")    
-      (">=" "\geq")
-      ("<=" "\leq")
-      ))
-
-  (define-abbrev-table 'ledger-mode-abbrev-table
-    '(
-      ("esse" " * Esselunga | Grocery shopping\nExpenses:Food:Supermarket\nAssets:Cards:N26")
-      ("parents" " * Income from parents\nIncome:Parents:Salary\nAssets:Cards:N26")
-      ("spoti" " * Spotify | Student monthly subscription\nExpenses:Leisure:Tech  5.99 EUR\nAssets:Cards:N26")
-      ("trenord" " * Trenord | Ticket to Milan\nExpenses:Transport:Public\nAssets:Cards:N26")
-      ("tim" " * TIM | Monthly Internet subscription\nExpenses:House:Utilities\nAssets:Cards:N26")
-      ("atm" " * ATM | Metro ticket @Milan\"\nExpenses:Transport:Public\nAssets:Cards:N26")
-      ("n26smart" " * N26 | Smart monthly subscription\nExpenses:Taxes:Bank\nAssets:Cards:N26")
-      ))
+    (yas-global-mode 1))
 #+end_src
 
 *** CTAGS
@@ -1454,10 +1384,6 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible.
   (use-package python-mode
     :ensure t
     :mode "\\.py\\'")
-
-  (use-package cc-mode
-    :ensure nil
-    :mode "\\.c\\'" "\\.h\\'" "\\.cpp\\'")
 
   (use-package edts
     :ensure t)
@@ -1515,7 +1441,15 @@ I use ~vterm~ as terminal inside Emacs.
 Adding some custom functions I use to make my life easier.
 
 #+begin_src emacs-lisp
-  ;; copy file name to clipboard
+  (defun mg/split-on-ultrawide ()
+    "Utility function used to quickly split the workspace in 3 buffers, convenient for ultrawide monitors"
+    (interactive)
+    (save-excursion
+      (progn
+	(split-window-horizontally)
+	(split-window-vertically)
+	)))
+
   (defun mg/copy-file-name-to-clipboard ()
     "Copy the current buffer file name to the clipboard."
     (interactive)
@@ -1574,5 +1508,6 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c u r i") #'indent-region)
   (global-set-key (kbd "C-c u c d") #'mg/find-docker-and-enter-in-assets)
   (global-set-key (kbd "C-c u m") #'compile)
+  (global-set-key (kbd "C-c u w u") #'mg/split-on-ultrawide)
   (global-set-key (kbd "C-c u t") #'mg/insert-current-timestamp)
 #+end_src

@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: cmake
+# key: cmake
+# expand-env: ((yas-indent-line 'fixed))
+# --
+CFLAGS=-Wall -Wextra -std=c11 -pedantic
+LIBS=
+$1: $2
+    $(CC) $(CFLAGS) -o $1 $2 $(LIBS)

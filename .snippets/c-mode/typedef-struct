@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: typedef struct
+# key: typedefs
+# expand-env: ((yas-indent-line 'fixed))
+# --
+typedef struct {
+	$2;
+} $1;

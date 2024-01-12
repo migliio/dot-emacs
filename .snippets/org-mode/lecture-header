@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: lecture header
+# key: lle
+# --
+** $1
+:PROPERTIES:
+:TOPICS:
+:LECTURER:
+:DATE:
+:RESOURCES:
+:END:

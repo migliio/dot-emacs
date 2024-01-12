@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: typedef enum
+# key: typedefe
+# expand-env: ((yas-indent-line 'fixed))
+# --
+typedef enum {
+	$2;
+} $1;
