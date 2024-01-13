@@ -386,7 +386,7 @@ Org mode is the single most used package of my Emacs workflow.
 	   ("C-c o d" . org-do-demote)	   
 	   ("C-c l" . org-store-link))
     :custom
-    (org-agenda-files (list "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "~/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org" "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org"))
+    (org-agenda-files (list "~/Vault/pkm/journal" "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "~/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org" "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org"))
     (org-export-backends '(beamer html latex ascii ox-hugo))
     (org-startup-folded t)
     (org-log-into-drawer t)
@@ -825,7 +825,7 @@ Managing contacts with the ~bbdb~ package.
     (denote-templates
      '((plain . "")
        (course . "* Course details\n- Lecturer ::\n- University ::\n- Academic year ::\n- Resources ::\n- Description ::\n* Lecture notes\n* COMMENT Flashcards\n")
-       (journal . "#+tags: { deep(d) shallow(s) } { @morning(m) @afternoon(a) @evening(e) } cancelled(c)\n* Task picking\n:PROPERTIES:\n:CATEGORY: TODAY\n:END:\n** \n* Learning and research\n- Resources found today ::\n- Key takeaways :: \n* Ideas vault\n\n#+BEGIN: denote-backlinks :sort-by-component nil :reverse-sort nil :id-only nil\n\n#+END:")
+       (journal . "#+tags: { deep(d) shallow(s) } @morning(m) @afternoon(a) @evening(e) cancelled(c)\n* Task picking\n:PROPERTIES:\n:CATEGORY: TODAY\n:END:\n** \n* Learning and research\n- Resources found today ::\n- Key takeaways :: \n* Ideas vault\n\n#+BEGIN: denote-backlinks :sort-by-component nil :reverse-sort nil :id-only nil\n\n#+END:")
        (zettel . "#+references: \n\n\n-----\n")
        (place . "* Details\n- Link ::\n- Visited ::\n- Description ::\n* Notes\n")
        (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- BBDB entry ::\n- Additional information ::\n* Notes")))
@@ -1135,7 +1135,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 	    ([?\s-b] .
 	     (lambda ()
 	       (interactive)
-	       (start-process "" nil "/usr/bin/firefox")))
+	       (start-process "" nil "/usr/bin/google-chrome-stable")))
 	    ([?\s-i] .
 	     (lambda ()
 	       (interactive)
@@ -1315,14 +1315,16 @@ These are useful tweaks I use when coding.
   (use-package multiple-cursors
     :ensure t
     :init
+    (define-key mc/keymap (kbd "<return>") nil)
     (eval-after-load 'org
       (progn
 	(define-key org-mode-map (kbd "C-c <") nil)
 	(define-key org-mode-map (kbd "C-c C-<") nil)
 	(define-key org-mode-map (kbd "C-c >") nil)))
     :bind (("C-c >" . mc/mark-next-like-this)
+	   ("C-c u c e" . 'mc/edit-lines)
 	   ("C-c <" . mc/mark-previous-like-this)
-	   ("C-c C-<" . mc/mark-all-like-this)))
+	   ("C-c u c a" . mc/mark-all-like-this)))
 #+end_src
 
 *** Snippets

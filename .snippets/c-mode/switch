@@ -8,3 +8,4 @@ case $2:
      $3;
 default:
 	$4
+}
