@@ -1508,6 +1508,8 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c u r c") #'comment-region)
   (global-set-key (kbd "C-c u r u") #'uncomment-region)
   (global-set-key (kbd "C-c u r i") #'indent-region)
+  (global-set-key (kbd "C-c u r a s") #'align-sexp)
+  (global-set-key (kbd "C-c u r a e") #'align-entire)
   (global-set-key (kbd "C-c u c d") #'mg/find-docker-and-enter-in-assets)
   (global-set-key (kbd "C-c u m") #'compile)
   (global-set-key (kbd "C-c u w u") #'mg/split-on-ultrawide)
