@@ -97,7 +97,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 		  confirm-kill-processes nil
 		  process-connection-type nil
 		  org-src-fontify-natively t
-		  warning-minimum-level :emergency
+;;		  warning-minimum-level :emergency
 		  set-language-environment "UTF-8"
 		  system-time-locale "C")
 
@@ -270,7 +270,7 @@ Trying some in-buffer completion framework that is not broken.
   (use-package dired
     :ensure nil
     :bind
-    (("c-x c-d" . dired))
+    (("C-x C-d" . dired))
     :custom
     (ls-lisp-use-insert-directory-program nil)
     (ls-lisp-dirs-first t)
@@ -361,9 +361,11 @@ Move the cursor around like a velociraptor.
     :init
     (eval-after-load 'org
       (progn
-	(define-key org-mode-maporg-mode-map ,") nil)
-	(define-key org-mode-maporg-mode-map ;") nil)))org-mode-map ," . avy-goto-char)
-     ("C-c ;" . avy-goto-line)))
+	(define-key org-mode-map "," nil)
+	(define-key org-mode-map ";" nil)))
+    :bind
+    (("C-c ;" . avy-goto-line)
+     ("C-c ," . avy-goto-char)))
 #+end_src
 
 ** Personal knowledge management
@@ -877,7 +879,8 @@ Using the superior citation manager.
     (citar-bibliography org-cite-global-bibliography)
     :bind
     (("C-c n c o" . citar-open)
-     (:map org-mode-map :package org ("C-c b" . #'orgorg-mode-map
+     (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
+    :config
     (setq citar-templates
 	  '((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
 	    (suffix . "          ${=key= id:15}    ${=type=:12}")
