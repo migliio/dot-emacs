@@ -97,7 +97,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 		  confirm-kill-processes nil
 		  process-connection-type nil
 		  org-src-fontify-natively t
-;;		  warning-minimum-level :emergency
+		  warning-minimum-level :emergency
 		  set-language-environment "UTF-8"
 		  system-time-locale "C")
 
@@ -361,8 +361,8 @@ Move the cursor around like a velociraptor.
     :init
     (eval-after-load 'org
       (progn
-	(define-key org-mode-map "," nil)
-	(define-key org-mode-map ";" nil)))
+	(define-key org-mode-map (kbd "C-c ,") nil)
+	(define-key org-mode-map (kbd "C-c ;") nil)))
     :bind
     (("C-c ;" . avy-goto-line)
      ("C-c ," . avy-goto-char)))
@@ -1326,6 +1326,7 @@ These are useful tweaks I use when coding.
 	(define-key org-mode-map (kbd "C-c >") nil)))
     :bind (("C-c >" . mc/mark-next-like-this)
 	   ("C-c u c e" . 'mc/edit-lines)
+	   ("C-c u c s" . 'mc/mark-all-dwim)
 	   ("C-c <" . mc/mark-previous-like-this)
 	   ("C-c u c a" . mc/mark-all-like-this)))
 #+end_src
@@ -1397,6 +1398,9 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible.
     :ensure nil
     :after (edts)
     :mode "\\.erl\\'")
+
+  (use-package nasm-mode
+    :ensure t)
 
   (use-package gnuplot
     :ensure t)
@@ -1500,6 +1504,8 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c p c") #'mg/org-capture-notes)
 
   ;; utils related bindings
+  (global-set-key (kbd "M-n") #'forward-paragraph)
+  (global-set-key (kbd "M-p") #'backward-paragraph)
   (global-set-key (kbd "C-c u p") #'mg/toggle-pdf-presentation-mode)
   (global-set-key (kbd "C-c u d t") #'mg/check-and-toggle-deepwork-mode)
   (global-set-key (kbd "C-c u d c") #'mg/check-deepwork-mode)
@@ -1514,6 +1520,7 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c u r a s") #'align-sexp)
   (global-set-key (kbd "C-c u r a e") #'align-entire)
   (global-set-key (kbd "C-c u c d") #'mg/find-docker-and-enter-in-assets)
+  (global-set-key (kbd "C-c u c w") #'whitespace-mode)
   (global-set-key (kbd "C-c u m") #'compile)
   (global-set-key (kbd "C-c u w u") #'mg/split-on-ultrawide)
   (global-set-key (kbd "C-c u t") #'mg/insert-current-timestamp)
