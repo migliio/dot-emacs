@@ -690,9 +690,9 @@ Org mode is the single most used package of my Emacs workflow.
     :config
     (require 'org-fc))
 
-  (use-package ox-hugo
-    :ensure t
-    :after ox)
+  (use-package org-timeblock
+    :bind (("C-c p t" . org-timeblock))
+    :ensure t)
 #+end_src
 
 **** Encrypting
@@ -1309,15 +1309,9 @@ Using ~magit~ as git client for Emacs.
 These are useful tweaks I use when coding.
 
 #+begin_src emacs-lisp
-  (use-package smartparens
-    :ensure t
-    :config
-    (require 'smartparens-config)
-    (smartparens-global-mode))
-
   (use-package multiple-cursors
     :ensure t
-    :init
+    :config
     (define-key mc/keymap (kbd "<return>") nil)
     (eval-after-load 'org
       (progn
@@ -1517,7 +1511,7 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c u r c") #'comment-region)
   (global-set-key (kbd "C-c u r u") #'uncomment-region)
   (global-set-key (kbd "C-c u r i") #'indent-region)
-  (global-set-key (kbd "C-c u r a s") #'align-sexp)
+  (global-set-key (kbd "C-c u r a r") #'align-regexp)
   (global-set-key (kbd "C-c u r a e") #'align-entire)
   (global-set-key (kbd "C-c u c d") #'mg/find-docker-and-enter-in-assets)
   (global-set-key (kbd "C-c u c w") #'whitespace-mode)

@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: book
+# key: bkk
+# expand-env: ((yas-indent-line 'fixed))
+# --
+** TODO $1
+:PROPERTIES:
+:TITLE: $1
+:AUTHOR: $2
+:YEAR: $3
+:PAGES: $4
+:RATING:
+:LINK: $5
+:END:
