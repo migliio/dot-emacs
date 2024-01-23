@@ -151,7 +151,7 @@ Loading the preferred theme.
 
   (if (display-graphic-p)
       (progn
-	(set-frame-font "Liberation Mono 13" nil t)
+	(set-frame-font "Iosevka 14" nil t)
 	(set-fringe-mode 0)
 	(use-package zenburn-theme :ensure t :config (load-theme 'zenburn t)))
     (set-face-background 'default "undefined"))
@@ -433,7 +433,7 @@ Org mode is the single most used package of my Emacs workflow.
       "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
       (when (and (string= (org-get-todo-state) "NEXT")
 		 (not (org-entry-get nil "ACTIVATED")))
-	(org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d %a]"))))
+	(org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d %a %H:%m]"))))
     (add-hook 'org-after-todo-state-change-hook #'log-todo-next-creation-date)
     (setq org-capture-templates
 	  '(("i" "Inbox")
@@ -1147,10 +1147,6 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 	     (lambda ()
 	       (interactive)
 	       (start-process "" nil "/usr/bin/setxkbmap" "us")))
-	    ([?\s-\S-p] .
-	     (lambda ()
-	       (interactive)
-	       (start-process "" nil "/usr/bin/shutdown" "now")))
 	    ([?\s-f] .
 	     (lambda ()
 	       (interactive)
@@ -1444,6 +1440,12 @@ I use ~vterm~ as terminal inside Emacs.
 Adding some custom functions I use to make my life easier.
 
 #+begin_src emacs-lisp
+  (defun mg/shutdown-with-confirmation ()
+    "Ask for confirmation and shut down the system if confirmed."
+    (interactive)
+    (when (yes-or-no-p "Are you sure you want to shut down the system? ")
+      (shell-command "shutdown now")))
+
   (defun mg/split-on-ultrawide ()
     "Utility function used to quickly split the workspace in 3 buffers, convenient for ultrawide monitors"
     (interactive)
@@ -1504,7 +1506,8 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c u d t") #'mg/check-and-toggle-deepwork-mode)
   (global-set-key (kbd "C-c u d c") #'mg/check-deepwork-mode)
   (global-set-key (kbd "C-c u f") #'mg/copy-file-name-to-clipboard)
-  (global-set-key (kbd "C-c u s") #'mg/display-machine-info)
+  (global-set-key (kbd "C-c u s i") #'mg/display-machine-info)
+  (global-set-key (kbd "C-c u s s") #'mg/shutdown-with-confirmation)
   (global-set-key (kbd "C-c u r s") #'replace-string)
   (global-set-key (kbd "C-c u r q") #'query-replace-regexp)
   (global-set-key (kbd "C-c u r r") #'query-replace)
