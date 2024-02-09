@@ -3,7 +3,8 @@
 #+PROPERTY: header-args:emacs-lisp :tangle init.el
 * Init work
 
-In this piece of code I add stuff to perform the loading of lisp files located on the local machine.
+In this piece of code I add stuff to perform the loading of lisp files located on the local machine. For some reason I needed to create a "recursive" code that goes into the ~site-lisp~ folder (i.e., where I have all the submodules not downloadable from MELPA) and recursively adds all folders inside it to ~load-path~.
+As [2024-01-30 Tue] this stuff is deprecated because I think there is the possibility to pull stuff inside ~site-lisp~ directly from ~straight.el~, since they are mostly git submodules.
 
 #+begin_src emacs-lisp
   (let ((base "/home/claudio/Repositories/dot-emacs/site-lisp"))
@@ -16,7 +17,7 @@ In this piece of code I add stuff to perform the loading of lisp files located o
   	  (add-to-list 'load-path name)))))
 #+end_src
 
-Start the server when opening emacs.
+I want to start the server when opening Emacs. This is crucial because I want a single instance of Emacs running in the background (given that I use it even as window manager, thus this is somehow mandatory).
 
 #+begin_src emacs-lisp
   (require 'server)
@@ -26,8 +27,9 @@ Start the server when opening emacs.
 
 * Package management
 
-First of all, let's initialize the package management setting up ELPA, MELPA and org package repositories. After that, I want Emacs loading =use-package= to manage package configuration.
-** ~use-package~
+First of all, let's initialize the package management setting up ELPA, MELPA and org package repositories. After that, I want Emacs loading =use-package= to manage package configuration. From [2024-01-30 Tue], I started to use ~straight.el~ in conjunction with ~use-package~, therefore there will be two consecutive bootstrap sections for each of th two.
+
+** Bootstrapping ~use-package~
 #+begin_src emacs-lisp
   (require 'package)
   (setq package-enable-at-startup nil)
@@ -41,7 +43,7 @@ First of all, let's initialize the package management setting up ELPA, MELPA and
     (require 'use-package))
   (setq use-package-always-ensure t)
 #+end_src
-** ~straight~
+** Bootstrapping ~straight~
 
 #+begin_src emacs-lisp
   (defvar bootstrap-version)
@@ -169,9 +171,9 @@ Loading the preferred theme.
 
   (if (display-graphic-p)
       (progn
-	(set-frame-font "Liberation Mono 13" nil t)
-	(set-fringe-mode 0)
-	(use-package zenburn-theme :straight t :config (load-theme 'zenburn t)))
+  	(set-frame-font "Iosevka 15" nil t)
+  	(set-fringe-mode 0)
+  	(use-package zenburn-theme :straight t :config (load-theme 'zenburn t)))
     (set-face-background 'default "undefined"))
 #+end_src
 
@@ -286,17 +288,6 @@ I really love the ~undo-tree~ mode visualization, so I'm going to enable it.
     (global-undo-tree-mode 1))
 #+end_src
 
-*** Ripgrep
-
-I use ~rg~ to find file content easily.
-
-#+begin_src emacs-lisp
-  (use-package deadgrep
-    :straight t
-    :bind
-    (("C-c d" . deadgrep)))
-#+end_src
-
 *** Avy
 
 Move the cursor around like a velociraptor.
@@ -392,6 +383,9 @@ Org mode is the single most used package of my Emacs workflow.
   	     "* %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
   	    ("ae" "Call entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
   	     "* Call with %? :call:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:CATEGORY:\n:END:\n%^T\n")
+  	    ("j" "Journal entry" plain (file+olp+datetree "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %i%?\n"
+  	     :time-prompt t
+  	     :unnarrowed t)
   	    ("r" "Resources")
   	    ("ra" "Conference attendance" entry
   	     (file "~/Vault/pkm/20231210T222135--conferences__personal_research.org")
@@ -1256,14 +1250,22 @@ These are useful tweaks I use when coding.
     (define-key mc/keymap (kbd "<return>") nil)
     (eval-after-load 'org
       (progn
-	(define-key org-mode-map (kbd "C-c <") nil)
-	(define-key org-mode-map (kbd "C-c C-<") nil)
-	(define-key org-mode-map (kbd "C-c >") nil)))
+  	(define-key org-mode-map (kbd "C-c <") nil)
+  	(define-key org-mode-map (kbd "C-c C-<") nil)
+  	(define-key org-mode-map (kbd "C-c >") nil)))
     :bind (("C-c >" . mc/mark-next-like-this)
-	   ("C-c u c e" . 'mc/edit-lines)
-	   ("C-c u c s" . 'mc/mark-all-dwim)
-	   ("C-c <" . mc/mark-previous-like-this)
-	   ("C-c u c a" . mc/mark-all-like-this)))
+  	   ("C-c u c e" . 'mc/mark-more-like-this-extended)
+  	   ("C-c u c s" . 'mc/mark-all-dwim)
+  	   ("C-c <" . mc/mark-previous-like-this)
+  	   ("C-c u c a" . mc/mark-all-like-this)
+  	   ("C-c u c r" . mc/mark-all-in-region)
+  	   ("C-c u c d" . mc/mark-all-like-this-dwim)
+  	   ("C-c u c w" . mc/mark-all-words-like-this)))
+
+  (use-package beacon
+    :straight t
+    :config
+    (beacon-mode))
 #+end_src
 
 *** Snippets
@@ -1343,12 +1345,13 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible.
     :ensure nil
     :config
     (add-to-list 'eglot-server-programs
-		 '((c-mode c++-mode)
-		   . ("clangd")))
+  		 '((c-mode c++-mode)
+  		   . ("clangd")))
     (add-to-list 'eglot-server-programs
-		 '((racket-mode)
-		   . ("racket")))
+  		 '((racket-mode)
+  		   . ("racket")))
     (add-hook 'c-mode-hook 'eglot-ensure)
+    (add-hook 'bison-mode-hook 'eglot-ensure)
     (add-hook 'haskell-mode-hook 'eglot-ensure)
     (add-hook 'erlang-mode-hook 'eglot-ensure)  
     (add-hook 'python-mode-hook 'eglot-ensure))
@@ -1384,30 +1387,52 @@ I use ~vterm~ as terminal inside Emacs.
 Adding some custom functions I use to make my life easier.
 
 #+begin_src emacs-lisp
+  (defun mg/new-empty-buffer ()
+     "Create a new empty buffer"
+     (interactive)
+     (let ((mbuf (generate-new-buffer "untitled")))
+       (switch-to-buffer mbuf)
+       (funcall initial-major-mode)
+       mbuf
+       ))
+
   (defun mg/shutdown-with-confirmation ()
     "Ask for confirmation and shut down the system if confirmed."
     (interactive)
     (when (yes-or-no-p "Are you sure you want to shut down the system? ")
       (shell-command "shutdown now")))
 
+  ;; TODO
+  (defun mg/take-screenshot ()
+    "Take a screenshot using 'scrot', then rename it using denote."
+    (interactive)
+    ;; Generate the screenshot filename with a timestamp
+    (let ((screenshot-name (format-time-string "/home/claudio/Vault/pkm/assets/%Y-%m-%d-%H-%M_screenshot_RENAME.png")))
+      ;; Take the screenshot
+      (shell-command (concat "/usr/bin/scrot -s " screenshot-name))
+      ;; Find and rename the screenshot files that need to be renamed
+      (dolist (file (directory-files-recursively "/home/claudio/Vault/pkm/assets/" "_RENAME\\.png$"))
+        (when (string-match (regexp-quote "_screenshot_RENAME.png") file)
+          (denote-rename-file-)))))
+
   (defun mg/split-on-ultrawide ()
     "Utility function used to quickly split the workspace in 3 buffers, convenient for ultrawide monitors"
     (interactive)
     (save-excursion
       (progn
-	(split-window-horizontally)
-	(split-window-vertically)
-	)))
+  	(split-window-horizontally)
+  	(split-window-vertically)
+  	)))
 
   (defun mg/copy-file-name-to-clipboard ()
     "Copy the current buffer file name to the clipboard."
     (interactive)
     (let ((filename (if (equal major-mode 'dired-mode)
-			default-directory
-		      (buffer-file-name))))
+  			default-directory
+  		      (buffer-file-name))))
       (when filename
-	(kill-new filename)
-	(message "Copied buffer file name '%s' to the clipboard." filename))))
+  	(kill-new filename)
+  	(message "Copied buffer file name '%s' to the clipboard." filename))))
 
   ;; enable pdf presentation mode
   (use-package hide-mode-line
@@ -1416,11 +1441,11 @@ Adding some custom functions I use to make my life easier.
   (defun mg/display-machine-info()
     (interactive)
     (message "System-level info => %s" (concat
-					(format "BAT: %s- " (shell-command-to-string "~/.config/scripts/battery.sh"))
-					(format "CPU: %s - " (shell-command-to-string "~/.config/scripts/cpu.sh"))			    
-					(format "MEM: %s - " (shell-command-to-string "~/.config/scripts/ram.sh"))
-					(format "DSK: %s - " (shell-command-to-string "~/.config/scripts/disk.sh"))
-					(format "VOL: %s " (shell-command-to-string "~/.config/scripts/volume.sh")))))
+  					(format "BAT: %s- " (shell-command-to-string "~/.config/scripts/battery.sh"))
+  					(format "CPU: %s - " (shell-command-to-string "~/.config/scripts/cpu.sh"))			    
+  					(format "MEM: %s - " (shell-command-to-string "~/.config/scripts/ram.sh"))
+  					(format "DSK: %s - " (shell-command-to-string "~/.config/scripts/disk.sh"))
+  					(format "VOL: %s " (shell-command-to-string "~/.config/scripts/volume.sh")))))
 
   (defun mg/find-docker-and-enter-in-assets ()
     "Find the running docker container and enter into the assets folder"
@@ -1446,6 +1471,7 @@ This is the list of keybindings I use.
   ;; utils related bindings
   (global-set-key (kbd "M-n") #'forward-paragraph)
   (global-set-key (kbd "M-p") #'backward-paragraph)
+  (global-set-key (kbd "M-g r") #'rgrep)
   (global-set-key (kbd "C-c u p") #'mg/toggle-pdf-presentation-mode)
   (global-set-key (kbd "C-c u d t") #'mg/check-and-toggle-deepwork-mode)
   (global-set-key (kbd "C-c u d c") #'mg/check-deepwork-mode)
@@ -1460,6 +1486,7 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c u r i") #'indent-region)
   (global-set-key (kbd "C-c u r a r") #'align-regexp)
   (global-set-key (kbd "C-c u r a e") #'align-entire)
+  (global-set-key (kbd "C-c u n") #'mg/new-empty-buffer)
   (global-set-key (kbd "C-c u c d") #'mg/find-docker-and-enter-in-assets)
   (global-set-key (kbd "C-c u c w") #'whitespace-mode)
   (global-set-key (kbd "C-c u m") #'compile)
