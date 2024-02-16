@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: trenord
+# key: trenord
+# expand-env: ((yas-indent-line 'fixed))
+# --
+;; $3
+$1 Trenord
+    Expenses:Transport:Public                   $2 EUR
+    Assets:Cards:N26

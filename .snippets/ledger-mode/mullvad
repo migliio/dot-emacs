@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: mullvad
+# key: mullvad
+# expand-env: ((yas-indent-line 'fixed))
+# --
+;; 1 month subscription
+$1 Mullvad VPN
+    Expenses:Leisure:Tech                       5.00 EUR
+    Assets:Cards:N26

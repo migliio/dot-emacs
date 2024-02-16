@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: tim
+# key: tim
+# expand-env: ((yas-indent-line 'fixed))
+# --
+;; Monthly Internet subscription
+$1 TIM
+    Expenses:House:Utilities                   27.80 EUR
+    Assets:Cards:N26

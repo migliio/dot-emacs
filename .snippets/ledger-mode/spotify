@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: spotify
+# key: spoti
+# expand-env: ((yas-indent-line 'fixed))
+# --
+;; Student monthly subscription
+$1 Spotify
+    Expenses:Leisure:Tech                       5.99 EUR
+    Assets:Cards:N26

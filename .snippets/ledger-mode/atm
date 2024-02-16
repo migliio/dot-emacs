@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: atm
+# key: atm
+# expand-env: ((yas-indent-line 'fixed))
+# --
+;; $3
+$1 ATM
+   Expenses:Transport:Public                   $2 EUR
+   Assets:Cards:N26

@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: bennet
+# key: bennet
+# expand-env: ((yas-indent-line 'fixed))
+# --
+;; $3
+$1 Bennet
+    Expenses:Food:Supermarket                   $2 EUR
+    Assets:Cards:N26
