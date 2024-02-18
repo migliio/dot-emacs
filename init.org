@@ -91,6 +91,8 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
     :init
     (setq completion-cycle-threshold 3)
     (setq tab-always-indent 'complete)
+    (require 'epa-file)
+    (epa-file-enable)
     (if (display-graphic-p)
   	(dolist (mode
   		 '(tool-bar-mode
@@ -102,13 +104,14 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
     (dolist (mode
   	     '(global-visual-line-mode
   	       show-paren-mode))
-      (funcall mode 1))
+  	(funcall mode 1))
     (setq-default inhibit-startup-screen t
   		  initial-scratch-message ""
   		  frame-title-format '("%b")
   		  ring-bell-function 'ignore
   		  tab-width 8
   		  c-basic-offset 8
+  		  c-default-style "linux"
   		  frame-resize-pixelwise t	      
   		  linum-format "%4d "
   		  use-short-answers t
@@ -126,9 +129,9 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
     (add-to-list 'yank-excluded-properties 'face)
 
     (define-minor-mode mg/line-numbers-highlight-line-mode
-      "Shows line numbers in relative mode and highlights the current line"
-      :initial nil
-      (if mg/line-numbers-highlight-line-mode
+  	"Shows line numbers in relative mode and highlights the current line"
+  	:initial nil
+  	(if mg/line-numbers-highlight-line-mode
   	  (progn
   	    (display-line-numbers-mode 1)
   	    (hl-line-mode 1)
@@ -156,6 +159,185 @@ Put Emacs auto-save and backup files to /tmp/.
    auto-save-list-file-prefix emacs-tmp-dir
    auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
    backup-directory-alist `((".*" . ,emacs-tmp-dir)))
+#+end_src
+
+** Window management and desktop environment
+
+Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
+
+#+begin_src emacs-lisp
+  (when (display-graphic-p)
+
+    (defun mg/exwm-update-class ()
+      (exwm-workspace-rename-buffer exwm-class-name))
+
+    (use-package exwm
+      :straight t
+      :config
+      (setq exwm-workspace-number 6)
+      (add-hook 'exwm-update-class-hook #'mg/exwm-update-class)
+      (require 'exwm-systemtray)
+      (exwm-systemtray-enable)
+      (setq exwm-systemtray-height 15)
+      (require 'exwm-randr)
+      (exwm-randr-enable)
+      (setq exwm-randr-workspace-monitor-plist '(2 "HDMI1" 5 "HDMI1"))
+      (defun mg/starter ()
+        "Choose the application to run"
+        (interactive)
+        (let* ((candidates (split-string
+  			  (shell-command-to-string "xstarter -P")
+  			  "\n"
+  			  t))
+  	     (application-path (completing-read
+  				"Application to launch: "
+  				candidates)))
+  	(start-process "" nil application-path)))
+      ;; these keys should always pass through emacs
+      (setq exwm-input-prefix-keys
+  	  '(?\C-x
+  	    ?\C-u
+  	    ?\C-n
+  	    ?\C-t
+  	    ?\C-h
+  	    ?\C-p
+  	    ?\C-g
+  	    ?\M-x
+  	    ?\M-`
+  	    ?\M-&
+  	    ?\M-:
+  	    ?\C-\M-j  ;; buffer list
+  	    ?\C-\ ))  ;; ctrl+space
+      ;; map sequences to be sent to X applications using emacs kebindings
+      (setq exwm-input-simulation-keys
+  	  '(([?\C-b] . [left])
+  	    ([?\C-f] . [right])
+  	    ([?\C-p] . [up])
+  	    ([?\C-n] . [down])
+  	    ([?\C-a] . [home])
+  	    ([?\C-e] . [end])
+  	    ([?\M-v] . [prior])
+  	    ([?\C-v] . [next])
+  	    ([?\C-d] . [delete])
+  	    ([?\C-k] . [S-end delete])))
+      (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
+      (setq exwm-layout-show-all-buffers t)
+      (setq exwm-workspace-show-all-buffers t)
+      (exwm-input-set-key
+       (kbd "<XF86MonBrightnessUp>")
+       (lambda ()
+         (interactive)
+         (start-process-shell-command
+  	"xbacklight" nil "xbacklight -inc 5")))
+      (exwm-input-set-key
+       (kbd "<XF86MonBrightnessDown>")
+       (lambda ()
+         (interactive)
+         (start-process-shell-command
+  	"xbacklight" nil "xbacklight -dec 5")))
+      ;; set up global key bindings
+      ;; keep in mind that changing this list after EXWM initializes has no effect
+      (setq exwm-input-global-keys
+  	  `(
+  	    ;; reset to line-mode (C-c C-k switches to char-mode via exwm-input-release-keyboard)
+  	    ([?\s-r] . exwm-reset)
+  	    ;; delete window
+  	    ([?\s-k]
+  	     . delete-window)
+  	    ;; move between windows
+  	    ([s-left] . windmove-left)
+  	    ([s-right] . windmove-right)
+  	    ([s-up] . windmove-up)
+  	    ([s-down] . windmove-down)
+  	    ;; move window to another workspace
+  	    ([?\s-m] . exwm-workspace-move-window)
+  	    ;; launch applications via shell command
+  	    ([?\s-\ ] .
+  	     (lambda ()
+  	       (interactive)
+  	       (mg/starter)))
+  	    ;; switch workspace
+  	    ([?\s-w] . exwm-workspace-switch)
+  	    ([?\s-`] . (lambda () (interactive) (exwm-workspace-switch-create 0)))
+  	    ;; utilities
+  	    ([?\s-b] .
+  	     (lambda ()
+  	       (interactive)
+  	       (start-process "" nil "/usr/bin/google-chrome-stable")))
+  	    ([?\s-i] .
+  	     (lambda ()
+  	       (interactive)
+  	       (start-process "" nil "/usr/bin/setxkbmap" "it")))
+  	    ([?\s-u] .
+  	     (lambda ()
+  	       (interactive)
+  	       (start-process "" nil "/usr/bin/setxkbmap" "us")))
+  	    ([?\s-f] .
+  	     (lambda ()
+  	       (interactive)
+  	       (mg/check-and-toggle-deepwork-mode)))
+  	    ([?\s-c] .
+  	     (lambda ()
+  	       (interactive)
+  	       (start-process "" nil "/usr/bin/scrot" "-s /home/claudio/Vault/pkm/assets/$(date +%Y-%m-%d-%H-%M-%S)_screenshot.png")))
+  	    ,@(mapcar (lambda (i)
+  			`(,(kbd (format "s-%d" i)) .
+  			  (lambda ()
+  			    (interactive)
+  			    (exwm-workspace-switch-create ,i))))
+  		      (number-sequence 0 9))))
+      (add-hook 'exwm-init-hook
+  	      (lambda ()
+  		(progn
+  		  (start-process "blueberry-tray" nil "blueberry-tray")
+  		  (start-process "xset" nil "xset" "s 300 5")
+  		  (start-process "nm-applet" nil "nm-applet")
+  		  (start-process "redshift" nil "redshift")
+  		  (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t))
+
+
+    (use-package exwm-modeline
+      :straight t
+      :after (exwm)
+      :config
+      (add-hook 'exwm-init-hook #'exwm-modeline-mode))
+
+    (use-package desktop-environment
+      :straight t
+      :after (exwm)
+      :config
+      (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>") #'desktop-environment-volume-increment)
+      (exwm-input-set-key (kbd "<XF86AudioLowerVolume>") #'desktop-environment-volume-decrement)
+      (exwm-input-set-key (kbd "<XF86AudioMute>") #'desktop-environment-toggle-mute)
+      (exwm-input-set-key (kbd "s-l") #'desktop-environment-lock-screen)
+      (exwm-input-set-key (kbd "<XF86AudioPlay>") #'desktop-environment-toggle-music)
+      (exwm-input-set-key (kbd "<XF86AudioPause>") #'desktop-environment-toggle-music)
+      (exwm-input-set-key (kbd "<XF86AudioNext>") #'desktop-environment-music-next)
+      (exwm-input-set-key (kbd "s-s") #'desktop-environment-screenshot-part)
+      :custom
+      (desktop-environment-volume-get-command "pamixer --get-volume")
+      (desktop-environment-volume-set-command "pamixer %s")
+      (desktop-environment-volume-toggle-regexp nil)
+      (desktop-environment-volume-get-regexp "\\([0-9]+\\)")
+      (desktop-environment-volume-normal-increment "-i 5 --allow-boost")
+      (desktop-environment-volume-normal-decrement "-d 5")
+      (desktop-environment-volume-toggle-command "pamixer -t")
+      (desktop-environment-screenshot-directory "/home/claudio/Vault/pkm/assets")
+      (desktop-environment-screenshot-command "scrot -s")
+      (desktop-environment-screenshot-delay-argument nil)
+      (desktop-environment-screenshot-partial-command "import png:- | xclip -selection c -t image/png -verbose")
+      (desktop-environment-screenlock-command "xsecurelock"))
+
+    (use-package bluetooth :after (exwm) :straight t)
+
+    (use-package time
+      :straight t
+      :after (exwm)
+      :custom
+      (display-time-format "[%d/%b %H:%M]")
+      :config
+      (display-time-mode)
+      (display-battery-mode)))
 #+end_src
 
 ** User interface
@@ -239,7 +421,7 @@ Trying some in-buffer completion framework that is not broken.
   (use-package disk-usage)  
 #+end_src
 
-** File visualization
+** Files visualization
 *** Open with
 
 I want to open some files with external programs and =open-with= addresses this problem.
@@ -274,6 +456,7 @@ I want to use =pdf-tools= to view and edit PDFs in a much better way.
 	      (lambda () (setq header-line-format nil))))
 #+end_src
    
+** Text editing
 *** Undo tree
 
 I really love the ~undo-tree~ mode visualization, so I'm going to enable it.
@@ -388,6 +571,7 @@ Org mode is the single most used package of my Emacs workflow.
   	     "* Call with %? :call:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:CATEGORY:\n:END:\n%^T\n")
   	    ("j" "Journal")
   	    ("jt" "Journal time blocking entry" plain (file+datetree "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** Time blocking :timeblocking:\n***** Deep work morning session\n<%(concat (mg/get-today-timestamp) \" 07:00-11:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Deep work afternoon session\n<%(concat (mg/get-today-timestamp) \" 13:30-15:30\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Shallow work afternoon session\n<%(concat (mg/get-today-timestamp) \" 15:30-17:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n%?")
+  	    ("jr" "Journal daily reflections entry" plain (file+datetree "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** Daily reflections :reflections:\n- Key takeaways :: \n- Daily review :: \n***** Resources found today\n- \n***** Ideas vault\n- \n")
   	    ("je" "Journal general entry" plain (file+datetree+prompt "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %U: %?\n")
   	    ("r" "Resources")
   	    ("ra" "Conference attendance" entry
@@ -620,13 +804,11 @@ Org mode is the single most used package of my Emacs workflow.
     (org-wild-notifier-mode))
 
   (use-package org-fc
-    :ensure nil
+    :straight (org-fc :type git :host github :repo "l3kn/org-fc")
     :bind (("C-c o f n" . org-fc-type-normal-init)
   	   ("C-c o f r" . org-fc-review))
     :custom
-    (org-fc-directories "~/Vault/pkm")
-    :config
-    (require 'org-fc))
+    (org-fc-directories "~/Vault/pkm"))
 
   (use-package org-timeblock
     :bind (("C-c p t" . org-timeblock))
@@ -737,6 +919,8 @@ Managing contacts with the ~bbdb~ package.
   	   ("C-c n y h" . denote-org-extras-link-to-heading)
   	   ("C-c n z" . denote-signature)
   	   ("C-c n s" . denote-sort-dired)
+  	   ("C-c n e n" . denote-silo-extras-create-note)
+  	   ("C-c n e f" . denote-silo-extras-open-or-create)
   	   ("C-c n t" . denote-template)
   	   ("C-c n i" . denote-link)
   	   ("C-c n I" . denote-add-links)
@@ -745,6 +929,8 @@ Managing contacts with the ~bbdb~ package.
   	   ("C-c n g b" . denote-finxd-backlink)
   	   ("C-c n r" . denote-rename-file)
   	   ("C-c n R" . denote-rename-file-using-front-matter))
+    :init
+    (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
     :custom
     (denote-directory (expand-file-name "~/Vault/pkm"))
     (denote-known-keywords '("emacs" "security" "kernel" "mathematics" "algorithms"))
@@ -757,9 +943,11 @@ Managing contacts with the ~bbdb~ package.
     (denote-date-prompt-use-org-read-date t)
     (denote-date-format nil)
     (denote-backlinks-show-context t)
+    (denote-silo-extras-directories
+     (list denote-directory "/home/claudio/Vault/wpkm"))
     (denote-dired-directories
-     (list denote-directory
-  	   (thread-last denote-directory (expand-file-name "assets"))))
+     (list denote-directory "/home/claudio/Vault/wpkm"
+  	 (thread-last denote-directory (expand-file-name "assets"))))
     (denote-templates
      '((plain . "")
        (course . "* Course details\n- Lecturer ::\n- University ::\n- Academic year ::\n- Resources ::\n- Description ::\n* Lecture notes\n* COMMENT Flashcards\n")
@@ -773,6 +961,7 @@ Managing contacts with the ~bbdb~ package.
       (interactive)
       (let ((default-directory (concat denote-directory "/")))
   	(call-interactively 'find-file)))
+    )
     (use-package denote-menu
     :after (denote)
     :straight t
@@ -847,23 +1036,12 @@ Enabling spellchecking by default.
     (add-hook hook (lambda () (flyspell-mode 1))))
 #+end_src
 
-** Bookmarks with ebuku
-
-I use buku as my bookmarks manager.
-
-#+begin_src emacs-lisp
-  (use-package ebuku
-    :straight t
-    :custom
-    (ebuku-buku-path "/usr/bin/buku"))
-#+end_src
-
 ** Finance
 
 I use ledger to track my finances.
 
 #+begin_src emacs-lisp
-  (use-package hledger-mode
+  (use-package ledger-mode
     :straight t)
 #+end_src
 
@@ -938,200 +1116,6 @@ Using ~mu4e~ as e-mail client.
     (setq message-citation-line-function 'mg/message-insert-citation-line))
 #+end_src
 
-** EXWM
-
-Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
-
-#+begin_src emacs-lisp
-  (defun mg/exwm-update-class ()
-    (exwm-workspace-rename-buffer exwm-class-name))
-
-  (use-package exwm
-    :straight t
-    :config
-    (setq exwm-workspace-number 6)
-    (add-hook 'exwm-update-class-hook #'mg/exwm-update-class)
-
-    (require 'exwm-systemtray)
-    (exwm-systemtray-enable)
-    (setq exwm-systemtray-height 15)
-
-    (require 'exwm-randr)
-    (exwm-randr-enable)
-
-    (setq exwm-randr-workspace-monitor-plist '(2 "HDMI1" 5 "HDMI1"))
-
-    (defun mg/starter ()
-      "Choose the application to run"
-      (interactive)
-      (let* ((candidates (split-string
-  			  (shell-command-to-string "xstarter -P")
-  			  "\n"
-  			  t))
-  	     (application-path (completing-read
-  				"Application to launch: "
-  				candidates)))
-  	(start-process "" nil application-path)))
-
-    ;; these keys should always pass through emacs
-    (setq exwm-input-prefix-keys
-  	  '(?\C-x
-  	    ?\C-u
-  	    ?\C-n
-  	    ?\C-t
-  	    ?\C-h
-  	    ?\C-p
-  	    ?\C-g
-  	    ?\M-x
-  	    ?\M-`
-  	    ?\M-&
-  	    ?\M-:
-  	    ?\C-\M-j  ;; buffer list
-  	    ?\C-\ ))  ;; ctrl+space
-
-    ;; map sequences to be sent to X applications using emacs kebindings
-    (setq exwm-input-simulation-keys
-  	  '(([?\C-b] . [left])
-  	    ([?\C-f] . [right])
-  	    ([?\C-p] . [up])
-  	    ([?\C-n] . [down])
-  	    ([?\C-a] . [home])
-  	    ([?\C-e] . [end])
-  	    ([?\M-v] . [prior])
-  	    ([?\C-v] . [next])
-  	    ([?\C-d] . [delete])
-  	    ([?\C-k] . [S-end delete])))
-
-    (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
-
-    (setq exwm-layout-show-all-buffers t)
-    (setq exwm-workspace-show-all-buffers t)
-
-    (exwm-input-set-key
-     (kbd "<XF86MonBrightnessUp>")
-     (lambda ()
-       (interactive)
-       (start-process-shell-command
-  	"xbacklight" nil "xbacklight -inc 5")))
-
-    (exwm-input-set-key
-     (kbd "<XF86MonBrightnessDown>")
-     (lambda ()
-       (interactive)
-       (start-process-shell-command
-  	"xbacklight" nil "xbacklight -dec 5")))
-
-    ;; set up global key bindings
-    ;; keep in mind that changing this list after EXWM initializes has no effect
-    (setq exwm-input-global-keys
-  	  `(
-  	    ;; reset to line-mode (C-c C-k switches to char-mode via exwm-input-release-keyboard)
-  	    ([?\s-r] . exwm-reset)
-
-  	    ;; delete window
-  	    ([?\s-k]
-  	     . delete-window)
-
-  	    ;; move between windows
-  	    ([s-left] . windmove-left)
-  	    ([s-right] . windmove-right)
-  	    ([s-up] . windmove-up)
-  	    ([s-down] . windmove-down)
-
-  	    ;; move window to another workspace
-  	    ([?\s-m] . exwm-workspace-move-window)
-
-  	    ;; launch applications via shell command
-  	    ([?\s-\ ] .
-  	     (lambda ()
-  	       (interactive)
-  	       (mg/starter)))
-
-  	    ;; switch workspace
-  	    ([?\s-w] . exwm-workspace-switch)
-  	    ([?\s-`] . (lambda () (interactive) (exwm-workspace-switch-create 0)))
-
-  	    ;; utilities
-  	    ([?\s-b] .
-  	     (lambda ()
-  	       (interactive)
-  	       (start-process "" nil "/usr/bin/google-chrome-stable")))
-  	    ([?\s-i] .
-  	     (lambda ()
-  	       (interactive)
-  	       (start-process "" nil "/usr/bin/setxkbmap" "it")))
-  	    ([?\s-u] .
-  	     (lambda ()
-  	       (interactive)
-  	       (start-process "" nil "/usr/bin/setxkbmap" "us")))
-  	    ([?\s-f] .
-  	     (lambda ()
-  	       (interactive)
-  	       (mg/check-and-toggle-deepwork-mode)))
-  	    ([?\s-c] .
-  	     (lambda ()
-  	       (interactive)
-  	       (start-process "" nil "/usr/bin/scrot" "-s /home/claudio/Vault/pkm/assets/$(date +%Y-%m-%d-%H-%M-%S)_screenshot.png")))
-
-  	    ,@(mapcar (lambda (i)
-  			`(,(kbd (format "s-%d" i)) .
-  			  (lambda ()
-  			    (interactive)
-  			    (exwm-workspace-switch-create ,i))))
-  		      (number-sequence 0 9))))
-    (add-hook 'exwm-init-hook
-  	      (lambda ()
-  		(progn
-  		  (start-process "blueberry-tray" nil "blueberry-tray")
-  		  (start-process "xset" nil "xset" "s 300 5")
-  		  (start-process "nm-applet" nil "nm-applet")
-  		  (start-process "redshift" nil "redshift")
-  		  (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)
-    (exwm-enable))
-
-  (use-package exwm-modeline
-    :straight t
-    :config
-    (add-hook 'exwm-init-hook #'exwm-modeline-mode))
-
-  (use-package desktop-environment
-    :straight t
-    :after (exwm)
-    :config
-    (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>") #'desktop-environment-volume-increment)
-    (exwm-input-set-key (kbd "<XF86AudioLowerVolume>") #'desktop-environment-volume-decrement)
-    (exwm-input-set-key (kbd "<XF86AudioMute>") #'desktop-environment-toggle-mute)
-    (exwm-input-set-key (kbd "s-l") #'desktop-environment-lock-screen)
-    (exwm-input-set-key (kbd "<XF86AudioPlay>") #'desktop-environment-toggle-music)
-    (exwm-input-set-key (kbd "<XF86AudioPause>") #'desktop-environment-toggle-music)
-    (exwm-input-set-key (kbd "<XF86AudioNext>") #'desktop-environment-music-next)
-    (exwm-input-set-key (kbd "s-s") #'desktop-environment-screenshot-part)
-    :custom
-    (desktop-environment-volume-get-command "pamixer --get-volume")
-    (desktop-environment-volume-set-command "pamixer %s")
-    (desktop-environment-volume-toggle-regexp nil)
-    (desktop-environment-volume-get-regexp "\\([0-9]+\\)")
-    (desktop-environment-volume-normal-increment "-i 5 --allow-boost")
-    (desktop-environment-volume-normal-decrement "-d 5")
-    (desktop-environment-volume-toggle-command "pamixer -t")
-    (desktop-environment-screenshot-directory "/home/claudio/Vault/pkm/assets")
-    (desktop-environment-screenshot-command "scrot -s")
-    (desktop-environment-screenshot-delay-argument nil)
-    (desktop-environment-screenshot-partial-command "import png:- | xclip -selection c -t image/png -verbose")
-    (desktop-environment-screenlock-command "xsecurelock"))
-
-  (use-package bluetooth :straight t)
-
-  (use-package time
-    :straight t
-    :after (exwm)
-    :custom
-    (display-time-format "[%d/%b %H:%M]")
-    :config
-    (display-time-mode)
-    (display-battery-mode))
-#+end_src
-
 ** Browser
 
 I use eww for quick search in a text-based format. Then, I also use engine-mode to quickly search stuff directly in emacs.
@@ -1203,16 +1187,10 @@ Using elfeed as my preferred RSS feed manager.
        "https://www.schneier.com/feed/")))
 #+end_src
 
-** Time tracking
-
-#+begin_src emacs-lisp
-
-#+end_src
-
 ** Coding stuff
 *** Git
 
-Using ~magit~ as git client for Emacs.
+Using ~magit~ as git client for Emacs. I think it is, along with ~org-mode~, the most impactful Emacs package ever. There is nothing more to add I think. Besides ~magit~, I used ~git-email~, which is a simple package that allows to send e-mails with git patches directly in Emacs. Starting from Emacs 29, they introduced ~vc-prepare-patch~ natively, which basically covers the same features of ~git-email~ (see [[https://lists.sr.ht/~yoctocell/git-email-devel/%3Ccc4a1b8b-9a1d-46cf-9b04-466c85ebcd44%40riseup.net%3E]]).
 
 #+begin_src emacs-lisp
   (use-package magit
@@ -1223,9 +1201,9 @@ Using ~magit~ as git client for Emacs.
     (setq git-commit-fill-column 75))
 #+end_src
 
-*** Utilities
+*** Paraphernalia
 
-These are useful tweaks I use when coding.
+These are useful tweaks I use when coding. I plan not to divide this into further subcategories, rather they we'll be all grouped together. I use a cool package that helps me writing/editing code efficiently? Well, it will be placed here for sure.
 
 #+begin_src emacs-lisp
   (use-package multiple-cursors
@@ -1237,19 +1215,22 @@ These are useful tweaks I use when coding.
   	(define-key org-mode-map (kbd "C-c <") nil)
   	(define-key org-mode-map (kbd "C-c C-<") nil)
   	(define-key org-mode-map (kbd "C-c >") nil)))
-    :bind (("C-c >" . mc/mark-next-like-this)
-  	   ("C-c u c e" . 'mc/mark-more-like-this-extended)
-  	   ("C-c u c s" . 'mc/mark-all-dwim)
-  	   ("C-c <" . mc/mark-previous-like-this)
-  	   ("C-c u c a" . mc/mark-all-like-this)
-  	   ("C-c u c r" . mc/mark-all-in-region)
-  	   ("C-c u c d" . mc/mark-all-like-this-dwim)
-  	   ("C-c u c w" . mc/mark-all-words-like-this)))
+    :bind (
+  	 ("C-c >" . mc/mark-next-like-this)
+  	 ("C-c <" . mc/mark-previous-like-this)
+  	 ("C-c -" . mc/mark-next-like-this-word)
+
+  	 ("C-c u c m e" . 'mc/mark-more-like-this-extended)
+  	 ("C-c u c m s" . 'mc/mark-all-dwim)
+  	 ("C-c u c m a" . mc/mark-all-like-this)
+  	 ("C-c u c m r" . mc/mark-all-in-region)
+  	 ("C-c u c m d" . mc/mark-all-like-this-dwim)
+  	 ("C-c u c m w" . mc/mark-all-words-like-this)))
 #+end_src
 
 *** Snippets
 
-Using some snippets to make my writing experience faster.
+Using some snippets to make my writing experience faster. I used ~abbrev-mode~ in the past, but I think ~yasnippet~ has an overall better experience and functionality. I have been looking at [[https://github.com/minad/tempel][Tempel]] for quite some time now: it is simpler and this is a big plus for me. However, ~yasnippet~ has a very well built integration with ~eglot~, which is the LSP package that I use (natively shipped with Emacs 29).
 
 #+begin_src emacs-lisp
   (use-package yasnippet
@@ -1260,21 +1241,9 @@ Using some snippets to make my writing experience faster.
     (yas-global-mode 1))
 #+end_src
 
-*** CTAGS
-
-Using CTAGS for kernel development.
-
-#+begin_src emacs-lisp
-  (use-package citre
-    :straight t
-    :config
-    (add-to-list 'load-path "~/Repositories/citre")
-    (citre-auto-enable-citre-mode-modes '(prog-mode)))
-#+end_src
-
 *** Tramp term
 
-Using tramp term to connect to ssh instances and edit files.
+Using tramp term to connect to ssh instances and edit files. This is a crucial package since I use Docker containers extensively, and it allows to smoothly connect to a Docker container, edit files in it directly through Emacs and quickly spawn a terminal if needed (in my setting, with just ~"C-c v"~ thanks to ~multi-vterm~, to be reviewed after in this configuration file).
 
 #+begin_src emacs-lisp
   (use-package tramp
@@ -1285,7 +1254,7 @@ Using tramp term to connect to ssh instances and edit files.
 
 *** LSP
 
-Setting up Emacs as an IDE, for the most comprehensive experience as possible.
+Setting up Emacs as an IDE, for the most comprehensive experience as possible. The only thing I think I'm missing is a decent client for ~gdb~, which is something I plan to do in the next months (@[2024-02-18 Sun 11:30]). The code below is basically a setup of some configuration options for ~eglot~ (already shipped with Emacs 29) and the declarations for some programming modes. I used ~lsp-mode~ in the past, but I think ~eglot~ has the perfect balance between simplicity and feature-richness.
 
 #+begin_src emacs-lisp
   (setq tab-always-indent 'complete)
@@ -1338,7 +1307,7 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible.
 
 *** Which key
 
-Using which key to remind what keybinds to use to perform actions.
+Using which key to remind what keybinds to use to perform actions. This is convenient because I often forget some keybindings that are not constantly part of my workflow. The idea of ~which-key~ is to pop a small list in the minibuffer showing pairs of ~(<next_key>, <emacs-command>)~ to facilitate the choice of pressing the next key in the sequence of keys for launching a certain Emacs command.
 
 #+begin_src emacs-lisp
   (use-package which-key
@@ -1351,7 +1320,7 @@ Using which key to remind what keybinds to use to perform actions.
 
 *** Terminal
 
-I use ~vterm~ as terminal inside Emacs.
+I use ~vterm~ as terminal inside Emacs. I always used it and never felt the need to move to some other terminal emulator. To spawn multiple instance of ~vtem~ easily I use ~multi-vterm~ and bit it to ~C-c v~, which is quite convenient.
 
 #+begin_src emacs-lisp
   (use-package vterm
