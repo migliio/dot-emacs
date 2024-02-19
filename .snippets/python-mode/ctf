@@ -1,0 +1,25 @@
+# -*- mode: snippet -*-
+# name: ctf
+# key: ctf
+# expand-env: ((yas-indent-line 'fixed))
+# --
+from pwn import *
+
+BINARY="FILLME"
+REMOTE="FILLME"
+PORT=0000
+
+# context.log_level = 'error'
+context.terminal = ['tmux', 'splitw', '-v']
+
+if "REMOTE" not in args:
+    r = process(BINARY)
+    gdb.attach(r, """
+
+    """)
+
+    input("wait")
+else:
+    r = remote(REMOTE, PORT)
+
+r.interactive()
