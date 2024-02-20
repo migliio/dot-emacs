@@ -87,61 +87,61 @@ Let's have a better organized folder, with relevant files only.
 Clean the Emacs interface making it as minimal as possible, without getting rid of useful improvements. Adding some defaults on indentation, etc.
 
 #+begin_src emacs-lisp
-  (use-package emacs
-    :init
-    (setq completion-cycle-threshold 3)
-    (setq tab-always-indent 'complete)
-    (require 'epa-file)
-    (epa-file-enable)
-    (if (display-graphic-p)
-  	(dolist (mode
-  		 '(tool-bar-mode
-  		   scroll-bar-mode
-  		   menu-bar-mode
-  		   tooltip-mode
-  		   blink-cursor-mode))
-  	  (funcall mode 0)))
-    (dolist (mode
-  	     '(global-visual-line-mode
-  	       show-paren-mode))
-  	(funcall mode 1))
-    (setq-default inhibit-startup-screen t
-  		  initial-scratch-message ""
-  		  frame-title-format '("%b")
-  		  ring-bell-function 'ignore
-  		  tab-width 8
-  		  c-basic-offset 8
-  		  c-default-style "linux"
-  		  frame-resize-pixelwise t	      
-  		  linum-format "%4d "
-  		  use-short-answers t
-  		  make-backup-files nil
-  		  native-comp-async-report-warnings-errors nil
-  		  global-auto-revert-mode t
-  		  confirm-kill-processes nil
-  		  process-connection-type nil
-  		  org-src-fontify-natively t
-  		  warning-minimum-level :emergency
-  		  set-language-environment "UTF-8"
-  		  system-time-locale "C")
+    (use-package emacs
+      :init
+      (setq completion-cycle-threshold 3)
+      (setq tab-always-indent 'complete)
+      (require 'epa-file)
+      (epa-file-enable)
+      (if (display-graphic-p)
+	  (dolist (mode
+		   '(tool-bar-mode
+		     scroll-bar-mode
+		     menu-bar-mode
+		     tooltip-mode
+		     blink-cursor-mode))
+	    (funcall mode 0)))
+      (dolist (mode
+	       '(global-visual-line-mode
+		 show-paren-mode))
+	  (funcall mode 1))
+      (setq-default inhibit-startup-screen t
+		    initial-scratch-message ""
+		    frame-title-format '("%b")
+		    ring-bell-function 'ignore
+		    tab-width 8
+		    c-basic-offset 8
+		    c-default-style "linux"
+		    frame-resize-pixelwise t	      
+		    linum-format "%4d "
+		    use-short-answers t
+		    make-backup-files nil
+		    native-comp-async-report-warnings-errors nil
+		    global-auto-revert-mode t
+		    confirm-kill-processes nil
+		    process-connection-type nil
+		    org-src-fontify-natively t
+  ;;  		  warning-minimum-level :emergency
+		    set-language-environment "UTF-8"
+		    system-time-locale "C")
 
-    (add-hook 'window-setup-hook 'toggle-frame-maximized t)
-    (add-to-list 'yank-excluded-properties 'face)
+      (add-hook 'window-setup-hook 'toggle-frame-maximized t)
+      (add-to-list 'yank-excluded-properties 'face)
 
-    (define-minor-mode mg/line-numbers-highlight-line-mode
-  	"Shows line numbers in relative mode and highlights the current line"
-  	:initial nil
-  	(if mg/line-numbers-highlight-line-mode
-  	  (progn
-  	    (display-line-numbers-mode 1)
-  	    (hl-line-mode 1)
-  	    (setq display-line-numbers-type 'relative))
-  	(progn
-  	  (display-line-numbers-mode 0)
-  	  (hl-line-mode 0))))
-    ;; enable some modes when programming
-    (add-hook 'prog-mode-hook
-  	      #'mg/line-numbers-highlight-line-mode))
+      (define-minor-mode mg/line-numbers-highlight-line-mode
+	  "Shows line numbers in relative mode and highlights the current line"
+	  :initial nil
+	  (if mg/line-numbers-highlight-line-mode
+	    (progn
+	      (display-line-numbers-mode 1)
+	      (hl-line-mode 1)
+	      (setq display-line-numbers-type 'relative))
+	  (progn
+	    (display-line-numbers-mode 0)
+	    (hl-line-mode 0))))
+      ;; enable some modes when programming
+      (add-hook 'prog-mode-hook
+		#'mg/line-numbers-highlight-line-mode))
 #+end_src
 
 ** Emacs auto-save
@@ -1050,7 +1050,7 @@ Using ~mu4e~ as e-mail client.
 
 #+begin_src emacs-lisp
   (use-package mu4e
-    :ensure nil
+    :straight t
     :commands (mu4e)
     :after (org)
     :bind (("C-c m" . mu4e))
