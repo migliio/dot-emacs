@@ -584,6 +584,10 @@ Org mode is the single most used package of my Emacs workflow.
   	     "** %^{Quarter} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Long-term projects ::\n- Financial/expenses planning ::\n- [ ] Review ::\n")
   	    ("Pm" "Month plan" plain (file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
   	     "*** %^{Month} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Short-term projects ::\n- [ ] Review ::\n")
+  	    ("f" "Flashcards")
+  	    ("fc" "Computer science flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Computer science") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:")
+  	    ("fm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Mathematics") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Mathematics\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:")
+  	    ("fe" "English flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "English") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: English\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:")
   	    ("p" "Projects")
   	    ("pl" "Learning project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Learning")
   	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
@@ -1013,6 +1017,15 @@ Using the superior citation manager.
   	   ("C-c n c r" . citar-denote-find-reference)
   	   ("C-c n c f" . citar-denote-find-citation)
   	   ("C-c n c l" . citar-denote-link-reference)))
+#+end_src
+
+*** Spaced repetition learning
+
+Spaced repetition is perhaps the only scientific approach to the learning process that has been discovered in the last years. Its effects are tangible and widely studied (see [[https://gwern.net/spaced-repetition]]). To this end, I use a connection between org-mode and [[https://apps.ankiweb.net/][Anki]] to conveniently write and review cards. I have used other org-centered alternatives (e.g., [[https://github.com/l3kn/org-fc][org-fc]] and [[https://orgmode.org/worg/org-contrib/org-drill.html][org-drill]]), but I think reviewing cards also /"on-the-go"/ through a mobile up is a potential speedup in the learning process. I take the use of Anki instead of org-centered alternatives as a test: in case it doesn't provide measurable benefits, I'll turn back.
+
+#+begin_src emacs-lisp
+  (use-package anki-editor
+    :straight t)
 #+end_src
 
 *** Markdown mode
