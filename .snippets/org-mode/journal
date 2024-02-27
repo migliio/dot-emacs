@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: journal
+# key: jentry
+# expand-env: ((yas-indent-line 'fixed))
+# --
+:PROPERTIES:
+:SLEEP: $1/5
+:MELATONIN: $2/1
+:WORKOUT: $3/5
+:VITAMINS: $4/1
+:CONSISTENCY: $5/1
+:DEEP_WORK: $6
+:END:

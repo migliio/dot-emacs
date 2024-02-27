@@ -570,8 +570,7 @@ Org mode is the single most used package of my Emacs workflow.
   	    ("ac" "Call entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
   	     "* Call with %? :call:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:CATEGORY:\n:END:\n%^T\n")
   	    ("j" "Journal")
-  	    ("jt" "Journal time blocking entry" plain (file+datetree "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** Time blocking :timeblocking:\n***** Deep work morning session\n<%(concat (mg/get-today-timestamp) \" 07:00-11:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Deep work afternoon session\n<%(concat (mg/get-today-timestamp) \" 13:30-15:30\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Shallow work afternoon session\n<%(concat (mg/get-today-timestamp) \" 15:30-17:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n%?")
-  	    ("jr" "Journal daily reflections entry" plain (file+datetree "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** Daily reflections :reflections:\n- Key takeaways :: \n- Daily review :: \n***** Resources found today\n- \n***** Ideas vault\n- \n")
+  	    ("jt" "Journal time blocking entry" plain (file+datetree "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %U: time blocking\t\t:timeblocking:\n- Day plans :: \n- Main challenges :: \n- Work check-in/check-out :: \n***** Deep work morning session\n<%(concat (mg/get-today-timestamp) \" 07:00-11:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Deep work afternoon session\n<%(concat (mg/get-today-timestamp) \" 13:30-15:30\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Shallow work afternoon session\n<%(concat (mg/get-today-timestamp) \" 15:30-17:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n%?")
   	    ("je" "Journal general entry" plain (file+datetree+prompt "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %U: %?\n")
   	    ("r" "Resources")
   	    ("ra" "Conference attendance" entry
@@ -585,13 +584,15 @@ Org mode is the single most used package of my Emacs workflow.
   	    ("Pm" "Month plan" plain (file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
   	     "*** %^{Month} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Short-term projects ::\n- [ ] Review ::\n")
   	    ("f" "Flashcards")
-  	    ("fc" "Computer science flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Computer science") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:")
-  	    ("fm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Mathematics") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Mathematics\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:")
-  	    ("fe" "English flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "English") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: English\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:")
+  	    ("fc" "Computer science flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Computer science") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:\n** Front\n%?\n** Back\n")
+  	    ("fc" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Mathematics") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Mathematics\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:\n** Front\n%?\n** Back\n")  	    
+  	    ("fe" "English flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "English") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: English\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:\n** Front\n%?\n** Back\n")  	    
   	    ("p" "Projects")
   	    ("pl" "Learning project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Learning")
   	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
   	    ("ph" "Home project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Home")
+  	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+  	    ("pm" "Misc project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Misc")
   	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
   	    ("pw" "Work project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "Work")
   	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
@@ -802,16 +803,6 @@ Org mode is the single most used package of my Emacs workflow.
     :config
     (org-wild-notifier-mode))
 
-  (use-package org-fc
-    :straight (org-fc :type git :host github :repo "l3kn/org-fc")
-    :bind (("C-c o f n" . org-fc-type-normal-init)
-  	   ("C-c o f r" . org-fc-review))
-    :custom
-    (org-fc-directories "~/Vault/pkm")
-    :config
-    (require 'org-fc)
-    )
-
   (use-package org-timeblock
     :bind (("C-c p t" . org-timeblock))
     :straight t)
@@ -953,7 +944,7 @@ Managing contacts with the ~bbdb~ package.
     (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
     (denote-templates
      '((plain . "")
-       (course . "* Course details\n- Lecturer ::\n- University ::\n- Academic year ::\n- Resources ::\n- Description ::\n* Lecture notes\n* COMMENT Flashcards\n")
+       (course . "#+include: \"/home/claudio/Repositories/knock-files/org-headers/header_notes_document_small.org\"\n* Course details\n- Lecturer ::\n- University ::\n- Academic year ::\n- Resources ::\n- Description ::\n* Lecture notes\n* COMMENT Flashcards\n")
        (zettel . "#+references: \n\n\n-----\n")
        (place . "* Details\n- Link ::\n- Visited ::\n- Description ::\n* Notes\n")
        (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- BBDB entry ::\n- Additional information ::\n* Notes")))
@@ -1025,7 +1016,10 @@ Spaced repetition is perhaps the only scientific approach to the learning proces
 
 #+begin_src emacs-lisp
   (use-package anki-editor
-    :straight t)
+    :straight t
+    :bind
+    (("C-c o a i" . anki-editor-insert-note)
+     ("C-c o a p" . anki-editor-push-notes)))
 #+end_src
 
 *** Markdown mode
@@ -1220,13 +1214,6 @@ These are useful tweaks I use when coding. I plan not to divide this into furthe
 #+begin_src emacs-lisp
   (use-package multiple-cursors
     :straight t
-    :init
-    (define-key mc/keymap (kbd "<return>") nil)
-    (eval-after-load 'org
-      (progn
-  	(define-key org-mode-map (kbd "C-c <") nil)
-  	(define-key org-mode-map (kbd "C-c C-<") nil)
-  	(define-key org-mode-map (kbd "C-c >") nil)))
     :bind (
   	 ("C-c >" . mc/mark-next-like-this)
   	 ("C-c <" . mc/mark-previous-like-this)
@@ -1237,7 +1224,18 @@ These are useful tweaks I use when coding. I plan not to divide this into furthe
   	 ("C-c u c m a" . mc/mark-all-like-this)
   	 ("C-c u c m r" . mc/mark-all-in-region)
   	 ("C-c u c m d" . mc/mark-all-like-this-dwim)
-  	 ("C-c u c m w" . mc/mark-all-words-like-this)))
+  	 ("C-c u c m w" . mc/mark-all-words-like-this))    
+    :config
+    (define-key mc/keymap (kbd "<return>") nil)
+    (eval-after-load 'org
+      (progn
+  	(define-key org-mode-map (kbd "C-c <") nil)
+  	(define-key org-mode-map (kbd "C-c C-<") nil)
+  	(define-key org-mode-map (kbd "C-c >") nil)))
+    (multiple-cursors-mode 1))
+
+  (use-package ztree
+    :straight t)
 #+end_src
 
 *** Snippets
@@ -1452,4 +1450,9 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c u m") #'compile)
   (global-set-key (kbd "C-c u w u") #'mg/split-on-ultrawide)
   (global-set-key (kbd "C-c u t") #'mg/insert-current-timestamp)
+
+  (global-set-key (kbd "C-x C-n") nil)
+  (global-set-key (kbd "C-x C-p") nil)
+  (global-set-key (kbd "C-x C-n") #'next-buffer)
+  (global-set-key (kbd "C-x C-p") #'previous-buffer)
 #+end_src

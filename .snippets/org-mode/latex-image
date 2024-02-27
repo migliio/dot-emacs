@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: latex-image
+# key: limg
+# --
+#+BEGIN_CENTER
+#+ATTR_LATEX: :height 0.5\textwidth
+#+CAPTION: $1
+$2
+#+END_CENTER
