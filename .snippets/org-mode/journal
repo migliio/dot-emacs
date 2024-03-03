@@ -4,7 +4,7 @@
 # expand-env: ((yas-indent-line 'fixed))
 # --
 :PROPERTIES:
-:SLEEP: $1/5
+:SLEEP: $1/100
 :MELATONIN: $2/1
 :WORKOUT: $3/5
 :VITAMINS: $4/1

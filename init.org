@@ -87,61 +87,66 @@ Let's have a better organized folder, with relevant files only.
 Clean the Emacs interface making it as minimal as possible, without getting rid of useful improvements. Adding some defaults on indentation, etc.
 
 #+begin_src emacs-lisp
-    (use-package emacs
-      :init
-      (setq completion-cycle-threshold 3)
-      (setq tab-always-indent 'complete)
-      (require 'epa-file)
-      (epa-file-enable)
-      (if (display-graphic-p)
-	  (dolist (mode
-		   '(tool-bar-mode
-		     scroll-bar-mode
-		     menu-bar-mode
-		     tooltip-mode
-		     blink-cursor-mode))
-	    (funcall mode 0)))
-      (dolist (mode
-	       '(global-visual-line-mode
-		 show-paren-mode))
-	  (funcall mode 1))
-      (setq-default inhibit-startup-screen t
-		    initial-scratch-message ""
-		    frame-title-format '("%b")
-		    ring-bell-function 'ignore
-		    tab-width 8
-		    c-basic-offset 8
-		    c-default-style "linux"
-		    frame-resize-pixelwise t	      
-		    linum-format "%4d "
-		    use-short-answers t
-		    make-backup-files nil
-		    native-comp-async-report-warnings-errors nil
-		    global-auto-revert-mode t
-		    confirm-kill-processes nil
-		    process-connection-type nil
-		    org-src-fontify-natively t
-  ;;  		  warning-minimum-level :emergency
-		    set-language-environment "UTF-8"
-		    system-time-locale "C")
+  (use-package emacs
+    :init
+    (setq completion-cycle-threshold 3)
+    (setq tab-always-indent 'complete)
+    (require 'epa-file)
+    (epa-file-enable)
+    (if (display-graphic-p)
+        (dolist (mode
+  	       '(tool-bar-mode
+  		 scroll-bar-mode
+  		 menu-bar-mode
+  		 tooltip-mode
+  		 blink-cursor-mode))
+  	(funcall mode 0)))
+    (dolist (mode
+  	   '(global-visual-line-mode
+  	     show-paren-mode))
+      (funcall mode 1))
+    (setq-default inhibit-startup-screen t
+  		initial-scratch-message ""
+  		frame-title-format '("%b")
+  		ring-bell-function 'ignore
+  		tab-width 8
+  		c-basic-offset 8
+  		c-default-style "linux"
+  		frame-resize-pixelwise t	      
+  		linum-format "%4d "
+  		use-short-answers t
+  		make-backup-files nil
+  		native-comp-async-report-warnings-errors nil
+  		global-auto-revert-mode t
+  		confirm-kill-processes nil
+  		process-connection-type nil
+  		org-src-fontify-natively t
+  		;;warning-minimum-level :emergency
+  		set-language-environment "UTF-8"
+  		system-time-locale "C")
 
-      (add-hook 'window-setup-hook 'toggle-frame-maximized t)
-      (add-to-list 'yank-excluded-properties 'face)
+    (add-hook 'window-setup-hook 'toggle-frame-maximized t)
+    (add-to-list 'yank-excluded-properties 'face)
 
-      (define-minor-mode mg/line-numbers-highlight-line-mode
-	  "Shows line numbers in relative mode and highlights the current line"
-	  :initial nil
-	  (if mg/line-numbers-highlight-line-mode
-	    (progn
-	      (display-line-numbers-mode 1)
-	      (hl-line-mode 1)
-	      (setq display-line-numbers-type 'relative))
-	  (progn
-	    (display-line-numbers-mode 0)
-	    (hl-line-mode 0))))
-      ;; enable some modes when programming
-      (add-hook 'prog-mode-hook
-		#'mg/line-numbers-highlight-line-mode))
+    (define-minor-mode mg/line-numbers-highlight-line-mode
+      "Shows line numbers in relative mode and highlights the current line"
+      :initial nil
+      (if mg/line-numbers-highlight-line-mode
+  	(progn
+  	  (display-line-numbers-mode 1)
+  	  (hl-line-mode 1)
+  	  (setq display-line-numbers-type 'relative))
+        (progn
+  	(display-line-numbers-mode 0)
+  	(hl-line-mode 0))))
+    ;; enable some modes when programming
+    (add-hook 'prog-mode-hook
+  	    #'mg/line-numbers-highlight-line-mode)
+    (when (eq system-type 'darwin)
+      (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+      (add-to-list 'default-frame-alist '(ns-appearance . dark))
+      (setq ns-use-proxy-icon nil)
+      (setq frame-title-format nil)))
 #+end_src
 
 ** Emacs auto-save
@@ -166,11 +171,9 @@ Put Emacs auto-save and backup files to /tmp/.
 Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 
 #+begin_src emacs-lisp
-  (when (display-graphic-p)
-
+  (when (and (display-graphic-p) (not (eq system-type 'darwin)))
     (defun mg/exwm-update-class ()
       (exwm-workspace-rename-buffer exwm-class-name))
-
     (use-package exwm
       :straight t
       :config
@@ -571,9 +574,9 @@ Org mode is the single most used package of my Emacs workflow.
   	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
   	     "* Meeting with %? :meeting:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n%^T\n")
   	    ("ae" "Event entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
-  	     "* %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
+  	     "* %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
   	    ("ac" "Call entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
-  	     "* Call with %? :call:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:NOTIFY_BEFORE:\n:CATEGORY:\n:END:\n%^T\n")
+  	     "* Call with %? :call:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:CATEGORY:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
   	    ("j" "Journal")
   	    ("jt" "Journal time blocking entry" plain (file+datetree "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %U: time blocking\t\t:timeblocking:\n- Day plans :: \n- Main challenges :: \n- Work check-in/check-out :: \n***** Deep work morning session\n<%(concat (mg/get-today-timestamp) \" 07:00-11:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Deep work afternoon session\n<%(concat (mg/get-today-timestamp) \" 13:30-15:30\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Shallow work afternoon session\n<%(concat (mg/get-today-timestamp) \" 15:30-17:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n%?")
   	    ("je" "Journal general entry" plain (file+datetree+prompt "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %U: %?\n")
@@ -590,7 +593,8 @@ Org mode is the single most used package of my Emacs workflow.
   	     "*** %^{Month} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Short-term projects ::\n- [ ] Review ::\n")
   	    ("f" "Flashcards")
   	    ("fc" "Computer science flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Computer science") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:\n** Front\n%?\n** Back\n")
-  	    ("fc" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Mathematics") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Mathematics\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:\n** Front\n%?\n** Back\n")  	    
+  	    ("fs" "Security flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Security") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Security\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:\n** Front\n%?\n** Back\n")
+  	    ("fm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Mathematics") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Mathematics\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:\n** Front\n%?\n** Back\n")  	    
   	    ("fe" "English flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "English") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: English\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:\n** Front\n%?\n** Back\n")  	    
   	    ("p" "Projects")
   	    ("pl" "Learning project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Learning")
@@ -1259,13 +1263,14 @@ Using some snippets to make my writing experience faster. I used ~abbrev-mode~ i
 
 *** Tramp term
 
-Using tramp term to connect to ssh instances and edit files. This is a crucial package since I use Docker containers extensively, and it allows to smoothly connect to a Docker container, edit files in it directly through Emacs and quickly spawn a terminal if needed (in my setting, with just ~"C-c v"~ thanks to ~multi-vterm~, to be reviewed after in this configuration file).
+Using tramp term to connect to ssh instances and edit files. This is a crucial package since I use Docker containers extensively, and it allows to smoothly connect to a Docker container, edit files in it directly through Emacs and quickly spawn a terminal if needed (in my setting, with just ~"C-c v"~ thanks to ~multi-vterm~, to be reviewed after in this configuration file). Note that ~tramp~ has a known bug with Emacs 29.1, so it shouldn't be installed in that case.
 
 #+begin_src emacs-lisp
-  (use-package tramp
-    :straight t
-    :init
-    (setq tramp-default-method "ssh"))
+  (unless (string-equal emacs-version "29.1")
+    (use-package tramp
+      :straight t
+      :init
+      (setq tramp-default-method "ssh")))
 #+end_src
 
 *** LSP
