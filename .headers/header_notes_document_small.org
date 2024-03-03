@@ -1,0 +1,10 @@
+#+LATEX_CLASS: memoir
+#+LATEX_CLASS_OPTIONS: [8pt,oneside]
+#+LATEX_HEADER: \usepackage{amsmath}
+#+LATEX_HEADER: \usepackage{mathtools}
+#+LATEX_HEADER: \usepackage{Archivo}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \counterwithout{section}{chapter}
+#+LATEX_HEADER: \usepackage[fontsize=8pt]{scrextend}
+#+LATEX_HEADER: \usepackage[left=25mm,right=25mm,top=25mm,bottom=25mm]{geometry}
+#+EXCLUDE_TAGS: noexport
