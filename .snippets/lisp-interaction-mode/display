@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: display
+# key: ddi
+# --
+(setq exwm-randr-workspace-monitor-plist '(2 \"$1\" 5 \"$1\"))
+(exwm-randr-refresh)
