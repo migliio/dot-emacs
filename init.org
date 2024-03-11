@@ -121,7 +121,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
   		confirm-kill-processes nil
   		process-connection-type nil
   		org-src-fontify-natively t
-  		;;warning-minimum-level :emergency
+  		;; warning-minimum-level :emergency
   		set-language-environment "UTF-8"
   		system-time-locale "C")
 
@@ -171,7 +171,7 @@ Put Emacs auto-save and backup files to /tmp/.
 Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 
 #+begin_src emacs-lisp
-  (when (and (display-graphic-p) (not (eq system-type 'darwin)))
+  (when (and (display-graphic-p) (not (or (eq system-type 'darwin) (equal (system-name) "nano"))))
     (defun mg/exwm-update-class ()
       (exwm-workspace-rename-buffer exwm-class-name))
     (use-package exwm
@@ -184,7 +184,6 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
       (setq exwm-systemtray-height 15)
       (require 'exwm-randr)
       (exwm-randr-enable)
-      (setq exwm-randr-workspace-monitor-plist '(2 "HDMI1" 5 "HDMI1"))
       (defun mg/starter ()
         "Choose the application to run"
         (interactive)
@@ -292,12 +291,11 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
       (add-hook 'exwm-init-hook
   	      (lambda ()
   		(progn
-  		  (start-process "blueberry-tray" nil "blueberry-tray")
-  		  (start-process "xset" nil "xset" "s 300 5")
-  		  (start-process "nm-applet" nil "nm-applet")
-  		  (start-process "redshift" nil "redshift")
-  		  (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t))
-
+  		      (start-process "blueberry-tray" nil "blueberry-tray")
+  		      (start-process "xset" nil "xset" "s 300 5")
+  		      (start-process "nm-applet" nil "nm-applet")
+  		      (start-process "redshift" nil "redshift")
+  		      (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t))
 
     (use-package exwm-modeline
       :straight t
@@ -359,10 +357,10 @@ Loading the preferred theme.
         (if (eq system-type 'darwin)
   	  (progn
   	    (use-package modus-themes :straight t :config (load-theme 'modus-operandi t))
-  	    (set-frame-font "Iosevka 17" nil t))
+  	    (set-frame-font "Noto Sans Mono 17" nil t))
   	(progn
-  	  (set-frame-font "Iosevka 15" nil t)
-  	  (use-package zenburn-theme :straight t :config (load-theme 'zenburn t)))
+  	      (set-frame-font "Noto Sans Mono 15" nil t)
+  	      (use-package zenburn-theme :straight t :config (load-theme 'zenburn t)))
   	(set-fringe-mode 0)))
     (set-face-background 'default "undefined"))
 #+end_src
@@ -893,18 +891,19 @@ Functions and utilities I do heavily use when working on pkm pages.
 Managing contacts with the ~bbdb~ package.
 
 #+begin_src emacs-lisp
-  (use-package bbdb
-    :straight t
-    :commands bbdb
-    :bind (("C-x c b" . bbdb)
-  	 ("C-x c c" . bbdb-create))
-    :custom
-    (bbdb-mua-pop-up-window-size 1)
-    (bbdb-file "~/Repositories/knock-files-private/bbdb/.bbdb")
-    (bbdb-mua-pop-up t)
-    (bbdb-mua-pop-up-window-size 5)
-    :config
-    (autoload 'bbdb-insinuate-mu4e "bbdb-mu4e"))
+  (if (not (equal (system-name) "nano"))
+      (use-package bbdb
+        :straight t
+        :commands bbdb
+        :bind (("C-x c b" . bbdb)
+  	     ("C-x c c" . bbdb-create))
+        :custom
+        (bbdb-mua-pop-up-window-size 1)
+        (bbdb-file "~/Repositories/knock-files-private/bbdb/.bbdb")
+        (bbdb-mua-pop-up t)
+        (bbdb-mua-pop-up-window-size 5)
+        :config
+        (autoload 'bbdb-insinuate-mu4e "bbdb-mu4e")))
 #+end_src
 
 *** Note taking system
@@ -1067,7 +1066,7 @@ I use ledger to track my finances.
 Using ~mu4e~ as e-mail client.
 
 #+begin_src emacs-lisp
-  (unless (eq system-type 'darwin)
+  (unless (or (eq system-type 'darwin) (equal (system-name) "nano"))
     (use-package mu4e
       :straight t
       :commands (mu4e)
@@ -1369,7 +1368,7 @@ Adding some custom functions I use to make my life easier.
     "Ask for confirmation and shut down the system if confirmed."
     (interactive)
     (when (yes-or-no-p "Are you sure you want to shut down the system? ")
-      (shell-command "shutdown now")))
+      (shell-command "/usr/sbin/shutdown now")))
 
   (defun mg/take-screenshot ()
     "Take a screenshot using 'scrot'"
