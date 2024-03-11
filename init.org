@@ -359,8 +359,8 @@ Loading the preferred theme.
   	    (use-package modus-themes :straight t :config (load-theme 'modus-operandi t))
   	    (set-frame-font "Noto Sans Mono 17" nil t))
   	(progn
-  	      (set-frame-font "Noto Sans Mono 15" nil t)
-  	      (use-package zenburn-theme :straight t :config (load-theme 'zenburn t)))
+  	  (set-frame-font "Noto Sans Mono 14" nil t)
+  	  (use-package zenburn-theme :straight t :config (load-theme 'zenburn t)))
   	(set-fringe-mode 0)))
     (set-face-background 'default "undefined"))
 #+end_src
