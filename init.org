@@ -355,10 +355,8 @@ Loading the preferred theme.
   (if (display-graphic-p)
       (progn
         (use-package zenburn-theme :straight t :config (load-theme 'zenburn t))
-        (if (eq system-type 'darwin)
-  	  (set-frame-font "Noto Sans Mono 17" nil t)
-  	(set-frame-font "Noto Sans Mono 15" nil t))
-  	(set-fringe-mode 0))
+        (set-frame-font "Noto Sans Mono 15" nil t)
+        (set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
 
