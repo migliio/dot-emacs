@@ -354,14 +354,11 @@ Loading the preferred theme.
 
   (if (display-graphic-p)
       (progn
+        (use-package zenburn-theme :straight t :config (load-theme 'zenburn t))
         (if (eq system-type 'darwin)
-  	  (progn
-  	    (use-package modus-themes :straight t :config (load-theme 'modus-operandi t))
-  	    (set-frame-font "Noto Sans Mono 17" nil t))
-  	(progn
-  	  (set-frame-font "Noto Sans Mono 14" nil t)
-  	  (use-package zenburn-theme :straight t :config (load-theme 'zenburn t)))
-  	(set-fringe-mode 0)))
+  	  (set-frame-font "Noto Sans Mono 17" nil t)
+  	(set-frame-font "Noto Sans Mono 15" nil t))
+  	(set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
 
@@ -1369,12 +1366,6 @@ Adding some custom functions I use to make my life easier.
     (interactive)
     (when (yes-or-no-p "Are you sure you want to shut down the system? ")
       (shell-command "/usr/sbin/shutdown now")))
-
-  (defun mg/commit-assets ()
-    "Commit assets, both in pkm and zotero-related, automatically"
-    (interactive)
-    (let ((default-directory "~/Zotero/storage"))
-      (shell-command "git add . && git commit -m \"commit\"")))
 
   (defun mg/take-screenshot ()
     "Take a screenshot using 'scrot'"
