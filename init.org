@@ -1370,6 +1370,12 @@ Adding some custom functions I use to make my life easier.
     (when (yes-or-no-p "Are you sure you want to shut down the system? ")
       (shell-command "/usr/sbin/shutdown now")))
 
+  (defun mg/commit-assets ()
+    "Commit assets, both in pkm and zotero-related, automatically"
+    (interactive)
+    (let ((default-directory "~/Zotero/storage"))
+      (shell-command "git add . && git commit -m \"commit\"")))
+
   (defun mg/take-screenshot ()
     "Take a screenshot using 'scrot'"
     (interactive)
