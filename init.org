@@ -964,10 +964,19 @@ Managing contacts with the ~bbdb~ package.
       (let ((default-directory (concat denote-directory "/")))
   	(call-interactively 'find-file)))
     )
-    (use-package denote-menu
+  (use-package denote-menu
     :after (denote)
     :straight t
     :bind (("C-c n m" . list-denotes)))
+
+  (use-package denote-explore
+    :straight t
+    :custom
+    (denote-explore-network-directory "~/Vault/pkm/graphs/")
+    (denote-explore-network-filename "denote-network")
+    (denote-explore-network-format 'graphviz)
+    (denote-explore-network-graphviz-filetype "svg")
+    (denote-explore-network-keywords-ignore '("bib")))
 #+end_src
 
 **** Citar
@@ -1455,6 +1464,8 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c u c w") #'whitespace-mode)
   (global-set-key (kbd "C-c u m") #'compile)
   (global-set-key (kbd "C-c u w u") #'mg/split-on-ultrawide)
+  (global-set-key (kbd "C-c u w f") #'toggle-frame-fullscreen)
+  (global-set-key (kbd "C-c u w m") #'toggle-frame-maximized)
   (global-set-key (kbd "C-c u t") #'mg/insert-current-timestamp)
 
   (global-set-key (kbd "C-x C-n") nil)
