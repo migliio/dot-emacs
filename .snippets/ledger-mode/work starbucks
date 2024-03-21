@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: work starbucks
+# key: wstar
+# expand-env: ((yas-indent-line 'fixed))
+# --
+;; Coffee @Starbucks machine (work)
+$1 Starbucks
+    Expenses:Food:Bar                           $2
+    Assets:Cards:N26
