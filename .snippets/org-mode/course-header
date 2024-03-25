@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: course header
+# key: cco
+# --
+#+include: "~/Repositories/dot-files/emacs/.emacs.d/.headers/header_notes_document_small.org"
