@@ -3,21 +3,7 @@
 #+PROPERTY: header-args:emacs-lisp :tangle init.el
 * Init work
 
-In this piece of code I add stuff to perform the loading of lisp files located on the local machine. For some reason I needed to create a "recursive" code that goes into the ~site-lisp~ folder (i.e., where I have all the submodules not downloadable from MELPA) and recursively adds all folders inside it to ~load-path~.
-As [2024-01-30 Tue] this stuff is deprecated because I think there is the possibility to pull stuff inside ~site-lisp~ directly from ~straight.el~, since they are mostly git submodules.
-
-#+begin_src emacs-lisp
-  ;; (let ((base "/home/claudio/Repositories/dot-emacs/site-lisp"))
-  ;;   (add-to-list 'load-path base)
-  ;;   (dolist (f (directory-files base))
-  ;;     (let ((name (concat base "/" f)))
-  ;;       (when (and (file-directory-p name) 
-  ;;   		 (not (equal f ".."))
-  ;;   		 (not (equal f ".")))
-  ;;   	(add-to-list 'load-path name)))))
-#+end_src
-
-I want to start the server when opening Emacs. This is crucial because I want a single instance of Emacs running in the background (given that I use it even as window manager, thus this is somehow mandatory).
+I want to start the server when opening Emacs. This is crucial because I want a single instance of Emacs running in the background. Given that I use it even as window manager, thus this is somehow mandatory). Even in cases when it is not the window manager of choice (shame on me!), I can use the neat feature of ~emacsclient~.
 
 #+begin_src emacs-lisp
   (require 'server)
@@ -974,7 +960,7 @@ Managing contacts with the ~bbdb~ package.
     :custom
     (denote-explore-network-directory "~/Vault/pkm/graphs/")
     (denote-explore-network-filename "denote-network")
-    (denote-explore-network-format 'graphviz)
+    (denote-explore-network-format 'gexf)
     (denote-explore-network-graphviz-filetype "svg")
     (denote-explore-network-keywords-ignore '("bib")))
 #+end_src
@@ -1079,6 +1065,8 @@ Using ~mu4e~ as e-mail client.
       :commands (mu4e)
       :after (org)
       :bind (("C-x m" . mu4e))
+      :init
+      (global-set-key (kbd "C-x m") nil)
       :config
       (setq mu4e-compnose-complete-addresses t)
       (add-hook 'mu4e-compose-mode-hook
