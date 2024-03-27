@@ -1154,6 +1154,9 @@ I use eww for quick search in a text-based format. Then, I also use engine-mode 
     (defengine kernel-documentation
       "https://www.kernel.org/doc/html/v4.12/core-api/kernel-api.html#c.%s"
       :keybinding "d")
+    (defengine syscall-table
+      "https://syscalls.mebeim.net/?table=x86/64/x64/latest"
+      :keybinding "s")
     (defengine google-maps
       "https://www.google.com/maps/search/%s/"
       :keybinding "M")
