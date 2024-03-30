@@ -561,11 +561,11 @@ Org mode is the single most used package of my Emacs workflow.
   	     "* %U (%a) :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
   	    ("a" "Agenda")
   	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
-  	     "* Meeting with %? :meeting:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n%^T\n")
+  	     "* Meeting with %? :meeting:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
   	    ("ae" "Event entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
-  	     "* %? :event:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
+  	     "* %? :event:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
   	    ("ac" "Call entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
-  	     "* Call with %? :call:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n:PROPERTIES:\n:CATEGORY:\n:NOTIFY_BEFORE:\n:END:\n%^T\n")
+  	     "* Call with %? :call:\n:PROPERTIES:\n:CATEGORY:\n:NOTIFY_BEFORE:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
   	    ("j" "Journal")
   	    ("jt" "Journal time blocking entry" plain (file+datetree "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %U: time blocking\t\t:timeblocking:\n- Day plans :: \n- Main challenges :: \n- Work check-in/check-out :: \n***** Deep work morning session\n<%(concat (mg/get-today-timestamp) \" 07:00-11:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Deep work afternoon session\n<%(concat (mg/get-today-timestamp) \" 13:30-15:30\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Shallow work afternoon session\n<%(concat (mg/get-today-timestamp) \" 15:30-17:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n%?")
   	    ("je" "Journal general entry" plain (file+datetree+prompt "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %U: %?\n")
@@ -954,6 +954,7 @@ Managing contacts with the ~bbdb~ package.
        (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- BBDB entry ::\n- Additional information ::\n* Notes")))
     (denote-date-prompt-use-org-read-date t)
     :config
+    (custom-set-variables '(org-link-parameters :store denote-link-ol-store))
     (defun mg/denote-find ()
       "Find files interactively starting from the denote-directory."
       (interactive)
