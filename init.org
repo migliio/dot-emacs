@@ -354,12 +354,14 @@ Loading the preferred theme.
     (minions-mode 1))
 
   (if (display-graphic-p)
-      (progn
-        (use-package zenburn-theme :straight t :config (load-theme 'zenburn t))
-        (if (equal system-type 'darwin)
-  	  (set-frame-font "Iosevka 18" nil t)
+      (if (equal system-type 'darwin)
+  	(progn
+  	  (set-frame-font "iA Writer Mono S 17" nil t)
+  	  (use-package doom-themes :straight t :config (load-theme 'doom-plain t)))
+  	(progn
+  	(use-package zenburn-theme :straight t :config (load-theme 'zenburn t))
   	(set-frame-font "Iosevka 15" nil t))
-        (set-fringe-mode 0))
+  	(set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
 
@@ -503,7 +505,11 @@ Org mode is the single most used package of my Emacs workflow.
 #+begin_src emacs-lisp
   (use-package writeroom-mode
     :straight t
-    :bind (("C-c w" . writeroom-mode)))
+    :bind (("C-c w" . writeroom-mode))
+    :init
+    (when (equal system-type 'darwin)
+      (global-writeroom-mode)))
+    
 
   (use-package org
     :straight t
