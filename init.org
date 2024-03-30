@@ -340,14 +340,15 @@ Loading the preferred theme.
     (minions-mode 1))
 
   (if (display-graphic-p)
-      (if (equal system-type 'darwin)
-  	(progn
-  	  (set-frame-font "iA Writer Mono S 17" nil t)
-  	  (use-package doom-themes :straight t :config (load-theme 'doom-plain t)))
-  	(progn
-  	(use-package zenburn-theme :straight t :config (load-theme 'zenburn t))
-  	(set-frame-font "Iosevka 15" nil t))
-  	(set-fringe-mode 0))
+      (progn
+        (if (equal system-type 'darwin)
+  	  (set-frame-font "Fantasque Sans Mono 18" nil t)
+        	(set-frame-font "Fantasque Sans Mono 16" nil t))
+        (use-package zenburn-theme :straight t :config
+  	(load-theme 'zenburn t)
+  	(set-face-attribute 'mode-line nil :box nil)
+  	(set-face-attribute 'mode-line-inactive nil :box nil))
+        (set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
 
@@ -491,10 +492,7 @@ Org mode is the single most used package of my Emacs workflow.
 #+begin_src emacs-lisp
   (use-package writeroom-mode
     :straight t
-    :bind (("C-c w" . writeroom-mode))
-    :init
-    (when (equal system-type 'darwin)
-      (global-writeroom-mode)))
+    :bind (("C-c w" . writeroom-mode)))
     
 
   (use-package org
@@ -806,6 +804,11 @@ Org mode is the single most used package of my Emacs workflow.
   (use-package org-timeblock
     :bind (("C-c p t" . org-timeblock))
     :straight t)
+
+  (use-package org-bullets
+    :straight t
+    :init
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 #+end_src
 
 **** Encrypting
