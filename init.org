@@ -3,21 +3,7 @@
 #+PROPERTY: header-args:emacs-lisp :tangle init.el
 * Init work
 
-In this piece of code I add stuff to perform the loading of lisp files located on the local machine. For some reason I needed to create a "recursive" code that goes into the ~site-lisp~ folder (i.e., where I have all the submodules not downloadable from MELPA) and recursively adds all folders inside it to ~load-path~.
-As [2024-01-30 Tue] this stuff is deprecated because I think there is the possibility to pull stuff inside ~site-lisp~ directly from ~straight.el~, since they are mostly git submodules.
-
-#+begin_src emacs-lisp
-  ;; (let ((base "/home/claudio/Repositories/dot-emacs/site-lisp"))
-  ;;   (add-to-list 'load-path base)
-  ;;   (dolist (f (directory-files base))
-  ;;     (let ((name (concat base "/" f)))
-  ;;       (when (and (file-directory-p name) 
-  ;;   		 (not (equal f ".."))
-  ;;   		 (not (equal f ".")))
-  ;;   	(add-to-list 'load-path name)))))
-#+end_src
-
-I want to start the server when opening Emacs. This is crucial because I want a single instance of Emacs running in the background (given that I use it even as window manager, thus this is somehow mandatory).
+I want to start the server when opening Emacs. This is crucial because I want a single instance of Emacs running in the background. Given that I use it even as window manager, thus this is somehow mandatory). Even in cases when it is not the window manager of choice (shame on me!), I can use the neat feature of ~emacsclient~.
 
 #+begin_src emacs-lisp
   (require 'server)
@@ -522,6 +508,7 @@ Org mode is the single most used package of my Emacs workflow.
   	   ("C-c l" . org-store-link))
     :custom
     (org-agenda-files (list "~/Vault/pkm/20240209T084736--journal__archive_personal.org" "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "~/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org" "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org"))
+    (org-archive-location "~/Vault/pkm/archive/archive.org::* From %s")
     (org-export-backends '(beamer html latex ascii ox-hugo))
     (org-startup-folded t)
     (org-log-into-drawer t)
@@ -976,11 +963,11 @@ Managing contacts with the ~bbdb~ package.
     :bind (("C-c n m" . list-denotes)))
 
   (use-package denote-explore
-    :straight t
+    :straight (denote-explore :type git :host github :repo "pprevos/denote-explore")
     :custom
     (denote-explore-network-directory "~/Vault/pkm/graphs/")
     (denote-explore-network-filename "denote-network")
-    (denote-explore-network-format 'graphviz)
+    (denote-explore-network-format 'gexf)
     (denote-explore-network-graphviz-filetype "svg")
     (denote-explore-network-keywords-ignore '("bib")))
 #+end_src
@@ -1084,7 +1071,9 @@ Using ~mu4e~ as e-mail client.
       :straight t
       :commands (mu4e)
       :after (org)
-      :bind (("C-c m" . mu4e))
+      :bind (("C-x m" . mu4e))
+      :init
+      (global-set-key (kbd "C-x m") nil)
       :config
       (setq mu4e-compnose-complete-addresses t)
       (add-hook 'mu4e-compose-mode-hook
@@ -1169,6 +1158,12 @@ I use eww for quick search in a text-based format. Then, I also use engine-mode 
     (defengine elixir
       "https://elixir.bootlin.com/linux/latest/A/ident/%s"
       :keybinding "k")
+    (defengine kernel-documentation
+      "https://www.kernel.org/doc/html/v4.12/core-api/kernel-api.html#c.%s"
+      :keybinding "d")
+    (defengine syscall-table
+      "https://syscalls.mebeim.net/?table=x86/64/x64/latest"
+      :keybinding "s")
     (defengine google-maps
       "https://www.google.com/maps/search/%s/"
       :keybinding "M")
@@ -1235,25 +1230,19 @@ These are useful tweaks I use when coding. I plan not to divide this into furthe
 
 #+begin_src emacs-lisp
   (use-package multiple-cursors
+    :after (org)
     :straight t
     :bind (
-  	 ("C-c >" . mc/mark-next-like-this)
-  	 ("C-c <" . mc/mark-previous-like-this)
-  	 ("C-c -" . mc/mark-next-like-this-word)
-
-  	 ("C-c u c m e" . 'mc/mark-more-like-this-extended)
-  	 ("C-c u c m s" . 'mc/mark-all-dwim)
-  	 ("C-c u c m a" . mc/mark-all-like-this)
-  	 ("C-c u c m r" . mc/mark-all-in-region)
-  	 ("C-c u c m d" . mc/mark-all-like-this-dwim)
-  	 ("C-c u c m w" . mc/mark-all-words-like-this))    
+  	 ("C-c m >" . #'mc/mark-next-like-this)
+  	 ("C-c m <" . #'mc/mark-previous-like-this)
+  	 ("C-c m -" . #'mc/mark-next-like-this-word)
+  	 ("C-c m e" . 'mc/mark-more-like-this-extended)
+  	 ("C-c m s" . 'mc/mark-all-dwim)
+  	 ("C-c m a" . mc/mark-all-like-this)
+  	 ("C-c m r" . mc/mark-all-in-region)
+  	 ("C-c m d" . mc/mark-all-like-this-dwim)
+  	 ("C-c m w" . mc/mark-all-words-like-this))
     :config
-    (define-key mc/keymap (kbd "<return>") nil)
-    (eval-after-load 'org
-      (progn
-  	(define-key org-mode-map (kbd "C-c <") nil)
-  	(define-key org-mode-map (kbd "C-c C-<") nil)
-  	(define-key org-mode-map (kbd "C-c >") nil)))
     (multiple-cursors-mode 1))
 
   (use-package ztree
