@@ -494,7 +494,6 @@ Org mode is the single most used package of my Emacs workflow.
     :straight t
     :bind (("C-c w" . writeroom-mode)))
     
-
   (use-package org
     :straight t
     :bind (("C-c a" . org-agenda)
@@ -954,7 +953,7 @@ Managing contacts with the ~bbdb~ package.
        (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- BBDB entry ::\n- Additional information ::\n* Notes")))
     (denote-date-prompt-use-org-read-date t)
     :config
-    (custom-set-variables '(org-link-parameters (quote (("store" . denote-link-ol-store)))))
+    ;; (custom-set-variables '(org-link-parameters (quote (("store" . denote-link-ol-store)))))
     (defun mg/denote-find ()
       "Find files interactively starting from the denote-directory."
       (interactive)
