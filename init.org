@@ -805,11 +805,6 @@ Org mode is the single most used package of my Emacs workflow.
   (use-package org-timeblock
     :bind (("C-c p t" . org-timeblock))
     :straight t)
-
-  (use-package org-bullets
-    :straight t
-    :init
-    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 #+end_src
 
 **** Encrypting
