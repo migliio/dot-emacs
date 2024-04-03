@@ -972,7 +972,7 @@ Managing contacts with the ~bbdb~ package.
     :custom
     (denote-explore-network-directory "~/Vault/pkm/graphs/")
     (denote-explore-network-filename "denote-network")
-    (denote-explore-network-format 'gexf)
+    (denote-explore-network-format 'graphviz)
     (denote-explore-network-graphviz-filetype "svg")
     (denote-explore-network-keywords-ignore '("bib")))
 #+end_src
