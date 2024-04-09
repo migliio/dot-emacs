@@ -1231,6 +1231,7 @@ These are useful tweaks I use when coding. I plan not to divide this into furthe
   	 ("C-c m d" . mc/mark-all-like-this-dwim)
   	 ("C-c m w" . mc/mark-all-words-like-this))
     :config
+    (define-key mc/keymap (kbd "<return>") nil)    
     (multiple-cursors-mode 1))
 
   (use-package ztree
