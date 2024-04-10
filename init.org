@@ -1236,6 +1236,11 @@ These are useful tweaks I use when coding. I plan not to divide this into furthe
 
   (use-package ztree
     :straight t)
+
+  (use-package deadgrep
+    :straight t
+    :bind
+    (("M-g r" . deadgrep)))
 #+end_src
 
 *** Snippets
@@ -1426,9 +1431,6 @@ This is the list of keybindings I use.
   ;; utils related bindings
   (global-set-key (kbd "M-n") #'forward-paragraph)
   (global-set-key (kbd "M-p") #'backward-paragraph)
-  (global-set-key (kbd "M-g r r") #'rgrep)
-  (global-set-key (kbd "M-g r f") #'grep-find)
-  (global-set-key (kbd "M-g r g") #'grep)
   (global-set-key (kbd "C-c u p") #'mg/toggle-pdf-presentation-mode)
   (global-set-key (kbd "C-c u d t") #'mg/check-and-toggle-deepwork-mode)
   (global-set-key (kbd "C-c u d c") #'mg/check-deepwork-mode)
