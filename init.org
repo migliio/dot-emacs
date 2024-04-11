@@ -252,7 +252,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
   	    ([?\s-b] .
   	     (lambda ()
   	       (interactive)
-  	       (start-process "" nil "/usr/bin/google-chrome-stable")))
+  	       (start-process "" nil "/usr/bin/brave")))
   	    ([?\s-i] .
   	     (lambda ()
   	       (interactive)
@@ -343,7 +343,7 @@ Loading the preferred theme.
       (progn
         (if (equal system-type 'darwin)
   	  (set-frame-font "DejaVu Sans Mono 17" nil t)
-        	(set-frame-font "DejaVu Sans Mono 13" nil t))
+        	(set-frame-font "DejaVu Sans Mono 14" nil t))
         (use-package zenburn-theme
   	:straight t
   	:config
