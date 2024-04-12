@@ -155,7 +155,7 @@ Put Emacs auto-save and backup files to /tmp/.
 
 ** Window management and desktop environment
 
-Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
+Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I've been using it as daily driver since around [2023-02-12 Sun], and I have never regretted this choice. No crap, no additional requirements, it just works.
 
 #+begin_src emacs-lisp
   (when (and (display-graphic-p) (not (eq system-type 'darwin)))
@@ -278,11 +278,14 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
       (add-hook 'exwm-init-hook
   	      (lambda ()
   		(progn
-  		      (start-process "blueberry-tray" nil "blueberry-tray")
-  		      (start-process "xset" nil "xset" "s 300 5")
-  		      (start-process "nm-applet" nil "nm-applet")
-  		      (start-process "redshift" nil "redshift")
-  		      (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t))
+  		  (if (equal (system-name) "nano")
+  		      (start-process "blueman-applet" nil "blueman-applet")
+  		    (start-process "blueberry-tray" nil "blueberry-tray"))
+  		  (start-process "xset" nil "xset" "s 300 5")
+  		  (start-process "nm-applet" nil "nm-applet")
+  		  (start-process "redshift" nil "redshift")
+  		  (when (not (equal (system-name) "nano"))
+  		    (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)))
 
     (use-package exwm-modeline
       :straight t
@@ -310,10 +313,6 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
       (desktop-environment-volume-normal-increment "-i 5 --allow-boost")
       (desktop-environment-volume-normal-decrement "-d 5")
       (desktop-environment-volume-toggle-command "pamixer -t")
-      (desktop-environment-screenshot-directory "/home/claudio/Vault/pkm/assets")
-      (desktop-environment-screenshot-command "scrot -s")
-      (desktop-environment-screenshot-delay-argument nil)
-      (desktop-environment-screenshot-partial-command "import png:- | xclip -selection c -t image/png -verbose")
       (desktop-environment-screenlock-command "xsecurelock"))
 
     (use-package bluetooth :after (exwm) :straight t)
