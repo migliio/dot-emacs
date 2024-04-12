@@ -158,7 +158,7 @@ Put Emacs auto-save and backup files to /tmp/.
 Using EXWM as window manager. Enabling the power of Emacs everywhere around X.
 
 #+begin_src emacs-lisp
-  (when (and (display-graphic-p) (not (or (eq system-type 'darwin) (equal (system-name) "nano"))))
+  (when (and (display-graphic-p) (not (eq system-type 'darwin)))
     (defun mg/exwm-update-class ()
       (exwm-workspace-rename-buffer exwm-class-name))
     (use-package exwm
@@ -899,26 +899,27 @@ Managing contacts with the ~bbdb~ package.
   (use-package denote
     :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main")
     :bind (("C-c n n" . denote)
-  	   ("C-c n x" . denote-region)
-  	   ("C-c n N" . denote-type)
-  	   ("C-c n d" . denote-date)
-  	   ("C-c n f" . mg/denote-find)
-  	   ("C-c n y f" . denote-org-extras-dblock-insert-files)
-  	   ("C-c n y l" . denote-org-extras-dblock-insert-links)
-  	   ("C-c n y b" . denote-org-extras-dblock-insert-backlinks)
-  	   ("C-c n y h" . denote-org-extras-link-to-heading)
-  	   ("C-c n z" . denote-signature)
-  	   ("C-c n s" . denote-sort-dired)
-  	   ("C-c n e n" . denote-silo-extras-create-note)
-  	   ("C-c n e f" . denote-silo-extras-open-or-create)
-  	   ("C-c n t" . denote-template)
-  	   ("C-c n i" . denote-link)
-  	   ("C-c n I" . denote-add-links)
-  	   ("C-c n b" . denote-backlinks)
-  	   ("C-c n g f" . denote-find-link)
-  	   ("C-c n g b" . denote-finxd-backlink)
-  	   ("C-c n r" . denote-rename-file)
-  	   ("C-c n R" . denote-rename-file-using-front-matter))
+  	 ("C-c n x" . denote-region)
+  	 ("C-c n N" . denote-type)
+  	 ("C-c n d" . denote-date)
+  	 ("C-c n f" . mg/denote-find)
+  	 ("C-c n z f" . mg/denote-find-zettel)
+  	 ("C-c n z i" . mg/denote-insert-zettel-link)
+  	 ("C-c n y f" . denote-org-extras-dblock-insert-files)
+  	 ("C-c n y l" . denote-org-extras-dblock-insert-links)
+  	 ("C-c n y b" . denote-org-extras-dblock-insert-backlinks)
+  	 ("C-c n y h" . denote-org-extras-link-to-heading)
+  	 ("C-c n s" . denote-sort-dired)
+  	 ("C-c n e n" . denote-silo-extras-create-note)
+  	 ("C-c n e f" . denote-silo-extras-open-or-create)
+  	 ("C-c n t" . denote-template)
+  	 ("C-c n i" . denote-link)
+  	 ("C-c n I" . denote-add-links)
+  	 ("C-c n b" . denote-backlinks)
+  	 ("C-c n g f" . denote-find-link)
+  	 ("C-c n g b" . denote-finxd-backlink)
+  	 ("C-c n r" . denote-rename-file)
+  	 ("C-c n R" . denote-rename-file-using-front-matter))
     :init
     (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
     :custom
@@ -952,8 +953,26 @@ Managing contacts with the ~bbdb~ package.
       "Find files interactively starting from the denote-directory."
       (interactive)
       (let ((default-directory (concat denote-directory "/")))
-  	(call-interactively 'find-file)))
-    )
+        (call-interactively 'find-file)))
+    (defun mg/get-zettel ()
+      "Get a zettel file from `denote-directory` interactively"
+      (let* ((candidates (directory-files denote-directory nil "==[0-9|a-b]*--"))
+  	   (file-name (completing-read
+  		       "Choose zettel: "
+  		       candidates))
+  	   (file-path (concat (concat denote-directory "/") file-name)))
+        file-path))
+    (defun mg/denote-find-zettel ()
+      "Find zettels interactively starting from the denote-directory."
+      (interactive)
+      (find-file (mg/get-zettel)))
+    (defun mg/denote-insert-zettel-link ()
+      "Select a zettel from denote directory and insert its link at current point"
+      (interactive)
+      (let* ((file-path (mg/get-zettel))
+  	   (file-description (denote--link-get-description file-path)))
+        (denote-link file-path 'org file-description))))
+
   (use-package denote-menu
     :after (denote)
     :straight t
@@ -1131,7 +1150,7 @@ I use eww for quick search in a text-based format. Then, I also use engine-mode 
   (use-package engine-mode
     :straight t
     :config
-    (engine/set-keymap-prefix (kbd "C-c s"))
+    (engine/set-keymap-prefix (kbd "C-c u e"))
     (defun mg/engine-mode-exact-phrase-transform (search-term)
       (if current-prefix-arg
   	(concat "\"" search-term "\"")
@@ -1231,7 +1250,7 @@ These are useful tweaks I use when coding. I plan not to divide this into furthe
   	 ("C-c m d" . mc/mark-all-like-this-dwim)
   	 ("C-c m w" . mc/mark-all-words-like-this))
     :config
-    (define-key mc/keymap (kbd "<return>") nil)    
+    (define-key mc/keymap (kbd "<return>") nil)
     (multiple-cursors-mode 1))
 
   (use-package ztree
@@ -1241,6 +1260,31 @@ These are useful tweaks I use when coding. I plan not to divide this into furthe
     :straight t
     :bind
     (("M-g r" . deadgrep)))
+
+  (use-package hl-todo
+    :straight t
+    :hook ((prog-mode . hl-todo-mode)
+  	 (org-mode . hl-todo-mode))
+    :config
+    (setq hl-todo-highlight-punctuation ":"
+          hl-todo-keyword-faces
+          `(("TODO"       warning bold)
+            ("FIXME"      error bold)
+            ("HACK"       font-lock-constant-face bold)
+            ("REVIEW"     font-lock-keyword-face bold)
+            ("NOTE"       success bold)
+            ("DEPRECATED" font-lock-doc-face bold))))
+
+  (use-package xcscope
+    :straight t
+    :bind
+    (("C-c s s" . cscope-find-this-symbol)
+     ("C-c s d" . cscope-find-global-definition)
+     ("C-c s c" . cscope-find-functions-calling-this-function)
+     ("C-c s x" . cscope-set-initial-directory)
+     ("C-c s f" . cscope-find-this-file))
+    :config
+    (cscope-setup))
 #+end_src
 
 *** Snippets
