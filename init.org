@@ -278,12 +278,11 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
       (add-hook 'exwm-init-hook
   	      (lambda ()
   		(progn
-  		  (if (equal (system-name) "nano")
-  		      (start-process "blueman-applet" nil "blueman-applet")
-  		    (start-process "blueberry-tray" nil "blueberry-tray"))
+  		  (start-process "blueman-applet" nil "blueman-applet")
   		  (start-process "xset" nil "xset" "s 300 5")
   		  (start-process "nm-applet" nil "nm-applet")
   		  (start-process "redshift" nil "redshift")
+  		  (start-process "dbus-update-activation-environment DISPLAY" nil "dbus-update-activation-environment DISPLAY")
   		  (when (not (equal (system-name) "nano"))
   		    (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)))
 
