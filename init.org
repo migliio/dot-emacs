@@ -136,6 +136,91 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
       (setq frame-title-format nil)))
 #+end_src
 
+** Custom modeline 
+
+Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for keeping things simple and under control. There was so much wasted space with the default one, and I couldn't tolerate it any longer.
+
+#+begin_src emacs-lisp
+  (defvar mg/modeline-buffer-status
+      '(:eval
+        (if (file-remote-p default-directory)
+  	  (propertize " @ "
+  		      'face 'normal
+  		      'mouse-face 'mode-line-highlight)
+  	(propertize " ^ "
+  		    'face 'normal
+  		    'mouse-face 'mode-line-highlight))))
+
+  (defvar mg/modeline-buffer-name
+      '(:eval
+        (propertize (buffer-name) 'face 'bold)))
+
+  (defun mg/modeline--major-mode ()
+    (let* ((mode
+  	 (mapconcat 'capitalize
+  		    (butlast (split-string (symbol-name major-mode) "-")) " "))
+  	 (mode-final
+  	  (if (string-equal mode "Exwm")
+  	      (concat "Exwm: "
+  	       (mapconcat 'capitalize
+  			  (butlast
+  			   (split-string
+  			    (symbol-name exwm--input-mode) "-"))))
+  	    mode))
+  	 (indicator (cond
+  		     ((derived-mode-p 'text-mode) "§")
+  		     ((derived-mode-p 'prog-mode) "λ")
+  		     ((derived-mode-p 'comint-mode) ">_")
+  		     (t "•"))))
+  	  (format "%s (%s)" indicator mode-final)))
+
+  (defvar mg/modeline-major-mode
+      '(:eval
+        (propertize (mg/modeline--major-mode) 'face 'normal)))
+
+  (defvar mg/modeline-buffer-mode
+      '(:eval
+        (if buffer-read-only
+  	  (propertize "*L*" 'face 'normal)
+  	(propertize "*U*" 'face 'normal))))
+
+  (defvar mg/modeline-align-right
+    '(:eval (propertize
+             " " 'display
+             `((space :align-to
+                      (- (+ right right-fringe right-margin)
+                         ,(string-width
+                           (format-mode-line mode-line-misc-info))))))))
+
+  (setq mode-line-end-spaces
+        '(""
+  	mg/modeline-align-right
+  	mode-line-misc-info))
+
+  (setq-default mode-line-format
+        '("%e"
+  	mg/modeline-buffer-status
+  	mg/modeline-buffer-mode
+  	" "  	
+  	mg/modeline-buffer-name
+  	"  "
+  	(vc-mode vc-mode)
+  	"  "  	
+  	mg/modeline-major-mode
+  	"  "
+  	(:eval
+  	 (when (mode-line-window-selected-p)
+  	   mode-line-end-spaces))))
+
+  (dolist (construct
+  	 '(mg/modeline-major-mode
+  	   mg/modeline-buffer-mode
+  	   mg/modeline-buffer-status
+  	   mg/modeline-align-right
+  	   mg/modeline-buffer-name))
+    (put construct 'risky-local-variable t))
+#+end_src
+
 ** Emacs auto-save
 
 Put Emacs auto-save and backup files to /tmp/.
@@ -265,10 +350,6 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
   	     (lambda ()
   	       (interactive)
   	       (mg/check-and-toggle-deepwork-mode)))
-  	    ([?\s-c] .
-  	     (lambda ()
-  	       (interactive)
-  	       (start-process "" nil "/usr/bin/scrot" "-s /home/claudio/Vault/pkm/assets/$(date +%Y-%m-%d-%H-%M-%S)_screenshot.png")))
   	    ,@(mapcar (lambda (i)
   			`(,(kbd (format "s-%d" i)) .
   			  (lambda ()
