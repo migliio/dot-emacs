@@ -282,7 +282,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
   		  (start-process "xset" nil "xset" "s 300 5")
   		  (start-process "nm-applet" nil "nm-applet")
   		  (start-process "redshift" nil "redshift")
-  		  (start-process "dbus-update-activation-environment DISPLAY" nil "dbus-update-activation-environment DISPLAY")
+  		  (start-process "dbus-update-activation-environment" nil "dbus-update-activation-environment" "DISPLAY")
   		  (when (not (equal (system-name) "nano"))
   		    (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)))
 
@@ -1443,7 +1443,7 @@ Adding some custom functions I use to make my life easier.
     (interactive)
     (message "System-level info => %s" (concat
   					(format "BAT: %s- " (shell-command-to-string "~/.config/scripts/battery.sh"))
-  					(format "CPU: %s - " (shell-command-to-string "~/.config/scripts/cpu.sh"))			    
+  					(format "CPU: %s - " (shell-command-to-string "~/.config/scripts/cpu.sh"))
   					(format "MEM: %s - " (shell-command-to-string "~/.config/scripts/ram.sh"))
   					(format "DSK: %s - " (shell-command-to-string "~/.config/scripts/disk.sh"))
   					(format "VOL: %s " (shell-command-to-string "~/.config/scripts/volume.sh")))))
