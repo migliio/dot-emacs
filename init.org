@@ -413,11 +413,6 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
 Loading the preferred theme.
 
 #+begin_src emacs-lisp
-  (use-package minions
-    :straight t
-    :config
-    (minions-mode 1))
-
   (if (display-graphic-p)
       (progn
         (if (equal system-type 'darwin)
