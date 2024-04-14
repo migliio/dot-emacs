@@ -184,17 +184,8 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for kee
   	  (propertize "*L*" 'face 'normal)
   	(propertize "*U*" 'face 'normal))))
 
-  (defvar mg/modeline-align-right
-    '(:eval (propertize
-             " " 'display
-             `((space :align-to
-                      (- (+ right right-fringe right-margin)
-                         ,(string-width
-                           (format-mode-line mode-line-misc-info))))))))
-
   (setq mode-line-end-spaces
         '(""
-  	mg/modeline-align-right
   	mode-line-misc-info))
 
   (setq-default mode-line-format
@@ -216,7 +207,6 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for kee
   	 '(mg/modeline-major-mode
   	   mg/modeline-buffer-mode
   	   mg/modeline-buffer-status
-  	   mg/modeline-align-right
   	   mg/modeline-buffer-name))
     (put construct 'risky-local-variable t))
 #+end_src
