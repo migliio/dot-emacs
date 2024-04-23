@@ -79,6 +79,8 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
     (setq tab-always-indent 'complete)
     (require 'epa-file)
     (epa-file-enable)
+    (when (eq system-type 'darwin)  
+      (setenv "LANG" "en_US.UTF-8"))
     (if (display-graphic-p)
         (dolist (mode
   	       '(tool-bar-mode
@@ -145,10 +147,10 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for kee
       '(:eval
         (if (file-remote-p default-directory)
   	  (propertize " @ "
-  		      'face 'mode-line
+  		      'face 'fixed-pitch
   		      'mouse-face 'mode-line-highlight)
   	(propertize " ^ "
-  		    'face 'mode-line
+  		    'face 'fixed-pitch
   		    'mouse-face 'mode-line-highlight))))
 
   (defvar mg/modeline-buffer-name
@@ -171,18 +173,18 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for kee
   		     ((derived-mode-p 'text-mode) "§")
   		     ((derived-mode-p 'prog-mode) "λ")
   		     ((derived-mode-p 'comint-mode) ">_")
-  		     (t "•"))))
+  		     (t "o"))))
   	  (format "%s (%s)" indicator mode-final)))
 
   (defvar mg/modeline-major-mode
       '(:eval
-        (propertize (mg/modeline--major-mode) 'face 'mode-line)))
+        (propertize (mg/modeline--major-mode) 'face 'fixed-pitch)))
 
   (defvar mg/modeline-buffer-mode
       '(:eval
         (if buffer-read-only
-  	  (propertize "*L*" 'face 'mode-line)
-  	(propertize "*U*" 'face 'mode-line))))
+  	  (propertize "*L*" 'face 'fixed-pitch)
+  	(propertize "*U*" 'face 'fixed-pitch))))
 
   (setq mode-line-end-spaces
         '(""
@@ -415,6 +417,21 @@ Loading the preferred theme.
     (set-face-background 'default "undefined"))
 #+end_src
 
+*** Workspaces
+
+I'd like to have an Emacs environment where to use different contexts for buffers (as "workspaces") and easily switch between those. As of [2024-04-19 Fri], I'm trying to use ~perspective.el~ to obtain that feature. This package seems to integrate flawlessly with EXWM, which is something really valuable to me.
+
+#+begin_src emacs-lisp
+  (use-package perspective
+    :straight t
+    :bind
+    ("C-x C-b" . persp-list-buffers)
+    :custom
+    (persp-mode-prefix-key (kbd "C-c w"))
+    :init
+    (persp-mode))
+#+end_src
+
 ** Completion
 
 Trying some in-buffer completion framework that is not broken.
@@ -553,10 +570,6 @@ Move the cursor around like a velociraptor.
 Org mode is the single most used package of my Emacs workflow.
 
 #+begin_src emacs-lisp
-  (use-package writeroom-mode
-    :straight t
-    :bind (("C-c w" . writeroom-mode)))
-    
   (use-package org
     :straight t
     :bind (("C-c a" . org-agenda)
@@ -567,7 +580,7 @@ Org mode is the single most used package of my Emacs workflow.
   	   ("C-c o d" . org-do-demote)	   
   	   ("C-c l" . org-store-link))
     :custom
-    (org-agenda-files (list "~/Vault/pkm/20240209T084736--journal__archive_personal.org" "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "~/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org" "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org"))
+    (org-agenda-files (list "~/Vault/pkm/20240209T084736--journal__archive_personal.org" "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "~/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org" "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org"))
     (org-archive-location "~/Vault/pkm/archive/archive.org::* From %s")
     (org-export-backends '(beamer html latex ascii ox-hugo))
     (org-startup-folded t)
@@ -652,14 +665,14 @@ Org mode is the single most used package of my Emacs workflow.
   	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
   	    ("ph" "Home project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Home")
   	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
-  	    ("pm" "Misc project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Misc")
+  	    ("pp" "Productivity and tooling project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Productivity and tooling")
   	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
-  	    ("pw" "Work project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "Work")
+  	    ("pw" "Work project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" "Work")
   	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
-  	    ("ps" "Study project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" "Study")
+  	    ("ps" "Study project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" "Study")
   	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")))
     ;; setting up org-refile
-    (setq org-refile-targets '(("~/Vault/pkm/20231210T220334--work-and-study-projects__personal_project.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
+    (setq org-refile-targets '(("~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
   			       ("~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
   			       ("~/Vault/pkm/20231210T224321--agenda__personal.org" :regexp . "\\(?:Past\\)")))
     (define-key global-map (kbd "C-c i") 'mg/org-capture-inbox)
