@@ -867,18 +867,6 @@ Org mode is the single most used package of my Emacs workflow.
   				 (lisp . t)
   				 (haskell . t)
   				 (R . t))))
-
-  (use-package org-wild-notifier
-    :straight t
-    :custom
-    (org-wild-notifier-notification-title "Org agenda reminder")
-    (org-wild-notifier-alert-times-property "NOTIFY_BEFORE")
-    :config
-    (org-wild-notifier-mode))
-
-  (use-package org-timeblock
-    :bind (("C-c p t" . org-timeblock))
-    :straight t)
 #+end_src
 
 **** Encrypting
