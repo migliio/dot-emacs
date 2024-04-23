@@ -147,15 +147,13 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for kee
       '(:eval
         (if (file-remote-p default-directory)
   	  (propertize " @ "
-  		      'face 'fixed-pitch
   		      'mouse-face 'mode-line-highlight)
   	(propertize " ^ "
-  		    'face 'fixed-pitch
   		    'mouse-face 'mode-line-highlight))))
 
   (defvar mg/modeline-buffer-name
       '(:eval
-        (propertize (buffer-name) 'face 'bold)))
+        (propertize (buffer-name) 'face 'mode-line-buffer-id)))
 
   (defun mg/modeline--major-mode ()
     (let* ((mode
@@ -178,13 +176,13 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for kee
 
   (defvar mg/modeline-major-mode
       '(:eval
-        (propertize (mg/modeline--major-mode) 'face 'fixed-pitch)))
+        (mg/modeline--major-mode)))
 
   (defvar mg/modeline-buffer-mode
       '(:eval
         (if buffer-read-only
-  	  (propertize "*L*" 'face 'fixed-pitch)
-  	(propertize "*U*" 'face 'fixed-pitch))))
+  	    "*L*"
+  	"*U*")))
 
   (setq mode-line-end-spaces
         '(""
