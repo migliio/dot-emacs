@@ -147,15 +147,13 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for kee
       '(:eval
         (if (file-remote-p default-directory)
   	  (propertize " @ "
-  		      'face 'normal
   		      'mouse-face 'mode-line-highlight)
   	(propertize " ^ "
-  		    'face 'normal
   		    'mouse-face 'mode-line-highlight))))
 
   (defvar mg/modeline-buffer-name
       '(:eval
-        (propertize (buffer-name) 'face 'bold)))
+        (propertize (buffer-name) 'face 'mode-line-buffer-id)))
 
   (defun mg/modeline--major-mode ()
     (let* ((mode
@@ -178,13 +176,13 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for kee
 
   (defvar mg/modeline-major-mode
       '(:eval
-        (propertize (mg/modeline--major-mode) 'face 'normal)))
+        (mg/modeline--major-mode)))
 
   (defvar mg/modeline-buffer-mode
       '(:eval
         (if buffer-read-only
-  	  (propertize "*L*" 'face 'normal)
-  	(propertize "*U*" 'face 'normal))))
+  	    "*L*"
+  	"*U*")))
 
   (setq mode-line-end-spaces
         '(""
@@ -1325,20 +1323,6 @@ These are useful tweaks I use when coding. I plan not to divide this into furthe
     :straight t
     :bind
     (("M-g r" . deadgrep)))
-
-  (use-package hl-todo
-    :straight t
-    :hook ((prog-mode . hl-todo-mode)
-  	 (org-mode . hl-todo-mode))
-    :config
-    (setq hl-todo-highlight-punctuation ":"
-          hl-todo-keyword-faces
-          `(("TODO"       warning bold)
-            ("FIXME"      error bold)
-            ("HACK"       font-lock-constant-face bold)
-            ("REVIEW"     font-lock-keyword-face bold)
-            ("INSIGHT"       success bold)
-            ("DEPRECATED" font-lock-doc-face bold))))
 
   (use-package xcscope
     :straight t
