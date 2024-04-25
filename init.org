@@ -1069,8 +1069,7 @@ Using the superior citation manager.
     (("C-c n c o" . citar-open)
      (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
     :config
-    (setq citar-bibliography org-cite-global-bibliography)
-    (setq org-cite-global-bibliography '("~/Vault/library/org/main/main.bib")))
+    (setq citar-bibliography '("~/Vault/library/org/main/main.bib")))
 
   (use-package citar-denote
     :straight t
