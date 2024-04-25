@@ -416,9 +416,7 @@ Loading the preferred theme.
         (if (equal system-type 'darwin)
   	  (set-frame-font "Lilex 17" nil t)
         	(set-frame-font "Lilex 14" nil t))
-        (load-theme 'modus-vivendi t)
-        (set-face-attribute 'mode-line nil :box nil)
-        (set-face-attribute 'mode-line-inactive nil :box nil)
+        (use-package zenburn-theme :straight t :config (load-theme 'zenburn t))
         (set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
