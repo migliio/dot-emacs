@@ -90,6 +90,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
     (setq tab-always-indent 'complete)
     (require 'epa-file)
     (epa-file-enable)
+    (setq create-lockfiles nil)
     (when (eq system-type 'darwin)
       (mg/darwin-setup))
     (if (display-graphic-p)
@@ -251,7 +252,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
       (add-hook 'exwm-update-class-hook #'mg/exwm-update-class)
       (require 'exwm-systemtray)
       (exwm-systemtray-enable)
-      (setq exwm-systemtray-height 15)
+      (setq exwm-systemtray-height 16)
       (require 'exwm-randr)
       (exwm-randr-enable)
       (defun mg/starter ()
@@ -1069,6 +1070,14 @@ Managing contacts with the ~bbdb~ package.
   	   (file-description (denote--link-get-description file-path)))
         (denote-link file-path 'org file-description))))
 
+  (use-package denote-explore
+    :straight t
+    :custom
+    (denote-explore-network-directory (concat denote-directory "/graphs"))
+    (denote-explore-network-filename "denote-network")
+    (denote-explore-network-format 'graphviz)
+    (denote-explore-network-graphviz-filetype "svg"))
+
   (use-package denote-menu
     :after (denote)
     :straight t
@@ -1366,6 +1375,11 @@ These are useful tweaks I use when coding. I plan not to divide this into furthe
      ("C-c s f" . cscope-find-this-file))
     :config
     (cscope-setup))
+
+  (use-package ediff
+    :straight t
+    :config
+    (set 'ediff-window-setup-function 'ediff-setup-windows-plain))
 #+end_src
 
 *** Snippets
