@@ -910,7 +910,7 @@ Functions and utilities I do heavily use when working on pkm pages.
     "execute the pkm clean script directly from emacs"
     (interactive)
     (progn
-      (start-process "" nil "~/.scripts/pkm-clean")
+      (start-process "" nil "~/.config/scripts/pkm-clean")
       (message "pkm clean executed")))
 
   (defun mg/check-and-toggle-deepwork-mode ()
@@ -919,7 +919,7 @@ Functions and utilities I do heavily use when working on pkm pages.
     (save-excursion
       (with-current-buffer (find-file-noselect "/etc/hosts")
 	(goto-char (point-min))
-	(let ((default-directory "/sudo::/home/claudio/.scripts"))
+	(let ((default-directory "/sudo::/home/claudio/.config/scripts"))
 	  (progn
 	    (shell-command (concat "./deepwork_mode" (when (search-forward "#gsd" nil t)
 						       " --play")))))))
