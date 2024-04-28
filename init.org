@@ -424,21 +424,6 @@ Loading the preferred theme.
     (set-face-background 'default "undefined"))
 #+end_src
 
-*** Workspaces
-
-I'd like to have an Emacs environment where to use different contexts for buffers (as "workspaces") and easily switch between those. As of [2024-04-19 Fri], I'm trying to use ~perspective.el~ to obtain that feature. This package seems to integrate flawlessly with EXWM, which is something really valuable to me.
-
-#+begin_src emacs-lisp
-  (use-package perspective
-    :straight t
-    :bind
-    ("C-x C-b" . persp-list-buffers)
-    :custom
-    (persp-mode-prefix-key (kbd "C-c w"))
-    :init
-    (persp-mode))
-#+end_src
-
 ** Completion and buffers
 
 Trying some in-buffer completion framework that is not broken.
@@ -1484,6 +1469,7 @@ I use ~vterm~ as terminal inside Emacs. I always used it and never felt the need
   (use-package multi-vterm
     :straight t
     :bind (("C-c v" . multi-vterm)))
+  
 #+end_src
 * Misc custom functions
 
