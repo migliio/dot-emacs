@@ -438,11 +438,36 @@ I'd like to have an Emacs environment where to use different contexts for buffer
     (persp-mode))
 #+end_src
 
-** Completion
+** Completion and buffers
 
 Trying some in-buffer completion framework that is not broken.
 
 #+begin_src emacs-lisp
+  (use-package ibuffer
+    :straight t
+    :bind
+    (("C-x C-b" . ibuffer))
+    :config
+    (setq ibuffer-expert t)
+    (setq ibuffer-saved-filter-groups
+  	(quote (("default"
+  		 ("org" (mode . org-mode))
+  		 ("dired" (mode . dired-mode))
+  		 ("magit" (name . "^magit"))
+  		 ("c-src" (mode . c-mode))
+  		 ("python-src" (mode . python-mode))
+  		 ("brave" (name . "^Brave"))
+  		 ("vterminal" (name . "^\\*vterminal"))
+  		 ("emacs" (or
+  			   (name . "^\\*scratch\\*$")
+  			   (name . "^\\*Messages\\*$")))
+  		 ))))
+    (setq ibuffer-default-sorting-mode 'alphabetic)
+    (add-hook 'ibuffer-mode-hook
+  	    (lambda ()
+  	      (ibuffer-switch-to-saved-filter-groups "default")
+  	      )))
+
   (use-package vertico
     :straight t
     :config
