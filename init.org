@@ -442,6 +442,7 @@ Trying some in-buffer completion framework that is not broken.
   		 ("magit" (name . "^magit"))
   		 ("c-src" (mode . c-mode))
   		 ("python-src" (mode . python-mode))
+  		 ("virt-manager" (name . "^Virt-manager"))
   		 ("brave" (name . "^Brave"))
   		 ("vterminal" (name . "^\\*vterminal"))
   		 ("emacs" (or
