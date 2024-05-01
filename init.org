@@ -346,7 +346,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
   	    ([?\s-u] .
   	     (lambda ()
   	       (interactive)
-  	       (start-process "" nil "/usr/bin/setxkbmap" "us")))
+  	       (start-process "" nil "/usr/bin/setxkbmap" "-layout us -variant altgr-intl")))
   	    ([?\s-f] .
   	     (lambda ()
   	       (interactive)
@@ -702,24 +702,12 @@ Org mode is the single most used package of my Emacs workflow.
   		      ((org-agenda-span 1)
   		       (org-agenda-skip-function
   			(lambda ()
-  			  (or (org-agenda-skip-entry-if 'regexp ":framework:")
-  			      (org-agenda-skip-entry-if 'done))))
+  			  (org-agenda-skip-entry-if 'done)))
   		       (org-deadline-warning-days 0)
   		       (org-scheduled-past-days 14)
   		       (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
   		       (org-agenda-format-date "%A %-e %B %Y")
   		       (org-agenda-overriding-header "Today's schedule:\n")))
-  	      (agenda ""
-  		      ((org-agenda-span 1)
-  		       (org-agenda-skip-function
-  			(lambda ()
-  			  (or (org-agenda-skip-entry-if 'notregexp ":framework:")
-  			      (org-agenda-skip-entry-if 'done))))
-  		       (org-deadline-warning-days 0)
-  		       (org-scheduled-past-days 14)
-  		       (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-  		       (org-agenda-format-date "%A %-e %B %Y")			
-  		       (org-agenda-overriding-header "Today's framework:\n")))
   	      (todo "NEXT"
   		    ((org-agenda-skip-function
   		      '(org-agenda-skip-entry-if 'deadline))
@@ -743,8 +731,7 @@ Org mode is the single most used package of my Emacs workflow.
   		      ((org-agenda-start-on-weekday nil)
   		       (org-agenda-skip-function
   			(lambda ()
-  			  (or (org-agenda-skip-entry-if 'regexp ":framework:")
-  			      (org-agenda-skip-entry-if 'done))))
+  			      (org-agenda-skip-entry-if 'done)))
   		       (org-agenda-start-day "+1d")
   		       (org-agenda-span 5)
   		       (org-deadline-warning-days 0)
