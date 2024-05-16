@@ -558,7 +558,7 @@ I really love the ~undo-tree~ mode visualization, so I'm going to enable it.
 #+begin_src emacs-lisp
   (use-package vundo
     :straight t
-    :bind (("C-x u"))
+    :bind (("C-x u" . vundo))
     :config
     (setq vundo-glyph-alist vundo-unicode-symbols))
 #+end_src
