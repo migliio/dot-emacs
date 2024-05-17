@@ -744,7 +744,8 @@ Org mode is the single most used package of my Emacs workflow.
   	(setq org-cite-export-processors
   	      '((latex biblatex)))
   	(setq org-latex-pdf-process (list
-  				     "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
+  				     "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"
+  				     ))
   	))
     (setq org-format-latex-options
   	  (plist-put org-format-latex-options :scale 1.5))
@@ -1395,6 +1396,10 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible. T
     :straight t
     :mode "\\.hs\\'")
 
+  (use-package bpftrace-mode
+    :straight t
+    :mode "\\.bt\\'")
+
   (use-package racket-mode
     :straight t
     :mode "\\.rkt\\'")
@@ -1555,7 +1560,7 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c u r r") #'query-replace)
   (global-set-key (kbd "C-c u r c") #'comment-region)
   (global-set-key (kbd "C-c u r u") #'uncomment-region)
-  (global-set-key (kbd "C-c u r i") #'indent-region)
+  (global-set-key (kbd "C-c u r i") #'indetn-region)
   (global-set-key (kbd "C-c u r a r") #'align-regexp)
   (global-set-key (kbd "C-c u r a e") #'align-entire)
   (global-set-key (kbd "C-c u n") #'mg/new-empty-buffer)
