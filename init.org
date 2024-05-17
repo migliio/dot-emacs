@@ -50,7 +50,7 @@ First of all, let's initialize the package management setting up ELPA, MELPA and
 #+end_src
 
 * Keep emacs.d clean
-** Customization settings
+** Cuqstomization settings
    
 Let's have a better organized folder, with relevant files only.
 
@@ -252,7 +252,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
       (add-hook 'exwm-update-class-hook #'mg/exwm-update-class)
       (require 'exwm-systemtray)
       (exwm-systemtray-enable)
-      (setq exwm-systemtray-height 16)
+      (setq exwm-systemtray-height 14)
       (require 'exwm-randr)
       (exwm-randr-enable)
       (defun mg/starter ()
@@ -346,7 +346,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
   	    ([?\s-u] .
   	     (lambda ()
   	       (interactive)
-  	       (start-process "" nil "/usr/bin/setxkbmap" "-layout us -variant altgr-intl")))
+  	       (start-process "" nil "/usr/bin/setxkbmap" "us")))
   	    ([?\s-f] .
   	     (lambda ()
   	       (interactive)
@@ -444,6 +444,7 @@ Trying some in-buffer completion framework that is not broken.
   		 ("python-src" (mode . python-mode))
   		 ("virt-manager" (name . "^Virt-manager"))
   		 ("brave" (name . "^Brave"))
+  		 ("jabber" (name . "^*-jabber"))
   		 ("vterminal" (name . "^\\*vterminal"))
   		 ("emacs" (or
   			   (name . "^\\*scratch\\*$")
@@ -555,13 +556,11 @@ I want to use =pdf-tools= to view and edit PDFs in a much better way.
 I really love the ~undo-tree~ mode visualization, so I'm going to enable it.
 
 #+begin_src emacs-lisp
-  (use-package undo-tree
+  (use-package vundo
     :straight t
-    :custom
-    (undo-tree-auto-save-history nil)
-    (undo-tree-visualizer-relative-timestamps nil)
+    :bind (("C-x u" . vundo))
     :config
-    (global-undo-tree-mode 1))
+    (setq vundo-glyph-alist vundo-unicode-symbols))
 #+end_src
 
 *** Avy
@@ -600,7 +599,7 @@ Org mode is the single most used package of my Emacs workflow.
     :custom
     (org-agenda-files (list "~/Vault/pkm/20240209T084736--journal__archive_personal.org" "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "~/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org" "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org"))
     (org-archive-location "~/Vault/pkm/archive/archive.org::* From %s")
-    (org-export-backends '(beamer html latex ascii ox-hugo))
+    (org-export-backends '(beamer html latex ascii))
     (org-startup-folded t)
     (org-log-into-drawer t)
     (org-export-with-drawers nil)
@@ -611,7 +610,7 @@ Org mode is the single most used package of my Emacs workflow.
     (org-stuck-projects '("+project/" ("NEXT" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
     (org-log-done 'time)
     (org-agenda-hide-tags-regexp ".")
-    (org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
+    (org-id-link-to-org-use-id 'nil)
     (org-refile-use-outline-path 'file)
     (org-outline-path-complete-in-steps nil)
     (org-clock-sources '(agenda))
@@ -630,17 +629,6 @@ Org mode is the single most used package of my Emacs workflow.
   	  (setq start (match-end 0)))
   	(push (substring heading start) parts)  ; Remaining text after last link
   	(string-join (reverse parts) "")))
-    ;; The function below works fine but it is deprecated in my workflow since Protesialos implemented it
-    ;; directly in denote.
-    (defun mg/org-create-or-store-id ()
-      "Create an ID for the Org heading at point. If already existent, simply copy it."
-      (interactive)
-      (save-excursion
-  	(org-back-to-heading)
-  	(let* ((id (org-id-get-create))
-  	       (heading-title (mg/extract-heading-name (org-get-heading t t t)))
-  	       (link (format "[[id:%s][%s]]" id heading-title)))
-  	  (kill-new link))))
     (defun mg/get-today-timestamp ()
       "Helper function to get today's timestamp with the abbreviated day name"
       (format-time-string "%Y-%m-%d %a"))
@@ -674,10 +662,11 @@ Org mode is the single most used package of my Emacs workflow.
   	    ("Pm" "Month plan" plain (file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
   	     "*** %^{Month} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Short-term projects ::\n- [ ] Review ::\n")
   	    ("f" "Flashcards")
-  	    ("fc" "Computer science flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Computer science") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:\n** Front\n%?\n** Back\n")
-  	    ("fs" "Security flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Security") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Security\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:\n** Front\n%?\n** Back\n")
-  	    ("fm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Mathematics") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: Mathematics\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:\n** Front\n%?\n** Back\n")  	    
-  	    ("fe" "English flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "English") "* %^{Heading title}\n:PROPERTIES:\n:ANKI_DECK: English\n:ANKI_NOTE_TYPE: %^{Anki note type}\n:END:\n** Front\n%?\n** Back\n")  	    
+  	    ("fc" "Computer science flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Computer science") "* %(buffer-name (plist-get org-capture-plist :original-buffer))\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+  	    ("fk" "Kernel flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Kernel") "* %(buffer-name (plist-get org-capture-plist :original-buffer))\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+  	    ("fs" "Security flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Security") "* %(buffer-name (plist-get org-capture-plist :original-buffer))\n:PROPERTIES:\n:ANKI_DECK: Security\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+  	    ("fm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Mathematics") "* %(buffer-name (plist-get org-capture-plist :original-buffer))\n:PROPERTIES:\n:ANKI_DECK: Mathematics\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+  	    ("fe" "English flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "English") "* %(buffer-name (plist-get org-capture-plist :original-buffer))\n:PROPERTIES:\n:ANKI_DECK: English\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
   	    ("p" "Projects")
   	    ("pl" "Learning project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Learning")
   	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
@@ -1049,13 +1038,15 @@ Managing contacts with the ~bbdb~ package.
     :custom
     (denote-explore-network-directory (concat denote-directory "/graphs"))
     (denote-explore-network-filename "denote-network")
-    (denote-explore-network-format 'graphviz)
-    (denote-explore-network-graphviz-filetype "svg"))
+    (denote-explore-network-format 'gexf)
+    (denote-explore-network-graphviz-filetype "gexf"))
 
   (use-package denote-menu
     :after (denote)
     :straight t
-    :bind (("C-c n m" . list-denotes)))
+    :config
+    :bind (("C-c n m l" . list-denotes)
+  	   ("C-c n m f" . denote-menu-filter-by-keyword)))
 #+end_src
 
 **** Citar
@@ -1143,7 +1134,13 @@ I use ledger to track my finances.
 
 #+begin_src emacs-lisp
   (use-package ledger-mode
-    :straight t)
+    :straight t
+    :mode ("\\.journal\\'" "\\.ledger\\'" "\\.hledger\\'")
+    :custom
+    (ledger-binary-path "/usr/bin/hledger")
+    (ledger-mode-should-check-version nil)
+    (ledger-report-auto-width nil)
+    (ledger-report-use-native-highlighting nil))
 #+end_src
 
 ** Email
@@ -1217,7 +1214,21 @@ Using ~mu4e~ as e-mail client.
   	(insert (mail-header-from message-reply-headers) " wrote:")
   	(newline)
   	(newline)))
-      (setq message-citation-line-function 'mg/message-insert-citation-line)))
+      (setq message-citation-line-function 'mg/message-insert-citation-line)
+      (defun sign-or-encrypt-message ()
+        (let ((answer (read-from-minibuffer "Sign or encrypt?\nEmpty to do nothing.\n[s/e]: ")))
+  	(cond
+  	 ((string-equal answer "s") (progn
+                                        (message "Signing message.")
+                                        (mml-secure-message-sign-pgpmime)))
+  	 ((string-equal answer "e") (progn
+                                        (message "Encrypt and signing message.")
+                                        (mml-secure-message-encrypt-pgpmime)))
+  	 (t (progn
+                (message "Dont signing or encrypting message.")
+                nil)))))
+
+      (add-hook 'message-send-hook 'sign-or-encrypt-message)))
 #+end_src
 
 ** Browser
@@ -1464,19 +1475,40 @@ I use ~vterm~ as terminal inside Emacs. I always used it and never felt the need
     :bind (("C-c v" . multi-vterm)))
   
 #+end_src
+** Chat and clients
+
+Using some chat and clients to use external software from within Emacs. The idea is to leave it as rarely as possible.
+
+#+begin_src emacs-lisp
+  (use-package jabber
+    :straight t
+    :bind (("C-x C-j C-a" . jabber-connect)))
+#+end_src
+
 * Misc custom functions
 
 Adding some custom functions I use to make my life easier.
 
 #+begin_src emacs-lisp
+  ;; (defun mg/compute-deep-work ()
+  ;;   "Ask for a date and then search in projects and archive all those LOGBOOK entries related to that date and compute the time."
+  ;;   (interactive)
+  ;;   (let ((date (org-read-date))
+  ;; 	(amount 0))
+  ;;     (with-current-buffer (concat denote-directory "/archive/archive.org")
+  ;;       (goto-char (point-min))
+  ;;       (when (re-search-forward (format "%s" date) nil t)
+  ;; 	(progn
+  ;; 	  (goto-char (line-beginning-position)))))))
+
   (defun mg/new-empty-buffer ()
-     "Create a new empty buffer"
-     (interactive)
-     (let ((mbuf (generate-new-buffer "untitled")))
-       (switch-to-buffer mbuf)
-       (funcall initial-major-mode)
-       mbuf
-       ))
+    "Create a new empty buffer"
+    (interactive)
+    (let ((mbuf (generate-new-buffer "untitled")))
+      (switch-to-buffer mbuf)
+      (funcall initial-major-mode)
+      mbuf
+      ))
 
   (defun mg/shutdown-with-confirmation ()
     "Ask for confirmation and shut down the system if confirmed."
@@ -1510,6 +1542,21 @@ Adding some custom functions I use to make my life easier.
       (when filename
   	(kill-new filename)
   	(message "Copied buffer file name '%s' to the clipboard." filename))))
+
+  (defun mg/org-get-clock-minutes (file date)
+    "Get minutes from org-clock of a specific file and date"
+    (interactive
+     (list
+      (read-file-name "Get clock fata from FILE: ")
+      (format "<%s>" (org-read-date))
+      ))
+    (let ((minutes (nth 1
+  		      (with-current-buffer (find-buffer-visiting file)
+  			(org-clock-get-table-data file `( :maxlevel 4
+  							  :tstart ,date
+  							  :tend ,date))))))
+      (insert (format "%s" minutes)
+      )))
 
   ;; enable pdf presentation mode
   (use-package hide-mode-line
@@ -1545,6 +1592,7 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c p e") #'mg/pkm-clean)
   (global-set-key (kbd "C-c p c") #'mg/org-capture-notes)
   (global-set-key (kbd "C-c p s") #'mg/take-screenshot)
+  (global-set-key (kbd "C-c p d") #'mg/org-get-clock-minutes)
 
   ;; utils related bindings
   (global-set-key (kbd "M-n") #'forward-paragraph)
