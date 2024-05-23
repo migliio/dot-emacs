@@ -1,4 +1,5 @@
 #+LATEX_CLASS: beamer
 #+LATEX_CLASS_OPTIONS: [9pt]
 #+LATEX_HEADER: \usetheme{metropolis}
+#+LATEX_HEADER: \usepackage[sorting=none]{biblatex}
 #+OPTIONS: H:2

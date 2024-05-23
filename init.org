@@ -907,11 +907,11 @@ Functions and utilities I do heavily use when working on pkm pages.
     (interactive)
     (save-excursion
       (with-current-buffer (find-file-noselect "/etc/hosts")
-	(goto-char (point-min))
-	(let ((default-directory "/sudo::/home/claudio/.config/scripts"))
-	  (progn
-	    (shell-command (concat "./deepwork_mode" (when (search-forward "#gsd" nil t)
-						       " --play")))))))
+  	(goto-char (point-min))
+  	(let ((default-directory "/sudo::/home/claudio/.config/scripts"))
+  	  (progn
+  	    (shell-command (concat "./deepwork_mode" (when (search-forward "#gsd" nil t)
+  						       " --play")))))))
     (kill-buffer "hosts")
     (mg/check-deepwork-mode))
 
@@ -920,16 +920,19 @@ Functions and utilities I do heavily use when working on pkm pages.
     (interactive)
     (save-excursion
       (with-current-buffer (find-file-noselect "/etc/hosts")
-	(goto-char (point-min))
-	(if (search-forward "#gsd" nil t)
-	    (message "Deep work mode is enabled")
-	  (message "Deep work mode is disabled"))))
+  	(goto-char (point-min))
+  	(if (search-forward "#gsd" nil t)
+  	    (message "Deep work mode is enabled")
+  	  (message "Deep work mode is disabled"))))
     (kill-buffer "hosts"))
 
   (defun mg/toggle-pdf-presentation-mode ()
+    "Toggle a presentation mode when showing PDFs"
     (interactive)
     (toggle-frame-fullscreen)
-    (hide-mode-line-mode)
+    (if (not (bound-and-true-p hide-mode-line-mode))
+        (hide-mode-line-mode 1)
+      (hide-mode-line-mode 0))
     (pdf-view-fit-page-to-window))
 #+end_src
 
