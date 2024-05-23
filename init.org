@@ -1033,12 +1033,8 @@ Functions and utilities I do heavily use when working on pkm pages.
   	  (message "Deep work mode is disabled"))))
     (kill-buffer "hosts"))
 
-<<<<<<< HEAD
   (defun mg/toggle-pdf-presentation-mode ()
     "Toggle a presentation mode when showing PDFs"
-=======
-  (defun mg-toggle-pdf-presentation-mode ()
->>>>>>> 7a547816445f7cf7cf323e238b6a634ace33188f
     (interactive)
     (toggle-frame-fullscreen)
     (if (not (bound-and-true-p hide-mode-line-mode))
