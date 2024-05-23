@@ -1639,9 +1639,9 @@ I use ~vterm~ as terminal inside Emacs. I always used it and never felt the need
     :bind (("C-c v" . multi-vterm)))
   
 #+end_src
-*** Treesitter
+*** Tree-sitter
 
-Using ~treesitter~ for a better syntax highlighting.
+Using ~tree-sitter~ for a better syntax highlighting.
 
 #+begin_src emacs-lisp
   (use-package tree-sitter :straight t
