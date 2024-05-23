@@ -73,7 +73,7 @@ Let's have a better organized folder, with relevant files only.
 Clean the Emacs interface making it as minimal as possible, without getting rid of useful improvements. Adding some defaults on indentation, etc.
 
 #+begin_src emacs-lisp
-  (defun mg/darwin-setup ()
+  (defun mg-darwin-setup ()
     "Set the environment to work flawlessly on ~darwin~."
     (progn
       (setenv "LANG" "en_US.UTF-8")
@@ -92,7 +92,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
     (epa-file-enable)
     (setq create-lockfiles nil)
     (when (eq system-type 'darwin)
-      (mg/darwin-setup))
+      (mg-darwin-setup))
     (if (display-graphic-p)
         (dolist (mode
     	       '(tool-bar-mode
@@ -106,7 +106,6 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
     	     show-paren-mode))
       (funcall mode 1))
     (setq-default inhibit-startup-screen t
-    		initial-scratch-message ""
     		frame-title-format '("%b")
     		ring-bell-function 'ignore
     		tab-width 8
@@ -128,10 +127,10 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
     (add-hook 'window-setup-hook 'toggle-frame-maximized t)
     (add-to-list 'yank-excluded-properties 'face)
 
-    (define-minor-mode mg/line-numbers-highlight-line-mode
+    (define-minor-mode mg-line-numbers-highlight-line-mode
       "Shows line numbers in relative mode and highlights the current line"
       :initial nil
-      (if mg/line-numbers-highlight-line-mode
+      (if mg-line-numbers-highlight-line-mode
     	(progn
     	  (display-line-numbers-mode 1)
     	  (hl-line-mode 1)
@@ -142,7 +141,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
     
     ;; enable some modes when programming
     (add-hook 'prog-mode-hook
-    	    #'mg/line-numbers-highlight-line-mode))
+    	    #'mg-line-numbers-highlight-line-mode))
 #+end_src
 
 ** Custom modeline
@@ -150,7 +149,7 @@ Clean the Emacs interface making it as minimal as possible, without getting rid 
 Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for keeping things simple and under control. There was so much wasted space with the default one, and I couldn't tolerate it any longer.
 
 #+begin_src emacs-lisp
-  (defvar mg/modeline-buffer-status
+  (defvar mg-modeline-buffer-status
       '(:eval
         (if (file-remote-p default-directory)
   	  (propertize " @ "
@@ -158,11 +157,11 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for kee
   	(propertize " ^ "
   		    'mouse-face 'mode-line-highlight))))
 
-  (defvar mg/modeline-buffer-name
+  (defvar mg-modeline-buffer-name
       '(:eval
         (propertize (buffer-name) 'face 'mode-line-buffer-id)))
 
-  (defun mg/modeline--major-mode ()
+  (defun mg-modeline--major-mode ()
     (let* ((mode
   	 (mapconcat 'capitalize
   		    (butlast (split-string (symbol-name major-mode) "-")) " "))
@@ -170,9 +169,7 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for kee
   	  (if (string-equal mode "Exwm")
   	      (concat "Exwm: "
   	       (mapconcat 'capitalize
-  			  (butlast
-  			   (split-string
-  			    (symbol-name exwm--input-mode) "-"))))
+  			  (butlast (split-string (symbol-name exwm--input-mode) "-"))))
   	    mode))
   	 (indicator (cond
   		     ((derived-mode-p 'text-mode) "§")
@@ -181,11 +178,11 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for kee
   		     (t "o"))))
   	  (format "%s (%s)" indicator mode-final)))
 
-  (defvar mg/modeline-major-mode
+  (defvar mg-modeline-major-mode
       '(:eval
-        (mg/modeline--major-mode)))
+        (mg-modeline--major-mode)))
 
-  (defvar mg/modeline-buffer-mode
+  (defvar mg-modeline-buffer-mode
       '(:eval
         (if buffer-read-only
   	    "*L*"
@@ -197,26 +194,26 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line, for kee
 
   (setq-default mode-line-format
         '("%e"
-  	mg/modeline-buffer-status
-  	mg/modeline-buffer-mode
+  	mg-modeline-buffer-status
+  	mg-modeline-buffer-mode
   	" "  	
-  	mg/modeline-buffer-name
+  	mg-modeline-buffer-name
   	" "
   	mode-line-position
   	"  "
   	(vc-mode vc-mode)
   	"  "
-  	mg/modeline-major-mode
+  	mg-modeline-major-mode
   	"  "
   	(:eval
   	 (when (mode-line-window-selected-p)
   	   mode-line-end-spaces))))
 
   (dolist (construct
-  	 '(mg/modeline-major-mode
-  	   mg/modeline-buffer-mode
-  	   mg/modeline-buffer-status
-  	   mg/modeline-buffer-name))
+  	 '(mg-modeline-major-mode
+  	   mg-modeline-buffer-mode
+  	   mg-modeline-buffer-status
+  	   mg-modeline-buffer-name))
     (put construct 'risky-local-variable t))
 #+end_src
 
@@ -243,19 +240,19 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
 
 #+begin_src emacs-lisp
   (when (and (display-graphic-p) (not (eq system-type 'darwin)))
-    (defun mg/exwm-update-class ()
+    (defun mg-exwm-update-class ()
       (exwm-workspace-rename-buffer exwm-class-name))
     (use-package exwm
       :straight t
       :config
       (setq exwm-workspace-number 6)
-      (add-hook 'exwm-update-class-hook #'mg/exwm-update-class)
+      (add-hook 'exwm-update-class-hook #'mg-exwm-update-class)
       (require 'exwm-systemtray)
       (exwm-systemtray-enable)
-      (setq exwm-systemtray-height 14)
+      (setq exwm-systemtray-height 17)
       (require 'exwm-randr)
       (exwm-randr-enable)
-      (defun mg/starter ()
+      (defun mg-starter ()
         "Choose the application to run"
         (interactive)
         (let* ((candidates (split-string
@@ -328,7 +325,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
   	    ([?\s-\ ] .
   	     (lambda ()
   	       (interactive)
-  	       (mg/starter)))
+  	       (mg-starter)))
   	    ;; switch workspace
   	    ([?\s-w] . exwm-workspace-switch)
   	    ([?\s-`] . (lambda () (interactive) (exwm-workspace-switch-create 0)))
@@ -350,7 +347,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
   	    ([?\s-f] .
   	     (lambda ()
   	       (interactive)
-  	       (mg/check-and-toggle-deepwork-mode)))
+  	       (mg-check-and-toggle-deepwork-mode)))
   	    ,@(mapcar (lambda (i)
   			`(,(kbd (format "s-%d" i)) .
   			  (lambda ()
@@ -417,10 +414,21 @@ Loading the preferred theme.
   (if (display-graphic-p)
       (progn
         (if (equal system-type 'darwin)
-  	  (set-frame-font "Lilex 17" nil t)
-        	(set-frame-font "Lilex 14" nil t))
-        (use-package zenburn-theme :straight t :config (load-theme 'zenburn t))
-        (set-fringe-mode 0))
+  	  (set-frame-font "Iosevka Comfy 18" nil t)
+  	(set-frame-font "Iosevka Comfy 16" nil t))
+        (use-package ef-themes :straight t :config
+  	(load-theme 'ef-elea-dark t))
+        (use-package spacious-padding :straight t :config
+  	(setq spacious-padding-widths
+  	      '(	:internal-border-width 15
+  			:header-line-width 4
+  			:mode-line-width 6
+  			:tab-width 4
+  			:right-divider-width 30
+  			:scroll-bar-width 0
+  			:fringe-width 0))
+  	(spacious-padding-mode 1))
+  	)
     (set-face-background 'default "undefined"))
 #+end_src
 
@@ -477,6 +485,63 @@ Trying some in-buffer completion framework that is not broken.
     :custom
     (completion-styles '(orderless basic)))
 
+  (use-package consult
+    :straight t
+    :bind (
+           ("C-c M-x" . consult-mode-command)
+           ("C-c h" . consult-history)
+           ("C-c k" . consult-kmacro)
+           ("C-c M-m" . consult-man)
+           ("C-c i" . consult-info)
+           ([remap Info-search] . consult-info)
+
+           ("C-x b" . consult-buffer)
+           ("C-x r b" . consult-bookmark)
+           ("C-x p b" . consult-project-buffer)
+
+           ("M-#" . consult-register-load)
+           ("M-'" . consult-register-store)
+           ("C-M-#" . consult-register)
+
+           ("M-y" . consult-yank-pop)
+
+           ("M-g e" . consult-compile-error)
+           ("M-g f" . consult-flymake)
+           ("M-g g" . consult-goto-line)
+           ("M-g M-g" . consult-goto-line)
+           ("M-g o" . consult-outline)
+           ("M-g m" . consult-mark)
+           ("M-g k" . consult-global-mark)
+           ("M-g i" . consult-imenu)
+           ("M-g I" . consult-imenu-multi)
+
+           ("M-s d" . consult-find)
+           ("M-s c" . consult-locate)
+           ("M-s g" . consult-grep)
+           ("M-s G" . consult-git-grep)
+           ("M-s r" . consult-ripgrep)
+           ("M-s l" . consult-line)
+           ("M-s L" . consult-line-multi)
+           ("M-s k" . consult-keep-lines)
+           ("M-s u" . consult-focus-lines)
+
+           ("M-s e" . consult-isearch-history)
+           :map isearch-mode-map
+           ("M-e" . consult-isearch-history)
+           ("M-s e" . consult-isearch-history)
+           ("M-s l" . consult-line)
+           ("M-s L" . consult-line-multi)
+
+           :map minibuffer-local-map
+           ("M-s" . consult-history)
+           ("M-r" . consult-history))
+    :hook (completion-list-mode . consult-preview-at-point-mode)
+    :init
+    (setq xref-show-xrefs-function #'consult-xref
+          xref-show-definitions-function #'consult-xref)
+    :config
+    (setq consult-narrow-key "<"))
+
   (use-package corfu
     :straight (corfu :type git :host github :repo "minad/corfu" :commit "24dccafeea114b1aec7118f2a8405b46aa0051e0")
     :custom
@@ -492,8 +557,6 @@ Trying some in-buffer completion framework that is not broken.
 #+begin_src emacs-lisp
   (use-package dired
     :ensure nil
-    :bind
-    (("C-x C-d" . dired))
     :custom
     (ls-lisp-use-insert-directory-program nil)
     (ls-lisp-dirs-first t)
@@ -560,7 +623,8 @@ I really love the ~undo-tree~ mode visualization, so I'm going to enable it.
     :straight t
     :bind (("C-x u" . vundo))
     :config
-    (setq vundo-glyph-alist vundo-unicode-symbols))
+    (setq vundo-glyph-alist vundo-unicode-symbols)
+    (set-face-attribute 'vundo-default nil :height 1.0))
 #+end_src
 
 *** Avy
@@ -589,12 +653,14 @@ Org mode is the single most used package of my Emacs workflow.
 #+begin_src emacs-lisp
   (use-package org
     :straight t
+    :after (denote)
     :bind (("C-c a" . org-agenda)
   	   ("C-c C-;" . org-insert-structure-template)
   	   ("C-c c" . org-capture)
   	   ("C-c C-z" . org-add-note)
   	   ("C-c o p" . org-do-promote)
-  	   ("C-c o d" . org-do-demote)	   
+  	   ("C-c o d" . org-do-demote)
+  	   ("C-c p o r" . org-clock-report)
   	   ("C-c l" . org-store-link))
     :custom
     (org-agenda-files (list "~/Vault/pkm/20240209T084736--journal__archive_personal.org" "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "~/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org" "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org"))
@@ -617,7 +683,7 @@ Org mode is the single most used package of my Emacs workflow.
     :config
     ;; handle links with IDs
     (require 'subr-x)  ; Required for string-trim function
-    (defun mg/extract-heading-name (heading)
+    (defun mg-extract-heading-name (heading)
       "Extract the heading name, handling text before links, links, and task indicators."
       ;; Remove task progress indicators like [1/1] and trim trailing spaces
       (setq heading (string-trim (replace-regexp-in-string "\\[\\([0-9]+\\)/\\([0-9]+\\)\\]\\s-*" "" heading)))
@@ -629,7 +695,7 @@ Org mode is the single most used package of my Emacs workflow.
   	  (setq start (match-end 0)))
   	(push (substring heading start) parts)  ; Remaining text after last link
   	(string-join (reverse parts) "")))
-    (defun mg/get-today-timestamp ()
+    (defun mg-get-today-timestamp ()
       "Helper function to get today's timestamp with the abbreviated day name"
       (format-time-string "%Y-%m-%d %a"))
     (setq org-capture-templates
@@ -648,7 +714,7 @@ Org mode is the single most used package of my Emacs workflow.
   	    ("ac" "Call entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
   	     "* Call with %? :call:\n:PROPERTIES:\n:CATEGORY:\n:NOTIFY_BEFORE:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
   	    ("j" "Journal")
-  	    ("jt" "Journal time blocking entry" plain (file+datetree "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %U: time blocking\t\t:timeblocking:\n- Day plans :: \n- Main challenges :: \n- Work check-in/check-out :: \n***** Deep work morning session\n<%(concat (mg/get-today-timestamp) \" 07:00-11:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Deep work afternoon session\n<%(concat (mg/get-today-timestamp) \" 13:30-15:30\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Shallow work afternoon session\n<%(concat (mg/get-today-timestamp) \" 15:30-17:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n%?")
+  	    ("jt" "Journal time blocking entry" plain (file+datetree "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %U: time blocking\t\t:timeblocking:\n- Day plans :: \n- Main challenges :: \n- Work check-in/check-out :: \n***** Deep work morning session\n<%(concat (mg-get-today-timestamp) \" 07:00-11:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Deep work afternoon session\n<%(concat (mg-get-today-timestamp) \" 13:30-15:30\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Shallow work afternoon session\n<%(concat (mg-get-today-timestamp) \" 15:30-17:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n%?")
   	    ("je" "Journal general entry" plain (file+datetree+prompt "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %U: %?\n")
   	    ("r" "Resources")
   	    ("ra" "Conference attendance" entry
@@ -662,11 +728,19 @@ Org mode is the single most used package of my Emacs workflow.
   	    ("Pm" "Month plan" plain (file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
   	     "*** %^{Month} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Short-term projects ::\n- [ ] Review ::\n")
   	    ("f" "Flashcards")
-  	    ("fc" "Computer science flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Computer science") "* %(buffer-name (plist-get org-capture-plist :original-buffer))\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
-  	    ("fk" "Kernel flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Kernel") "* %(buffer-name (plist-get org-capture-plist :original-buffer))\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
-  	    ("fs" "Security flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Security") "* %(buffer-name (plist-get org-capture-plist :original-buffer))\n:PROPERTIES:\n:ANKI_DECK: Security\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
-  	    ("fm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Mathematics") "* %(buffer-name (plist-get org-capture-plist :original-buffer))\n:PROPERTIES:\n:ANKI_DECK: Mathematics\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
-  	    ("fe" "English flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "English") "* %(buffer-name (plist-get org-capture-plist :original-buffer))\n:PROPERTIES:\n:ANKI_DECK: English\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+  	    ("fc" "Computer science flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Computer science") "* %(if (not (equal (plist-get org-capture-plist :original-file) 'nil))
+     (mg-insert-denote-or-normal-link (plist-get org-capture-plist :original-file))
+   (buffer-name (plist-get org-capture-plist :original-buffer)))\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+  	    ("fk" "Kernel flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Kernel") "* %(mg-insert-denote-or-normal-link (format \"%s/%s\" denote-directory (buffer-name (plist-get org-capture-plist :original-buffer))))\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+  	    ("fs" "Security flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Security") "* %(if (not (equal (plist-get org-capture-plist :original-file) 'nil))
+     (mg-insert-denote-or-normal-link (plist-get org-capture-plist :original-file))
+   (buffer-name (plist-get org-capture-plist :original-buffer)))\n:PROPERTIES:\n:ANKI_DECK: Security\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+  	    ("fm" "Mathematics flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "Mathematics") "* %(if (not (equal (plist-get org-capture-plist :original-file) 'nil))
+     (mg-insert-denote-or-normal-link (plist-get org-capture-plist :original-file))
+   (buffer-name (plist-get org-capture-plist :original-buffer)))\n:PROPERTIES:\n:ANKI_DECK: Mathematics\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+  	    ("fe" "English flashcard" entry (file+headline "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org" "English") "* %(if (not (equal (plist-get org-capture-plist :original-file) 'nil))
+     (mg-insert-denote-or-normal-link (plist-get org-capture-plist :original-file))
+   (buffer-name (plist-get org-capture-plist :original-buffer)))\n:PROPERTIES:\n:ANKI_DECK: English\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
   	    ("p" "Projects")
   	    ("pl" "Learning project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Learning")
   	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
@@ -676,13 +750,15 @@ Org mode is the single most used package of my Emacs workflow.
   	     "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
   	    ("pw" "Work project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" "Work")
   	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+  	    ("pb" "Blogging project" plain (file+headline "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "Blogging")
+  	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
   	    ("ps" "Study project" plain (file+headline "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" "Study")
   	     "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")))
     ;; setting up org-refile
     (setq org-refile-targets '(("~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
   			       ("~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
   			       ("~/Vault/pkm/20231210T224321--agenda__personal.org" :regexp . "\\(?:Past\\)")))
-    (define-key global-map (kbd "C-c i") 'mg/org-capture-inbox)
+    (define-key global-map (kbd "C-c i") 'mg-org-capture-inbox)
     ;; Org-agenda custom commands
     (setq org-agenda-block-separator "==============================================================================")
     (setq org-agenda-custom-commands
@@ -895,14 +971,45 @@ Install org-noter to deal with PDF notes.
 Functions and utilities I do heavily use when working on pkm pages.
 
 #+begin_src emacs-lisp
-  (defun mg/pkm-clean ()
+  (defun mg-org-get-clock-minutes (file start-date end-date)
+    "Get minutes from org-clock of a specific file and date"
+    (interactive
+     (list
+      (read-file-name "Get clock data from FILE: ")
+      (format "<%s>" (org-read-date))
+      (format "<%s>" (org-read-date))
+      ))
+    (let ((minutes (nth 1
+    		    (with-current-buffer (find-buffer-visiting file)
+                          (org-clock-get-table-data file `( :maxlevel 4
+    							:tstart ,start-date
+    							:tend ,end-date))))))
+      minutes)
+    )
+
+  (defun mg-org-compute-deep-work-minutes (start-date end-date)
+      "Compute the minutes of deep work by searching into project and archive
+  files for a given date range"
+      (interactive
+       (list
+        (format "<%s>" (org-read-date))
+        (format "<%s>" (org-read-date))))
+      (let* ((default-directory (denote-directory))
+  	   (target-files
+  	    '("20231210T220334--work-and-study-projects__project_work.org"
+  	      "archive/archive.org")))
+        (insert (format "%s"
+  		      (apply '+ (mapcar (lambda (file)
+  		       (mg-org-get-clock-minutes file start-date end-date)) target-files))))))
+
+  (defun mg-pkm-clean ()
     "execute the pkm clean script directly from emacs"
     (interactive)
     (progn
       (start-process "" nil "~/.config/scripts/pkm-clean")
       (message "pkm clean executed")))
 
-  (defun mg/check-and-toggle-deepwork-mode ()
+  (defun mg-check-and-toggle-deepwork-mode ()
     "Check if deepwork-mode is enable, if so disable it, otherwise enable it"
     (interactive)
     (save-excursion
@@ -913,9 +1020,9 @@ Functions and utilities I do heavily use when working on pkm pages.
   	    (shell-command (concat "./deepwork_mode" (when (search-forward "#gsd" nil t)
   						       " --play")))))))
     (kill-buffer "hosts")
-    (mg/check-deepwork-mode))
+    (mg-check-deepwork-mode))
 
-  (defun mg/check-deepwork-mode ()
+  (defun mg-check-deepwork-mode ()
     "Check if deepwork-mode is enable, if so disable it, otherwise enable it"
     (interactive)
     (save-excursion
@@ -926,8 +1033,12 @@ Functions and utilities I do heavily use when working on pkm pages.
   	  (message "Deep work mode is disabled"))))
     (kill-buffer "hosts"))
 
+<<<<<<< HEAD
   (defun mg/toggle-pdf-presentation-mode ()
     "Toggle a presentation mode when showing PDFs"
+=======
+  (defun mg-toggle-pdf-presentation-mode ()
+>>>>>>> 7a547816445f7cf7cf323e238b6a634ace33188f
     (interactive)
     (toggle-frame-fullscreen)
     (if (not (bound-and-true-p hide-mode-line-mode))
@@ -965,9 +1076,9 @@ Managing contacts with the ~bbdb~ package.
   	 ("C-c n x" . denote-region)
   	 ("C-c n N" . denote-type)
   	 ("C-c n d" . denote-date)
-  	 ("C-c n f" . mg/denote-find)
-  	 ("C-c n z f" . mg/denote-find-zettel)
-  	 ("C-c n z i" . mg/denote-insert-zettel-link)
+  	 ("C-c n f" . mg-denote-find-file)
+  	 ("C-c n z f" . mg-denote-find-zettel)
+  	 ("C-c n z i" . mg-denote-insert-zettel-link)
   	 ("C-c n y f" . denote-org-extras-dblock-insert-files)
   	 ("C-c n y l" . denote-org-extras-dblock-insert-links)
   	 ("C-c n y b" . denote-org-extras-dblock-insert-backlinks)
@@ -1011,30 +1122,59 @@ Managing contacts with the ~bbdb~ package.
        (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- BBDB entry ::\n- Additional information ::\n* Notes")))
     (denote-date-prompt-use-org-read-date t)
     :config
+    ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
+    (require 'denote-org-extras)
     ;; (custom-set-variables '(org-link-parameters (quote (("store" . denote-link-ol-store)))))
-    (defun mg/denote-find ()
-      "Find files interactively starting from the denote-directory."
-      (interactive)
-      (let ((default-directory (concat denote-directory "/")))
-        (call-interactively 'find-file)))
-    (defun mg/get-zettel ()
-      "Get a zettel file from `denote-directory` interactively"
-      (let* ((candidates (directory-files denote-directory nil "==[0-9|a-b]*--"))
+
+    (defun mg-denote-get-item (filter-regex)
+      "Get a file path interactively starting from the denote-directory"
+      (let* ((candidates (directory-files denote-directory nil filter-regex))
   	   (file-name (completing-read
-  		       "Choose zettel: "
+  		       "Choose FILE: "
   		       candidates))
   	   (file-path (concat (concat denote-directory "/") file-name)))
         file-path))
-    (defun mg/denote-find-zettel ()
+
+    (defun mg-denote-get-file ()
+      "Get a denote file interactively starting from the denote-directory"
+      (mg-denote-get-item "^\\([0-9]+\\)"))
+    
+    (defun mg-denote-find-file ()
+      "Find files interactively starting from the denote-directory."
+      (interactive)
+      (find-file (mg-denote-get-file)))
+
+    (defun mg-denote-get-zettel ()
+      "Get zettel interactively starting from the denote directory"
+      (mg-denote-get-item "==[0-9|a-b]*--"))
+        
+    (defun mg-denote-find-zettel ()
       "Find zettels interactively starting from the denote-directory."
       (interactive)
-      (find-file (mg/get-zettel)))
-    (defun mg/denote-insert-zettel-link ()
-      "Select a zettel from denote directory and insert its link at current point"
+      (find-file (mg-denote-get-zettel)))
+
+    (defun mg-insert-denote-or-normal-link (name)
+      "Insert a denote link if the file specified by buffer-name is a denote item, otherwise a normal link"
+      (if (denote-file-is-note-p (format "%s" name))
+  	(mg-denote-insert-link-from-file-path name)
+        (format "[[file:%s]]" name)))
+
+    (defun mg-denote-insert-link-from-file-path (file-path)
+      "Insert a denote link provided a file path"
+      (let ((file-description (denote--link-get-description file-path)))
+        (denote-link file-path (denote-filetype-heuristics file-path) file-description)))
+
+    (defun mg-denote-insert-zettel-link ()
+      "Select a zettel from `denote-directory` and insert its link at current point"
       (interactive)
-      (let* ((file-path (mg/get-zettel))
-  	   (file-description (denote--link-get-description file-path)))
-        (denote-link file-path 'org file-description))))
+       (let ((file-path
+  	    (mg-denote-get-zettel)))
+         (mg-denote-insert-link-from-file-path file-path)))
+
+    (defun mg-add-identifier-to-killring ()
+      "Generate a denote identifier and add it to the kill-ring to use it as a timestamp"
+      (interactive)
+      (kill-new (denote-get-identifier))))
 
   (use-package denote-explore
     :straight t
@@ -1131,6 +1271,35 @@ Enabling spellchecking by default.
     (add-hook hook (lambda () (flyspell-mode 1))))
 #+end_src
 
+*** Focus mode
+
+To enable a "focus mode" I use the ~logos.el~ package, which I find very convenient, along with the ~olivetti~ package, which is itself convenient.
+
+#+begin_src emacs-lisp
+  (use-package olivetti
+    :straight t)
+
+  (use-package logos
+    :bind (("C-c p f" . logos-focus-mode))
+    :straight t
+    :custom
+    (logos-outlines-are-pages t)
+    :config
+    (setq-default logos-hide-cursor nil
+  		logos-hide-mode-line t
+  		logos-hide-header-line t
+  		logos-hide-buffer-boundaries t
+  		logos-hide-fringe t
+  		logos-variable-pitch nil
+  		logos-buffer-read-only nil
+  		logos-scroll-lock nil
+  		logos-olivetti t)
+    (let ((map global-map))
+      (define-key map [remap narrow-to-region] #'logos-narrow-dwim)
+      (define-key map [remap forward-page] #'logos-forward-page-dwim)
+      (define-key map [remap backward-page] #'logos-backward-page-dwim)))
+#+end_src
+
 ** Finance
 
 I use ledger to track my finances.
@@ -1145,7 +1314,6 @@ I use ledger to track my finances.
     (ledger-report-auto-width nil)
     (ledger-report-use-native-highlighting nil))
 #+end_src
-
 ** Email
 
 Using ~mu4e~ as e-mail client.
@@ -1166,12 +1334,12 @@ Using ~mu4e~ as e-mail client.
   		(auto-fill-mode 1)))
       (define-key mu4e-headers-mode-map (kbd "C-c c") 'mu4e-org-store-and-capture)
       (define-key mu4e-view-mode-map    (kbd "C-c c") 'mu4e-org-store-and-capture)
-      (defun mg/org-capture-mail ()
+      (defun mg-org-capture-mail ()
         (interactive)
         (call-interactively 'org-store-link)
         (org-capture nil "im"))
-      (define-key mu4e-headers-mode-map (kbd "C-c i") 'mg/org-capture-mail)
-      (define-key mu4e-view-mode-map    (kbd "C-c i") 'mg/org-capture-mail)
+      (define-key mu4e-headers-mode-map (kbd "C-c i") 'mg-org-capture-mail)
+      (define-key mu4e-view-mode-map    (kbd "C-c i") 'mg-org-capture-mail)
       (setq mu4e-maildir (expand-file-name "~/Maildir")
   	  mu4e-use-fancy-chars nil
   	  mu4e-attachment-dir  "~/Downloads"
@@ -1210,14 +1378,14 @@ Using ~mu4e~ as e-mail client.
       (with-eval-after-load "mm-decode"
         (add-to-list 'mm-discouraged-alternatives "text/html")
         (add-to-list 'mm-discouraged-alternatives "text/richtext"))
-      (defun mg/message-insert-citation-line ()
+      (defun mg-message-insert-citation-line ()
         "Based off `message-insert-citation-line`."
         (when message-reply-headers
   	(insert "On " (format-time-string "%a, %d %b %Y %H:%M:%S %z" (date-to-time (mail-header-date message-reply-headers))) " ")
   	(insert (mail-header-from message-reply-headers) " wrote:")
   	(newline)
   	(newline)))
-      (setq message-citation-line-function 'mg/message-insert-citation-line)
+      (setq message-citation-line-function 'mg-message-insert-citation-line)
       (defun sign-or-encrypt-message ()
         (let ((answer (read-from-minibuffer "Sign or encrypt?\nEmpty to do nothing.\n[s/e]: ")))
   	(cond
@@ -1243,7 +1411,7 @@ I use eww for quick search in a text-based format. Then, I also use engine-mode 
     :straight t
     :config
     (engine/set-keymap-prefix (kbd "C-c u e"))
-    (defun mg/engine-mode-exact-phrase-transform (search-term)
+    (defun mg-engine-mode-exact-phrase-transform (search-term)
       (if current-prefix-arg
   	(concat "\"" search-term "\"")
         search-term))
@@ -1253,7 +1421,7 @@ I use eww for quick search in a text-based format. Then, I also use engine-mode 
     (defengine google
       "http://www.google.com/search?hl=en&ie=utf-8&oe=utf-8&q=%s"
       :keybinding "g"
-      :term-transformation-hook mg/engine-mode-exact-phrase-transform)
+      :term-transformation-hook mg-engine-mode-exact-phrase-transform)
     (defengine elixir
       "https://elixir.bootlin.com/linux/latest/A/ident/%s"
       :keybinding "k")
@@ -1478,6 +1646,20 @@ I use ~vterm~ as terminal inside Emacs. I always used it and never felt the need
     :bind (("C-c v" . multi-vterm)))
   
 #+end_src
+*** Tree-sitter
+
+Using ~tree-sitter~ for a better syntax highlighting.
+
+#+begin_src emacs-lisp
+  (use-package tree-sitter :straight t
+    :config
+    (setq major-mode-remap-alist
+  	'((c-mode . c-ts-mode)
+  	  (bash-mode . bash-ts-mode)
+  	  (python-mode . python-ts-mode)))
+    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+#+end_src
+
 ** Chat and clients
 
 Using some chat and clients to use external software from within Emacs. The idea is to leave it as rarely as possible.
@@ -1493,18 +1675,7 @@ Using some chat and clients to use external software from within Emacs. The idea
 Adding some custom functions I use to make my life easier.
 
 #+begin_src emacs-lisp
-  ;; (defun mg/compute-deep-work ()
-  ;;   "Ask for a date and then search in projects and archive all those LOGBOOK entries related to that date and compute the time."
-  ;;   (interactive)
-  ;;   (let ((date (org-read-date))
-  ;; 	(amount 0))
-  ;;     (with-current-buffer (concat denote-directory "/archive/archive.org")
-  ;;       (goto-char (point-min))
-  ;;       (when (re-search-forward (format "%s" date) nil t)
-  ;; 	(progn
-  ;; 	  (goto-char (line-beginning-position)))))))
-
-  (defun mg/new-empty-buffer ()
+  (defun mg-new-empty-buffer ()
     "Create a new empty buffer"
     (interactive)
     (let ((mbuf (generate-new-buffer "untitled")))
@@ -1513,13 +1684,13 @@ Adding some custom functions I use to make my life easier.
       mbuf
       ))
 
-  (defun mg/shutdown-with-confirmation ()
+  (defun mg-shutdown-with-confirmation ()
     "Ask for confirmation and shut down the system if confirmed."
     (interactive)
     (when (yes-or-no-p "Are you sure you want to shut down the system? ")
       (shell-command "/usr/sbin/shutdown now")))
 
-  (defun mg/take-screenshot ()
+  (defun mg-take-screenshot ()
     "Take a screenshot using 'scrot'"
     (interactive)
     ;; Generate the screenshot filename with a timestamp
@@ -1527,7 +1698,7 @@ Adding some custom functions I use to make my life easier.
       ;; Take the screenshot
       (shell-command (concat "/usr/bin/scrot -s " screenshot-name))))
 
-  (defun mg/split-on-ultrawide ()
+  (defun mg-split-on-ultrawide ()
     "Utility function used to quickly split the workspace in 3 buffers, convenient for ultrawide monitors"
     (interactive)
     (save-excursion
@@ -1536,7 +1707,7 @@ Adding some custom functions I use to make my life easier.
   	(split-window-vertically)
   	)))
 
-  (defun mg/copy-file-name-to-clipboard ()
+  (defun mg-copy-file-name-to-clipboard ()
     "Copy the current buffer file name to the clipboard."
     (interactive)
     (let ((filename (if (equal major-mode 'dired-mode)
@@ -1546,26 +1717,11 @@ Adding some custom functions I use to make my life easier.
   	(kill-new filename)
   	(message "Copied buffer file name '%s' to the clipboard." filename))))
 
-  (defun mg/org-get-clock-minutes (file date)
-    "Get minutes from org-clock of a specific file and date"
-    (interactive
-     (list
-      (read-file-name "Get clock fata from FILE: ")
-      (format "<%s>" (org-read-date))
-      ))
-    (let ((minutes (nth 1
-  		      (with-current-buffer (find-buffer-visiting file)
-  			(org-clock-get-table-data file `( :maxlevel 4
-  							  :tstart ,date
-  							  :tend ,date))))))
-      (insert (format "%s" minutes)
-      )))
-
   ;; enable pdf presentation mode
   (use-package hide-mode-line
     :straight t)
 
-  (defun mg/display-machine-info()
+  (defun mg-display-machine-info()
     (interactive)
     (message "System-level info => %s" (concat
   					(format "BAT: %s- " (shell-command-to-string "~/.config/scripts/battery.sh"))
@@ -1574,13 +1730,13 @@ Adding some custom functions I use to make my life easier.
   					(format "DSK: %s - " (shell-command-to-string "~/.config/scripts/disk.sh"))
   					(format "VOL: %s " (shell-command-to-string "~/.config/scripts/volume.sh")))))
 
-  (defun mg/find-docker-and-enter-in-assets ()
+  (defun mg-find-docker-and-enter-in-assets ()
     "Find the running docker container and enter into the assets folder"
     (interactive)
     (let ((docker-id (replace-regexp-in-string "\n$" "" (shell-command-to-string "docker container ls | awk 'NR > 1 {print $1}' "))))
       (find-file (concat "/docker:claudio@" docker-id ":/assets"))))
 
-  (defun mg/insert-current-timestamp ()
+  (defun mg-insert-current-timestamp ()
     "Insert current y-m-d timestamp"
     (interactive)
     (insert "[" (format-time-string "%y-%m-%d" (current-time)) "] "))
@@ -1591,21 +1747,22 @@ This is the list of keybindings I use.
 
 #+begin_src emacs-lisp
   ;; pkm custom functions
-  (global-set-key (kbd "C-c p l") #'mg/org-create-or-store-id)
-  (global-set-key (kbd "C-c p e") #'mg/pkm-clean)
-  (global-set-key (kbd "C-c p c") #'mg/org-capture-notes)
-  (global-set-key (kbd "C-c p s") #'mg/take-screenshot)
-  (global-set-key (kbd "C-c p d") #'mg/org-get-clock-minutes)
+  (global-set-key (kbd "C-c p l") #'mg-org-create-or-store-id)
+  (global-set-key (kbd "C-c p e") #'mg-pkm-clean)
+  (global-set-key (kbd "C-c p s") #'mg-take-screenshot)
+  (global-set-key (kbd "C-c p c m") #'mg-org-get-clock-minutes)
+  (global-set-key (kbd "C-c p c d") #'mg-org-compute-deep-work-minutes)
+  (global-set-key (kbd "C-c p u t") #'mg-add-identifier-to-killring)
 
   ;; utils related bindings
   (global-set-key (kbd "M-n") #'forward-paragraph)
   (global-set-key (kbd "M-p") #'backward-paragraph)
-  (global-set-key (kbd "C-c u p") #'mg/toggle-pdf-presentation-mode)
-  (global-set-key (kbd "C-c u d t") #'mg/check-and-toggle-deepwork-mode)
-  (global-set-key (kbd "C-c u d c") #'mg/check-deepwork-mode)
-  (global-set-key (kbd "C-c u f") #'mg/copy-file-name-to-clipboard)
-  (global-set-key (kbd "C-c u s i") #'mg/display-machine-info)
-  (global-set-key (kbd "C-c u s s") #'mg/shutdown-with-confirmation)
+  (global-set-key (kbd "C-c u p") #'mg-toggle-pdf-presentation-mode)
+  (global-set-key (kbd "C-c u d t") #'mg-check-and-toggle-deepwork-mode)
+  (global-set-key (kbd "C-c u d c") #'mg-check-deepwork-mode)
+  (global-set-key (kbd "C-c u f") #'mg-copy-file-name-to-clipboard)
+  (global-set-key (kbd "C-c u s i") #'mg-display-machine-info)
+  (global-set-key (kbd "C-c u s s") #'mg-shutdown-with-confirmation)
   (global-set-key (kbd "C-c u r s") #'replace-string)
   (global-set-key (kbd "C-c u r q") #'query-replace-regexp)
   (global-set-key (kbd "C-c u r r") #'query-replace)
@@ -1614,14 +1771,14 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c u r i") #'indetn-region)
   (global-set-key (kbd "C-c u r a r") #'align-regexp)
   (global-set-key (kbd "C-c u r a e") #'align-entire)
-  (global-set-key (kbd "C-c u n") #'mg/new-empty-buffer)
-  (global-set-key (kbd "C-c u c d") #'mg/find-docker-and-enter-in-assets)
+  (global-set-key (kbd "C-c u n") #'mg-new-empty-buffer)
+  (global-set-key (kbd "C-c u c d") #'mg-find-docker-and-enter-in-assets)
   (global-set-key (kbd "C-c u c w") #'whitespace-mode)
   (global-set-key (kbd "C-c u m") #'compile)
-  (global-set-key (kbd "C-c u w u") #'mg/split-on-ultrawide)
+  (global-set-key (kbd "C-c u w u") #'mg-split-on-ultrawide)
   (global-set-key (kbd "C-c u w f") #'toggle-frame-fullscreen)
   (global-set-key (kbd "C-c u w m") #'toggle-frame-maximized)
-  (global-set-key (kbd "C-c u t") #'mg/insert-current-timestamp)
+  (global-set-key (kbd "C-c u t") #'mg-insert-current-timestamp)
 
   (global-set-key (kbd "C-x C-n") nil)
   (global-set-key (kbd "C-x C-p") nil)
