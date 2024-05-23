@@ -416,8 +416,17 @@ Loading the preferred theme.
         (if (equal system-type 'darwin)
   	  (set-frame-font "Iosevka Comfy 18" nil t)
   	(set-frame-font "Iosevka Comfy 16" nil t))
-        (use-package spacious-padding :straight t :config (spacious-padding-mode 1))
-        (use-package ef-themes :straight t :config (load-theme 'ef-dream t))
+        (use-package spacious-padding :straight t :config
+  	(setq spacious-padding-widths
+  	      '(	:internal-border-width 15
+  			:header-line-width 4
+  			:mode-line-width 10
+  			:tab-width 4
+  			:right-divider-width 30
+  			:scroll-bar-width 0
+  			:fringe-width 0))
+  	(spacious-padding-mode 1))
+        (use-package zenburn-theme :straight t :config (load-theme 'zenburn t))
         (set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
@@ -547,8 +556,6 @@ Trying some in-buffer completion framework that is not broken.
 #+begin_src emacs-lisp
   (use-package dired
     :ensure nil
-    :bind
-    (("C-x C-d" . dired))
     :custom
     (ls-lisp-use-insert-directory-program nil)
     (ls-lisp-dirs-first t)
@@ -616,7 +623,7 @@ I really love the ~undo-tree~ mode visualization, so I'm going to enable it.
     :bind (("C-x u" . vundo))
     :config
     (setq vundo-glyph-alist vundo-unicode-symbols)
-    (set-face-attribute 'vundo-default nil :height 1.1))
+    (set-face-attribute 'vundo-default nil :height 1.0))
 #+end_src
 
 *** Avy
@@ -1159,7 +1166,7 @@ Managing contacts with the ~bbdb~ package.
     (defun mg/add-identifier-to-killring ()
       "Generate a denote identifier and add it to the kill-ring to use it as a timestamp"
       (interactive)
-      (kill-new (denote-get-identifier)))
+      (kill-new (denote-get-identifier))))
 
   (use-package denote-explore
     :straight t
