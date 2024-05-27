@@ -1179,7 +1179,9 @@ Managing contacts with the ~bbdb~ package.
   	 ("C-c n m f" . denote-menu-filter-by-keyword)))
 
   (use-package consult-denote
-    :straight (consult-denote :type git :host github :repo "protesilaos/consult-denote" :branch "main"))
+    :straight (consult-denote :type git :host github :repo "protesilaos/consult-denote" :branch "main")
+    :bind (("C-c n u c g" . consult-denote-grep)
+  	 ("C-c n u c f" . consult-denote-find)))
 #+end_src
 
 **** Citar
