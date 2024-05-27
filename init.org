@@ -533,11 +533,6 @@ Trying some in-buffer completion framework that is not broken.
     :config
     (setq consult-narrow-key "<"))
 
-  (use-package vertico-posframe
-    :straight t
-    :init
-    (vertico-posframe-mode 1))
-
   (use-package corfu
     :straight (corfu :type git :host github :repo "minad/corfu" :commit "24dccafeea114b1aec7118f2a8405b46aa0051e0")
     :custom
@@ -1181,7 +1176,10 @@ Managing contacts with the ~bbdb~ package.
     :straight t
     :config
     :bind (("C-c n m l" . list-denotes)
-  	   ("C-c n m f" . denote-menu-filter-by-keyword)))
+  	 ("C-c n m f" . denote-menu-filter-by-keyword)))
+
+  (use-package consult-denote
+    :straight (consult-denote :type git :host github :repo "protesilaos/consult-denote" :branch "main"))
 #+end_src
 
 **** Citar
