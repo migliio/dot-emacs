@@ -540,7 +540,7 @@ Trying some in-buffer completion framework that is not broken.
     (setq xref-show-xrefs-function #'consult-xref
           xref-show-definitions-function #'consult-xref)
     :config
-    (setq consult-narrow-key "<"))
+    (setq consult-narrow-key ">"))
 
   (use-package corfu
     :straight (corfu :type git :host github :repo "minad/corfu" :commit "24dccafeea114b1aec7118f2a8405b46aa0051e0")
@@ -1609,11 +1609,10 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible. T
     (add-to-list 'eglot-server-programs
   		 '((racket-mode)
   		   . ("racket")))
-    (add-hook 'c-mode-hook 'eglot-ensure)
-    (add-hook 'bison-mode-hook 'eglot-ensure)
-    (add-hook 'haskell-mode-hook 'eglot-ensure)
-    (add-hook 'erlang-mode-hook 'eglot-ensure)  
-    (add-hook 'python-mode-hook 'eglot-ensure))
+    (add-hook 'c-ts-mode-hook 'eglot-ensure)
+    (add-hook 'haskell-ts-mode-hook 'eglot-ensure)
+    (add-hook 'erlang-ts-mode-hook 'eglot-ensure)  
+    (add-hook 'python-ts-mode-hook 'eglot-ensure))
 #+end_src
 
 *** Which key
@@ -1651,6 +1650,8 @@ Using ~tree-sitter~ for a better syntax highlighting.
     :config
     (setq major-mode-remap-alist
   	'((c-mode . c-ts-mode)
+  	  (haskell-mode . haskell-ts-mode)
+  	  (erlang-mode . erlang-ts-mode)
   	  (bash-mode . bash-ts-mode)
   	  (python-mode . python-ts-mode)))
     (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
@@ -1671,6 +1672,10 @@ Using some chat and clients to use external software from within Emacs. The idea
 Adding some custom functions I use to make my life easier.
 
 #+begin_src emacs-lisp
+  (defun mg-get-kernel-version-from-repo ()
+    "Prompt the user for a git repository of the Linux kernel and return its version"
+    )
+
   (defun mg-new-empty-buffer ()
     "Create a new empty buffer"
     (interactive)
