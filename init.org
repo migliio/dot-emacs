@@ -416,9 +416,18 @@ Loading the preferred theme.
         (if (equal system-type 'darwin)
   	  (set-frame-font "Iosevka Comfy 18" nil t)
   	(set-frame-font "Iosevka Comfy 16" nil t))
-        (use-package zenburn-theme :straight t :config
-  	(load-theme 'zenburn t))
-        (set-fringe-mode 0))
+        (use-package ef-themes :straight t :config
+  	(load-theme 'ef-elea-dark t))
+        (use-package spacious-padding :straight t :config
+  	(setq spacious-padding-widths
+  	      '(	:internal-border-width 15
+  			:header-line-width 4
+  			:mode-line-width 6
+  			:tab-width 4
+  			:right-divider-width 30
+  			:scroll-bar-width 0
+  			:fringe-width 0))
+  	(spacious-padding-mode 1)))
     (set-face-background 'default "undefined"))
 #+end_src
 
@@ -1650,7 +1659,20 @@ Using ~tree-sitter~ for a better syntax highlighting.
   	  (erlang-mode . erlang-ts-mode)
   	  (bash-mode . bash-ts-mode)
   	  (python-mode . python-ts-mode)))
-    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+    (setq
+     c-ts-mode-indent-style 'linux
+     c-ts-mode-indent-offset 8))
+#+end_src
+
+*** Dev-docs
+
+Dev-docs are pretty useful when it comes to API inspection for a bunch of different languages and related libraries.
+
+#+begin_src emacs-lisp
+  (use-package devdocs
+    :straight t
+    :bind (("C-h D" . devdocs-lookup)))
 #+end_src
 
 ** Chat and clients
