@@ -416,18 +416,8 @@ Loading the preferred theme.
         (if (equal system-type 'darwin)
   	  (set-frame-font "Iosevka Comfy 18" nil t)
   	(set-frame-font "Iosevka Comfy 16" nil t))
-        (use-package ef-themes :straight t :config
-  	(load-theme 'ef-elea-dark t))
-        (use-package spacious-padding :straight t :config
-  	(setq spacious-padding-widths
-  	      '(	:internal-border-width 15
-  			:header-line-width 4
-  			:mode-line-width 6
-  			:tab-width 4
-  			:right-divider-width 30
-  			:scroll-bar-width 0
-  			:fringe-width 0))
-  	(spacious-padding-mode 1)))
+        (use-package zenburn :straight t :config
+  	(load-theme 'zenburn t))
     (set-face-background 'default "undefined"))
 #+end_src
 
@@ -540,6 +530,8 @@ Trying some in-buffer completion framework that is not broken.
     (setq xref-show-xrefs-function #'consult-xref
           xref-show-definitions-function #'consult-xref)
     :config
+    (consult-customize consult-buffer
+  		     :preview-key "M-.")
     (setq consult-narrow-key ">"))
 
   (use-package corfu
