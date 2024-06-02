@@ -249,7 +249,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
       (add-hook 'exwm-update-class-hook #'mg-exwm-update-class)
       (require 'exwm-systemtray)
       (exwm-systemtray-enable)
-      (setq exwm-systemtray-height 14)
+      (setq exwm-systemtray-height 25)
       (require 'exwm-randr)
       (exwm-randr-enable)
       (defun mg-starter ()
