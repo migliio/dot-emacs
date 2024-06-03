@@ -249,7 +249,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
       (add-hook 'exwm-update-class-hook #'mg-exwm-update-class)
       (require 'exwm-systemtray)
       (exwm-systemtray-enable)
-      (setq exwm-systemtray-height 14)
+      (setq exwm-systemtray-height 25)
       (require 'exwm-randr)
       (exwm-randr-enable)
       (defun mg-starter ()
@@ -413,21 +413,12 @@ Loading the preferred theme.
 #+begin_src emacs-lisp
   (if (display-graphic-p)
       (progn
-        (if (equal system-type 'darwin)
+  	(if (equal system-type 'darwin)
   	  (set-frame-font "Iosevka Comfy 18" nil t)
   	(set-frame-font "Iosevka Comfy 16" nil t))
-        (use-package ef-themes :straight t :config
-  	(load-theme 'ef-elea-dark t))
-        (use-package spacious-padding :straight t :config
-  	(setq spacious-padding-widths
-  	      '(	:internal-border-width 15
-  			:header-line-width 4
-  			:mode-line-width 6
-  			:tab-width 4
-  			:right-divider-width 30
-  			:scroll-bar-width 0
-  			:fringe-width 0))
-  	(spacious-padding-mode 1)))
+  	(use-package zenburn-theme :straight t :config
+  	  (load-theme 'zenburn t))
+  	(set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
 
@@ -540,6 +531,8 @@ Trying some in-buffer completion framework that is not broken.
     (setq xref-show-xrefs-function #'consult-xref
           xref-show-definitions-function #'consult-xref)
     :config
+    (consult-customize consult-buffer
+  		     :preview-key "M-.")
     (setq consult-narrow-key ">"))
 
   (use-package corfu
