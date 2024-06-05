@@ -239,7 +239,7 @@ Put Emacs auto-save and backup files to /tmp/.
 Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I've been using it as daily driver since around [2023-02-12 Sun], and I have never regretted this choice. No crap, no additional requirements, it just works.
 
 #+begin_src emacs-lisp
-  (when (and (display-graphic-p) (not (eq system-type 'darwin)))
+  (when (and (display-graphic-p) (not (or (eq system-type 'darwin) (equal (system-name) "nano"))))
     (defun mg-exwm-update-class ()
       (exwm-workspace-rename-buffer exwm-class-name))
     (use-package exwm
@@ -1602,11 +1602,11 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible. T
     :ensure nil
     :config
     (add-to-list 'eglot-server-programs
-  		 '((c-mode c++-mode)
+  		 '((c-ts-mode cpp-ts-mode)
   		   . ("clangd")))
     (add-to-list 'eglot-server-programs
-  		 '((racket-mode)
-  		   . ("racket")))
+  		 '((python-ts-mode)
+  		   . ("~/.local/bin/pylsp")))
     (add-hook 'c-ts-mode-hook 'eglot-ensure)
     (add-hook 'haskell-ts-mode-hook 'eglot-ensure)
     (add-hook 'erlang-ts-mode-hook 'eglot-ensure)  
