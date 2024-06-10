@@ -416,8 +416,7 @@ Loading the preferred theme.
   	(if (equal system-type 'darwin)
   	  (set-frame-font "Iosevka Comfy 18" nil t)
   	(set-frame-font "Iosevka Comfy 16" nil t))
-  	(use-package zenburn-theme :straight t :config
-  	  (load-theme 'zenburn t))
+  	(load-theme 'modus-vivendi t)
   	(set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
@@ -657,7 +656,7 @@ Org mode is the single most used package of my Emacs workflow.
   	   ("C-c l" . org-store-link))
     :custom
     (org-agenda-files (list "~/Vault/pkm/20240209T084736--journal__archive_personal.org" "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "~/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org" "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org"))
-    (org-archive-location "~/Vault/pkm/archive/archive.org::* From %s")
+    (org-archive-location "~/Vault/pkm/.archive/archive.org::* From %s")
     (org-export-backends '(beamer html latex ascii))
     (org-startup-folded nil)
     (org-log-into-drawer t)
@@ -990,7 +989,7 @@ Functions and utilities I do heavily use when working on pkm pages.
       (let* ((default-directory (denote-directory))
   	   (target-files
   	    '("20231210T220334--work-and-study-projects__project_work.org"
-  	      "archive/archive.org")))
+  	      ".archive/archive.org")))
         (insert (format "%s"
   		      (apply '+ (mapcar (lambda (file)
   		       (mg-org-get-clock-minutes file start-date end-date)) target-files))))))
