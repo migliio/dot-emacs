@@ -413,10 +413,13 @@ Loading the preferred theme.
 #+begin_src emacs-lisp
   (if (display-graphic-p)
       (progn
-  	(if (equal system-type 'darwin)
-  	  (set-frame-font "Iosevka Comfy 18" nil t)
-  	(set-frame-font "Iosevka Comfy 16" nil t))
-  	(load-theme 'modus-vivendi t)
+        (if (equal system-type 'darwin)
+  	  (progn
+  	    (set-frame-font "Iosevka Comfy 18" nil t)
+  	    (load-theme 'modus-operandi t))
+  	(progn
+  	  (set-frame-font "Iosevka Comfy 16" nil t)
+  	  (load-theme 'modus-vivendi t)))
   	(set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
@@ -657,7 +660,7 @@ Org mode is the single most used package of my Emacs workflow.
     :custom
     (org-agenda-files (list "~/Vault/pkm/20240209T084736--journal__archive_personal.org" "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "~/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org" "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org"))
     (org-archive-location "~/Vault/pkm/.archive/archive.org::* From %s")
-    (org-export-backends '(beamer html latex ascii))
+    (org-export-backends '(beamer html latex icalendar ascii))
     (org-startup-folded nil)
     (org-log-into-drawer t)
     (org-export-with-drawers nil)
