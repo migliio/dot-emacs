@@ -416,11 +416,15 @@ Loading the preferred theme.
         (if (equal system-type 'darwin)
   	  (progn
   	    (set-frame-font "Iosevka Comfy 18" nil t)
-  	    (load-theme 'modus-operandi t))
+  	    (load-theme 'modus-operandi t)
+  	    (use-package solarized-theme :straight t :config
+  	      (setq solarized-use-variable-pitch nil
+  		    solarized-high-contrast-mode-line t)
+  	      (load-theme 'solarized-light t)))
   	(progn
   	  (set-frame-font "Iosevka Comfy 16" nil t)
   	  (load-theme 'modus-vivendi t)))
-  	(set-fringe-mode 0))
+        (set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
 
