@@ -73,75 +73,77 @@ Let's have a better organized folder, with relevant files only.
 Clean the Emacs interface making it as minimal as possible, without getting rid of useful improvements. Adding some defaults on indentation, etc.
 
 #+begin_src emacs-lisp
-  (defun mg-darwin-setup ()
-    "Set the environment to work flawlessly on ~darwin~."
-    (progn
-      (setenv "LANG" "en_US.UTF-8")
-      (setq mac-option-modifier 'meta)
-      (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
-      (add-to-list 'default-frame-alist '(ns-appearance . dark))
-      (setq ns-use-proxy-icon nil)
-      (setq frame-title-format nil)
-      (setq mac-frame-tabbing nil)))
+    (defun mg-darwin-setup ()
+      "Set the environment to work flawlessly on ~darwin~."
+      (progn
+        (setenv "LANG" "en_US.UTF-8")
+        (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+        (add-to-list 'default-frame-alist '(ns-appearance . dark))
+        (setq ns-use-proxy-icon nil
+    	    frame-title-format nil
+    	    mac-option-modifier 'meta
+    	    mac-frame-tabbing nil)
+        (setq-default
+         menu-bar-mode t)))
 
-  (use-package emacs
-    :init
-    (setq completion-cycle-threshold 3)
-    (setq tab-always-indent 'complete)
-    (require 'epa-file)
-    (epa-file-enable)
-    (setq create-lockfiles nil)
-    (when (eq system-type 'darwin)
-      (mg-darwin-setup))
-    (if (display-graphic-p)
-        (dolist (mode
-    	       '(tool-bar-mode
-    		 scroll-bar-mode
-    		 menu-bar-mode
-    		 tooltip-mode
-    		 blink-cursor-mode))
-    	(funcall mode 0)))
-    (dolist (mode
-    	   '(global-visual-line-mode
-    	     show-paren-mode))
-      (funcall mode 1))
-    (setq-default inhibit-startup-screen t
-    		frame-title-format '("%b")
-    		ring-bell-function 'ignore
-    		tab-width 8
-    		c-basic-offset 8
-    		c-default-style "linux"
-    		frame-resize-pixelwise t	      
-    		linum-format "%4d "
-    		use-short-answers t
-    		make-backup-files nil
-    		native-comp-async-report-warnings-errors nil
-    		global-auto-revert-mode t
-    		confirm-kill-processes nil
-    		process-connection-type nil
-    		org-src-fontify-natively t
-    		;; warning-minimum-level :emergency
-    		set-language-environment "UTF-8"
-    		system-time-locale "C")
+    (use-package emacs
+      :init
+      (setq completion-cycle-threshold 3)
+      (setq tab-always-indent 'complete)
+      (require 'epa-file)
+      (epa-file-enable)
+      (setq create-lockfiles nil)
+      (when (eq system-type 'darwin)
+        (mg-darwin-setup))
+      (if (display-graphic-p)
+          (dolist (mode
+      	       '(tool-bar-mode
+      		 scroll-bar-mode
+      		 menu-bar-mode
+      		 tooltip-mode
+      		 blink-cursor-mode))
+      	(funcall mode 0)))
+      (dolist (mode
+      	   '(global-visual-line-mode
+      	     show-paren-mode))
+        (funcall mode 1))
+      (setq-default inhibit-startup-screen t
+      		frame-title-format '("%b")
+      		ring-bell-function 'ignore
+      		tab-width 8
+      		c-basic-offset 8
+      		c-default-style "linux"
+      		frame-resize-pixelwise t
+      		linum-format "%4d "
+      		use-short-answers t
+      		make-backup-files nil
+      		native-comp-async-report-warnings-errors nil
+      		global-auto-revert-mode t
+      		confirm-kill-processes nil
+      		process-connection-type nil
+      		org-src-fontify-natively t
+      		;; warning-minimum-level :emergency
+      		set-language-environment "UTF-8"
+      		system-time-locale "C")
 
-    (add-hook 'window-setup-hook 'toggle-frame-maximized t)
-    (add-to-list 'yank-excluded-properties 'face)
+      (add-hook 'window-setup-hook 'toggle-frame-maximized t)
+      (add-to-list 'yank-excluded-properties 'face)
 
-    (define-minor-mode mg-line-numbers-highlight-line-mode
-      "Shows line numbers in relative mode and highlights the current line"
-      :initial nil
-      (if mg-line-numbers-highlight-line-mode
-    	(progn
-    	  (display-line-numbers-mode 1)
-    	  (hl-line-mode 1)
-    	  (setq display-line-numbers-type 'relative))
-        (progn
-    	(display-line-numbers-mode 0)
-    	(hl-line-mode 0))))
-    
-    ;; enable some modes when programming
-    (add-hook 'prog-mode-hook
-    	    #'mg-line-numbers-highlight-line-mode))
+      (define-minor-mode mg-line-numbers-highlight-line-mode
+        "Shows line numbers in relative mode and highlights the current line"
+        :initial nil
+        (if mg-line-numbers-highlight-line-mode
+      	(progn
+      	  (display-line-numbers-mode 1)
+      	  (hl-line-mode 1)
+      	  (setq display-line-numbers-type 'relative))
+          (progn
+      	(display-line-numbers-mode 0)
+      	(hl-line-mode 0))))
+
+      ;; enable some modes when programming
+      (add-hook 'prog-mode-hook
+      	    #'mg-line-numbers-highlight-line-mode))
 #+end_src
 
 ** Custom modeline
@@ -414,16 +416,9 @@ Loading the preferred theme.
   (if (display-graphic-p)
       (progn
         (if (equal system-type 'darwin)
-  	  (progn
-  	    (set-frame-font "Iosevka Comfy 18" nil t)
-  	    (load-theme 'modus-operandi t)
-  	    (use-package solarized-theme :straight t :config
-  	      (setq solarized-use-variable-pitch nil
-  		    solarized-high-contrast-mode-line t)
-  	      (load-theme 'solarized-light t)))
-  	(progn
-  	  (set-frame-font "Iosevka Comfy 16" nil t)
-  	  (load-theme 'modus-vivendi t)))
+  	  (set-frame-font "Iosevka Comfy 18" nil t)
+  	(set-frame-font "Iosevka Comfy 16" nil t))
+        (load-theme 'modus-vivendi t)
         (set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
@@ -671,7 +666,8 @@ Org mode is the single most used package of my Emacs workflow.
     (org-clock-clocked-in-display 'mode-line)
     (org-clock-idle-time nil)
     (org-todo-keywords
-     '((sequence "TODO(t)" "NEXT(n)" "HOLD(h)" "|" "DONE(d)")))
+     '((sequence "TODO(t)" "NEXT(n)" "DOING(p@/!)" "HOLD(h)" "|" "DONE(d)")
+       (sequence "SCHEDULED(s@/!)" "|" "ENDED(e)" "|" "CANCELED(c)")))
     (org-stuck-projects '("+project/" ("NEXT" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
     (org-log-done 'time)
     (org-agenda-hide-tags-regexp ".")
@@ -772,6 +768,11 @@ Org mode is the single most used package of my Emacs workflow.
   		       (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
   		       (org-agenda-format-date "%A %-e %B %Y")
   		       (org-agenda-overriding-header "Today's schedule:\n")))
+  	      (todo "DOING"
+  		    ((org-agenda-skip-function
+  		      '(org-agenda-skip-entry-if 'deadline))
+  		     (org-agenda-prefix-format "  %i %-12:c [%e] ")
+  		     (org-agenda-overriding-header "\nDOING Tasks:\n")))
   	      (todo "NEXT"
   		    ((org-agenda-skip-function
   		      '(org-agenda-skip-entry-if 'deadline))
@@ -1608,15 +1609,15 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible. T
     :ensure nil
     :config
     (add-to-list 'eglot-server-programs
-  		 '((c-ts-mode cpp-ts-mode)
+  		 '((c-mode)
   		   . ("clangd")))
     (add-to-list 'eglot-server-programs
-  		 '((python-ts-mode)
+  		 '((python-mode)
   		   . ("~/.local/bin/pylsp")))
-    (add-hook 'c-ts-mode-hook 'eglot-ensure)
-    (add-hook 'haskell-ts-mode-hook 'eglot-ensure)
-    (add-hook 'erlang-ts-mode-hook 'eglot-ensure)  
-    (add-hook 'python-ts-mode-hook 'eglot-ensure))
+    (add-hook 'c-mode-hook 'eglot-ensure)
+    (add-hook 'haskell-mode-hook 'eglot-ensure)
+    (add-hook 'erlang-mode-hook 'eglot-ensure)
+    (add-hook 'python-mode-hook 'eglot-ensure))
 #+end_src
 
 *** Which key
@@ -1644,24 +1645,6 @@ I use ~vterm~ as terminal inside Emacs. I always used it and never felt the need
     :straight t
     :bind (("C-c v" . multi-vterm)))
   
-#+end_src
-*** Tree-sitter
-
-Using ~tree-sitter~ for a better syntax highlighting.
-
-#+begin_src emacs-lisp
-  (use-package tree-sitter :straight t
-    :config
-    (setq major-mode-remap-alist
-  	'((c-mode . c-ts-mode)
-  	  (haskell-mode . haskell-ts-mode)
-  	  (erlang-mode . erlang-ts-mode)
-  	  (bash-mode . bash-ts-mode)
-  	  (python-mode . python-ts-mode)))
-    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
-    (setq
-     c-ts-mode-indent-style 'linux
-     c-ts-mode-indent-offset 8))
 #+end_src
 
 *** Dev-docs
