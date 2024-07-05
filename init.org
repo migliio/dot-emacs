@@ -690,8 +690,12 @@ Org mode is the single most used package of my Emacs workflow.
   	(push (substring heading start) parts)  ; Remaining text after last link
   	(string-join (reverse parts) "")))
     (defun mg-get-today-timestamp ()
-      "Helper function to get today's timestamp with the abbreviated day name"
+      "Helper function to get today's timestamp with the abbreviated day name."
       (format-time-string "%Y-%m-%d %a"))
+    (defun mg-get-denote-like-timestamp ()
+      "Helper function to get a convenient denote-style timestamp."
+      (interactive)
+      (insert (denote-get-identifier)))
     (setq org-capture-templates
   	  '(("i" "Inbox")
   	    ("it" "Todo entry" entry (file "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org")
