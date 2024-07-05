@@ -640,6 +640,22 @@ Move the cursor around like a velociraptor.
 #+end_src
 
 ** Personal knowledge management
+*** Outline mode
+
+Setting up outline mode to enable useful facilities even when writing code.
+
+#+begin_src emacs-lisp
+  (use-package outline
+    :ensure nil
+    :bind
+    ("C-c u c o" . outline-minor-mode)
+    :config
+    (setq outline-minor-mode-highlight nil)
+    (setq outline-minor-mode-cycle t)
+    (setq outline-minor-mode-use-buttons nil)
+    (setq outline-minor-mode-use-margins nil))
+#+end_src
+
 *** Org mode
 
 Org mode is the single most used package of my Emacs workflow.
@@ -715,6 +731,9 @@ Org mode is the single most used package of my Emacs workflow.
   	    ("ra" "Conference attendance" entry
   	     (file "~/Vault/pkm/20231210T222135--conferences__personal_research.org")
   	     "* %^{Conference name}\n:PROPERTIES:\n:WHERE: %?\n:WEBSITE: %?\n:END:\n")
+  	    ("rb" "Book archiving" entry
+  	     (file+headline "/home/claudio/Vault/pkm/20240102T104309--books__personal_reading.org" "Inbox")
+  	     "* %^{Book title}\n:PROPERTIES:\n:TITLE: %^{Book title}\n:AUTHOR: %^{Author}\n:YEAR: %^{Year}\n:PAGES: %^{Pages}\n:RATING: %^{Rating (From * to *****)}\n:LINK: %^{Book link}\n:END:\n")
   	    ("P" "Planning")
   	    ("Py" "Year plan" plain (file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
   	     "* %^{Year} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Milestones ::\n- Values and life philosophy ::\n- 5 years vision(s) ::\n- Financial goals ::\n- [ ] Review ::\n")
@@ -752,6 +771,7 @@ Org mode is the single most used package of my Emacs workflow.
     ;; setting up org-refile
     (setq org-refile-targets '(("~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
   			       ("~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
+  			       ("/home/claudio/Vault/pkm/20240102T104309--books__personal_reading.org" :regexp . "\\(?:\\(?:2023\\|2024\\)s\\)")
   			       ("~/Vault/pkm/20231210T224321--agenda__personal.org" :regexp . "\\(?:Past\\)")))
     (define-key global-map (kbd "C-c i") 'mg-org-capture-inbox)
     ;; Org-agenda custom commands
@@ -1072,7 +1092,7 @@ Managing contacts with the ~bbdb~ package.
   	 ("C-c n x" . denote-region)
   	 ("C-c n N" . denote-type)
   	 ("C-c n d" . denote-date)
-  	 ("C-c n f" . mg-denote-find-file)
+  	 ("C-c n f f" . mg-denote-find-file)
   	 ("C-c n z f" . mg-denote-find-zettel)
   	 ("C-c n z i" . mg-denote-insert-zettel-link)
   	 ("C-c n y f" . denote-org-extras-dblock-insert-files)
@@ -1086,6 +1106,7 @@ Managing contacts with the ~bbdb~ package.
   	 ("C-c n i" . denote-link)
   	 ("C-c n I" . denote-add-links)
   	 ("C-c n b" . denote-backlinks)
+  	 ("C-c n h" . denote-org-extras-backlinks-for-heading)
   	 ("C-c n g f" . denote-find-link)
   	 ("C-c n g b" . denote-finxd-backlink)
   	 ("C-c n r" . denote-rename-file)
@@ -1177,7 +1198,7 @@ Managing contacts with the ~bbdb~ package.
   (use-package denote-explore
     :straight t
     :custom
-    (denote-explore-network-directory (concat denote-directory "/graphs"))
+    (denote-explore-network-directory (concat denote-directory "/.graphs"))
     (denote-explore-network-filename "denote-network")
     (denote-explore-network-format 'gexf)
     (denote-explore-network-graphviz-filetype "gexf"))
@@ -1191,8 +1212,8 @@ Managing contacts with the ~bbdb~ package.
 
   (use-package consult-denote
     :straight (consult-denote :type git :host github :repo "protesilaos/consult-denote" :branch "main")
-    :bind (("C-c n u c g" . consult-denote-grep)
-  	 ("C-c n u c f" . consult-denote-find)))
+    :bind (("C-c n f g" . consult-denote-grep)
+  	 ("C-c n f c" . consult-denote-find)))
 #+end_src
 
 **** Citar
