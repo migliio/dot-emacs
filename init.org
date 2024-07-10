@@ -1150,16 +1150,16 @@ Managing contacts with the ~bbdb~ package.
 
     (defun mg-denote-get-item (filter-regex)
       "Get a file path interactively starting from the denote-directory"
-      (let* ((candidates (directory-files denote-directory nil filter-regex))
+      (let* ((candidates (denote-directory-files filter-regex))
   	   (file-name (completing-read
   		       "Choose FILE: "
   		       candidates))
-  	   (file-path (concat (concat denote-directory "/") file-name)))
+  	   (file-path file-name))
         file-path))
 
     (defun mg-denote-get-file ()
       "Get a denote file interactively starting from the denote-directory"
-      (mg-denote-get-item "^\\([0-9]+\\)"))
+      (mg-denote-get-item denote-id-regexp))
     
     (defun mg-denote-find-file ()
       "Find files interactively starting from the denote-directory."
@@ -1168,7 +1168,7 @@ Managing contacts with the ~bbdb~ package.
 
     (defun mg-denote-get-zettel ()
       "Get zettel interactively starting from the denote directory"
-      (mg-denote-get-item "==[0-9|a-b]*--"))
+      (mg-denote-get-item denote-signature-regexp))
         
     (defun mg-denote-find-zettel ()
       "Find zettels interactively starting from the denote-directory."
