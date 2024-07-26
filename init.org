@@ -334,9 +334,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
   	    ([?\s-b] .
   	     (lambda ()
   	       (interactive)
-  	       (if (equal (system-name) "nano")
-  		   (start-process "" nil "/usr/bin/brave-browser")
-  		 (start-process "" nil "/usr/bin/brave"))))
+  	       (start-process "" nil "/usr/bin/google-chrome-stable")))
   	    ([?\s-i] .
   	     (lambda ()
   	       (interactive)
