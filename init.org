@@ -705,8 +705,12 @@ Org mode is the single most used package of my Emacs workflow.
   	(push (substring heading start) parts)  ; Remaining text after last link
   	(string-join (reverse parts) "")))
     (defun mg-get-today-timestamp ()
-      "Helper function to get today's timestamp with the abbreviated day name"
+      "Helper function to get today's timestamp with the abbreviated day name."
       (format-time-string "%Y-%m-%d %a"))
+    (defun mg-get-denote-like-timestamp ()
+      "Helper function to get a convenient denote-style timestamp."
+      (interactive)
+      (insert (denote-get-identifier)))
     (setq org-capture-templates
   	  '(("i" "Inbox")
   	    ("it" "Todo entry" entry (file "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org")
@@ -1145,16 +1149,16 @@ Managing contacts with the ~bbdb~ package.
 
     (defun mg-denote-get-item (filter-regex)
       "Get a file path interactively starting from the denote-directory"
-      (let* ((candidates (directory-files denote-directory nil filter-regex))
+      (let* ((candidates (denote-directory-files filter-regex))
   	   (file-name (completing-read
   		       "Choose FILE: "
   		       candidates))
-  	   (file-path (concat (concat denote-directory "/") file-name)))
+  	   (file-path file-name))
         file-path))
 
     (defun mg-denote-get-file ()
       "Get a denote file interactively starting from the denote-directory"
-      (mg-denote-get-item "^\\([0-9]+\\)"))
+      (mg-denote-get-item denote-id-regexp))
     
     (defun mg-denote-find-file ()
       "Find files interactively starting from the denote-directory."
@@ -1163,7 +1167,7 @@ Managing contacts with the ~bbdb~ package.
 
     (defun mg-denote-get-zettel ()
       "Get zettel interactively starting from the denote directory"
-      (mg-denote-get-item "==[0-9|a-b]*--"))
+      (mg-denote-get-item denote-signature-regexp))
         
     (defun mg-denote-find-zettel ()
       "Find zettels interactively starting from the denote-directory."
