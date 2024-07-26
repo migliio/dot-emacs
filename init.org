@@ -681,8 +681,7 @@ Org mode is the single most used package of my Emacs workflow.
     (org-clock-clocked-in-display 'mode-line)
     (org-clock-idle-time nil)
     (org-todo-keywords
-     '((sequence "TODO(t)" "NEXT(n)" "DOING(p@/!)" "HOLD(h)" "|" "DONE(d)")
-       (sequence "SCHEDULED(s@/!)" "|" "ENDED(e)" "|" "CANCELED(c)")))
+     '((sequence "TODO(t)" "NEXT(n)" "DOING(p@/!)" "HOLD(h)" "|" "DONE(d)")))
     (org-stuck-projects '("+project/" ("NEXT" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
     (org-log-done 'time)
     (org-agenda-hide-tags-regexp ".")
