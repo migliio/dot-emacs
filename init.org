@@ -415,7 +415,21 @@ Loading the preferred theme.
         (if (equal system-type 'darwin)
   	  (set-frame-font "Iosevka Comfy 18" nil t)
   	(set-frame-font "Iosevka Comfy 16" nil t))
-        (load-theme 'modus-vivendi t)
+        (progn
+  	(load-theme 'modus-vivendi t)
+  	(use-package spacious-padding
+  	  :straight t
+  	  :custom
+  	  (spacious-padding-widths
+  	   '( :internal-border-width 15
+  	      :header-line-width 4
+  	      :mode-line-width 8
+  	      :tab-width 4
+  	      :right-divider-width 30
+  	      :scroll-bar-width 8
+  	      :fringe-width 8))
+  	  :config
+  	  (spacious-padding-mode 1)))
         (set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
@@ -1628,6 +1642,9 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible. T
     :straight t)
 
   (use-package gnuplot
+    :straight t)
+
+  (use-package pyvenv
     :straight t)
 
   (use-package eglot
