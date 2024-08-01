@@ -423,7 +423,7 @@ Loading the preferred theme.
   	  (spacious-padding-widths
   	   '( :internal-border-width 15
   	      :header-line-width 4
-  	      :mode-line-width 8
+  	      :mode-line-width 6
   	      :tab-width 4
   	      :right-divider-width 30
   	      :scroll-bar-width 8
@@ -697,7 +697,7 @@ Org mode is the single most used package of my Emacs workflow.
     (org-stuck-projects '("+project/" ("NEXT" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
     (org-log-done 'time)
     (org-agenda-hide-tags-regexp ".")
-    (org-id-link-to-org-use-id 'nil)
+    (org-id-link-to-org-use-id t)
     (org-refile-use-outline-path 'file)
     (org-outline-path-complete-in-steps nil)
     (org-clock-sources '(agenda))
