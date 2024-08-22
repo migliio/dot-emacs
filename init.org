@@ -415,22 +415,8 @@ Loading the preferred theme.
         (if (equal system-type 'darwin)
   	  (set-frame-font "Iosevka Comfy 18" nil t)
   	(set-frame-font "Iosevka Comfy 16" nil t))
-        (progn
   	(load-theme 'modus-vivendi t)
-  	(use-package spacious-padding
-  	  :straight t
-  	  :custom
-  	  (spacious-padding-widths
-  	   '( :internal-border-width 15
-  	      :header-line-width 4
-  	      :mode-line-width 8
-  	      :tab-width 4
-  	      :right-divider-width 30
-  	      :scroll-bar-width 8
-  	      :fringe-width 8))
-  	  :config
-  	  (spacious-padding-mode 1)))
-        (set-fringe-mode 0))
+  	(set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
 
@@ -1101,12 +1087,13 @@ Managing contacts with the ~bbdb~ package.
 
 #+begin_src emacs-lisp
   (use-package denote
-    :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main")
+    :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main" :commit "7183877bd49d82371cf38b38ac7b30bcbc1caf0c")
     :bind (("C-c n n" . denote)
   	 ("C-c n x" . denote-region)
   	 ("C-c n N" . denote-type)
   	 ("C-c n d" . denote-date)
   	 ("C-c n f f" . mg-denote-find-file)
+  	 ("C-c n f z" . mg-denote-grep-on-zettels)
   	 ("C-c n z f" . mg-denote-find-zettel)
   	 ("C-c n z i" . mg-denote-insert-zettel-link)
   	 ("C-c n y f" . denote-org-extras-dblock-insert-files)
@@ -1203,6 +1190,13 @@ Managing contacts with the ~bbdb~ package.
        (let ((file-path
   	    (mg-denote-get-zettel)))
          (mg-denote-insert-link-from-file-path file-path)))
+
+    (defun mg-denote-grep-on-zettels ()
+      "Grep for a search query, but only on zettels"
+      (interactive)
+      (let ((zettels
+  	   (denote-directory-files denote-signature-regexp)))
+        (consult-grep zettels)))
 
     (defun mg-add-identifier-to-killring ()
       "Generate a denote identifier and add it to the kill-ring to use it as a timestamp"
