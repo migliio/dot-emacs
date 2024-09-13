@@ -240,7 +240,7 @@ Put Emacs auto-save and backup files to /tmp/.
 Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I've been using it as daily driver since around [2023-02-12 Sun], and I have never regretted this choice. No crap, no additional requirements, it just works.
 
 #+begin_src emacs-lisp
-  (when (and (display-graphic-p) (not (or (eq system-type 'darwin) (equal (system-name) "nano"))))
+  (when (and (display-graphic-p) (not (eq system-type 'darwin)))
     (defun mg-exwm-update-class ()
       (exwm-workspace-rename-buffer exwm-class-name))
     (use-package exwm
@@ -334,7 +334,7 @@ Using EXWM as window manager. Enabling the power of Emacs everywhere around X. I
   	    ([?\s-b] .
   	     (lambda ()
   	       (interactive)
-  	       (start-process "" nil "/usr/bin/google-chrome-stable")))
+  	       (start-process "" nil "/usr/bin/firefox")))
   	    ([?\s-i] .
   	     (lambda ()
   	       (interactive)
@@ -542,6 +542,28 @@ Trying some in-buffer completion framework that is not broken.
     :init
     (global-corfu-mode)
     (corfu-popupinfo-mode))
+
+  (use-package embark
+    :straight t 
+    :bind
+    (("C-." . embark-act)         ;; pick some comfortable binding
+     ("C-;" . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+    :init
+    (setq prefix-help-command #'embark-prefix-help-command)
+
+    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+    (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+    :config
+    (add-to-list 'display-buffer-alist
+                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                   nil
+                   (window-parameters (mode-line-format . none)))))
+
+  (use-package embark-consult
+    :straight t
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 
 ** Files navigation
@@ -671,7 +693,7 @@ Org mode is the single most used package of my Emacs workflow.
   	   ("C-c p o r" . org-clock-report)
   	   ("C-c l" . org-store-link))
     :custom
-    (org-agenda-files (list "~/Vault/pkm/20240209T084736--journal__archive_personal.org" "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "~/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org" "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org"))
+    (org-agenda-files (list "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" "~/Vault/pkm/20231210T224321--agenda__personal.org" "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org" "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org"))
     (org-archive-location "~/Vault/pkm/.archive/archive.org::* From %s")
     (org-export-backends '(beamer html latex icalendar ascii))
     (org-startup-folded nil)
@@ -684,7 +706,7 @@ Org mode is the single most used package of my Emacs workflow.
     (org-stuck-projects '("+project/" ("NEXT" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
     (org-log-done 'time)
     (org-agenda-hide-tags-regexp ".")
-    (org-id-link-to-org-use-id t)
+    (org-id-link-to-org-use-id nil)
     (org-refile-use-outline-path 'file)
     (org-outline-path-complete-in-steps nil)
     (org-clock-sources '(agenda))
@@ -720,14 +742,11 @@ Org mode is the single most used package of my Emacs workflow.
   	     "* %U (%a) :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
   	    ("a" "Agenda")
   	    ("am" "Meeting entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
-  	     "* Meeting with %? :meeting:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
+  	     "* Meeting with %? :meeting:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
   	    ("ae" "Event entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
-  	     "* %? :event:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
+  	     "* %? :event:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
   	    ("ac" "Call entry" entry (file+headline "~/Vault/pkm/20231210T224321--agenda__personal.org" "Future")
-  	     "* Call with %? :call:\n:PROPERTIES:\n:CATEGORY:\n:NOTIFY_BEFORE:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
-  	    ("j" "Journal")
-  	    ("jt" "Journal time blocking entry" plain (file+datetree "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %U: time blocking\t\t:timeblocking:\n- Day plans :: \n- Main challenges :: \n- Work check-in/check-out :: \n***** Deep work morning session\n<%(concat (mg-get-today-timestamp) \" 07:00-11:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Deep work afternoon session\n<%(concat (mg-get-today-timestamp) \" 13:30-15:30\")>\n- [ ] Task :: <link>\n- Outcome :: \n***** Shallow work afternoon session\n<%(concat (mg-get-today-timestamp) \" 15:30-17:00\")>\n- [ ] Task :: <link>\n- Outcome :: \n%?")
-  	    ("je" "Journal general entry" plain (file+datetree+prompt "~/Vault/pkm/20240209T084736--journal__archive_personal.org") "**** %U: %?\n")
+  	     "* Call with %? :call:\n:PROPERTIES:\n:CATEGORY:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
   	    ("r" "Resources")
   	    ("ra" "Conference attendance" entry
   	     (file "~/Vault/pkm/20231210T222135--conferences__personal_research.org")
@@ -772,7 +791,7 @@ Org mode is the single most used package of my Emacs workflow.
     ;; setting up org-refile
     (setq org-refile-targets '(("~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
   			       ("~/Vault/pkm/20231210T220139--personal-projects__personal_project.org" :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
-  			       ("/home/claudio/Vault/pkm/20240102T104309--books__personal_reading.org" :regexp . "\\(?:\\(?:2023\\|2024\\)s\\)")
+  			       ("~/Vault/pkm/20240102T104309--books__personal_reading.org" :regexp . "\\(?:\\(?:2023\\|2024\\)s\\)")
   			       ("~/Vault/pkm/20231210T224321--agenda__personal.org" :regexp . "\\(?:Past\\)")))
     (define-key global-map (kbd "C-c i") 'mg-org-capture-inbox)
     ;; Org-agenda custom commands
@@ -1108,6 +1127,9 @@ Managing contacts with the ~bbdb~ package.
   	 ("C-c n i" . denote-link)
   	 ("C-c n I" . denote-add-links)
   	 ("C-c n b" . denote-backlinks)
+  	 ("C-c n j n" . denote-journal-extras-new-entry)
+  	 ("C-c n j l" . denote-journal-extras-link-or-create-entry)
+  	 ("C-c n j j" . denote-journal-extras-new-or-existing-entry)
   	 ("C-c n h" . denote-org-extras-backlinks-for-heading)
   	 ("C-c n g f" . denote-find-link)
   	 ("C-c n g b" . denote-finxd-backlink)
@@ -1131,8 +1153,13 @@ Managing contacts with the ~bbdb~ package.
     (denote-silo-extras-directories
      (list denote-directory "/home/claudio/Vault/wpkm"))
     (denote-dired-directories
-     (list denote-directory "/home/claudio/Vault/wpkm"
-  	 (thread-last denote-directory (expand-file-name "assets"))))
+     (list denote-directory
+  	 (thread-last denote-directory (expand-file-name "assets")
+  		      )
+  	 (thread-last denote-directory (expand-file-name "contacts")
+  		      )
+  	 (thread-last denote-directory (expand-file-name "places")
+  		      )))
     (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
     (denote-templates
      '((plain . "")
@@ -1145,6 +1172,7 @@ Managing contacts with the ~bbdb~ package.
     (denote-rename-buffer-mode 1)
     ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
     (require 'denote-org-extras)
+    (require 'denote-journal-extras)
     ;; (custom-set-variables '(org-link-parameters (quote (("store" . denote-link-ol-store)))))
 
     (defun mg-denote-get-item (filter-regex)
@@ -1159,7 +1187,7 @@ Managing contacts with the ~bbdb~ package.
     (defun mg-denote-get-file ()
       "Get a denote file interactively starting from the denote-directory"
       (mg-denote-get-item denote-id-regexp))
-    
+
     (defun mg-denote-find-file ()
       "Find files interactively starting from the denote-directory."
       (interactive)
@@ -1168,7 +1196,7 @@ Managing contacts with the ~bbdb~ package.
     (defun mg-denote-get-zettel ()
       "Get zettel interactively starting from the denote directory"
       (mg-denote-get-item denote-signature-regexp))
-        
+
     (defun mg-denote-find-zettel ()
       "Find zettels interactively starting from the denote-directory."
       (interactive)
@@ -1270,6 +1298,11 @@ Using the superior citation manager.
   	   ("C-c n c r" . citar-denote-find-reference)
   	   ("C-c n c f" . citar-denote-find-citation)
   	   ("C-c n c l" . citar-denote-link-reference)))
+
+  (use-package citar-embark
+    :after citar embark
+    :no-require
+    :config (citar-embark-mode))
 #+end_src
 
 *** Spaced repetition learning
