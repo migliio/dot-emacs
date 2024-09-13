@@ -412,12 +412,12 @@ Loading the preferred theme.
 #+begin_src emacs-lisp
   (if (display-graphic-p)
       (progn
-	(if (equal system-type 'darwin)
-	    (set-frame-font "Iosevka Comfy 18" nil t)
-	  (set-frame-font "Iosevka Comfy 16" nil t))
-	  (use-package zenburn-theme :straight t :config
-	    (load-theme 'zenburn t))
-	(set-fringe-mode 0))
+        (if (equal system-type 'darwin)
+  	  (set-frame-font "Iosevka Comfy 18" nil t)
+  	(set-frame-font "Iosevka Comfy 16" nil t))
+        (use-package zenburn-theme :straight t :config
+  	(load-theme 'zenburn t))
+  	(set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
 
@@ -1088,30 +1088,31 @@ Managing contacts with the ~bbdb~ package.
 
 #+begin_src emacs-lisp
   (use-package denote
-    :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main")
+    :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main" :commit "7183877bd49d82371cf38b38ac7b30bcbc1caf0c")
     :bind (("C-c n n" . denote)
-	   ("C-c n x" . denote-region)
-	   ("C-c n N" . denote-type)
-	   ("C-c n d" . denote-date)
-	   ("C-c n f f" . mg-denote-find-file)
-	   ("C-c n z f" . mg-denote-find-zettel)
-	   ("C-c n z i" . mg-denote-insert-zettel-link)
-	   ("C-c n y f" . denote-org-extras-dblock-insert-files)
-	   ("C-c n y l" . denote-org-extras-dblock-insert-links)
-	   ("C-c n y b" . denote-org-extras-dblock-insert-backlinks)
-	   ("C-c n y h" . denote-org-extras-link-to-heading)
-	   ("C-c n s" . denote-sort-dired)
-	   ("C-c n e n" . denote-silo-extras-create-note)
-	   ("C-c n e f" . denote-silo-extras-open-or-create)
-	   ("C-c n t" . denote-template)
-	   ("C-c n i" . denote-link)
-	   ("C-c n I" . denote-add-links)
-	   ("C-c n b" . denote-backlinks)
-	   ("C-c n h" . denote-org-extras-backlinks-for-heading)
-	   ("C-c n g f" . denote-find-link)
-	   ("C-c n g b" . denote-find-backlink)
-	   ("C-c n r" . denote-rename-file)
-	   ("C-c n R" . denote-rename-file-using-front-matter))
+  	 ("C-c n x" . denote-region)
+  	 ("C-c n N" . denote-type)
+  	 ("C-c n d" . denote-date)
+  	 ("C-c n f f" . mg-denote-find-file)
+  	 ("C-c n f z" . mg-denote-grep-on-zettels)
+  	 ("C-c n z f" . mg-denote-find-zettel)
+  	 ("C-c n z i" . mg-denote-insert-zettel-link)
+  	 ("C-c n y f" . denote-org-extras-dblock-insert-files)
+  	 ("C-c n y l" . denote-org-extras-dblock-insert-links)
+  	 ("C-c n y b" . denote-org-extras-dblock-insert-backlinks)
+  	 ("C-c n y h" . denote-org-extras-link-to-heading)
+  	 ("C-c n s" . denote-sort-dired)
+  	 ("C-c n e n" . denote-silo-extras-create-note)
+  	 ("C-c n e f" . denote-silo-extras-open-or-create)
+  	 ("C-c n t" . denote-template)
+  	 ("C-c n i" . denote-link)
+  	 ("C-c n I" . denote-add-links)
+  	 ("C-c n b" . denote-backlinks)
+  	 ("C-c n h" . denote-org-extras-backlinks-for-heading)
+  	 ("C-c n g f" . denote-find-link)
+  	 ("C-c n g b" . denote-find-backlink)
+  	 ("C-c n r" . denote-rename-file)
+  	 ("C-c n R" . denote-rename-file-using-front-matter))
     :init
     (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
     :custom
@@ -1190,6 +1191,13 @@ Managing contacts with the ~bbdb~ package.
        (let ((file-path
 	      (mg-denote-get-zettel)))
 	 (mg-denote-insert-link-from-file-path file-path)))
+
+    (defun mg-denote-grep-on-zettels ()
+      "Grep for a search query, but only on zettels"
+      (interactive)
+      (let ((zettels
+  	   (denote-directory-files denote-signature-regexp)))
+        (consult-grep zettels)))
 
     (defun mg-add-identifier-to-killring ()
       "Generate a denote identifier and add it to the kill-ring to use it as a timestamp"
