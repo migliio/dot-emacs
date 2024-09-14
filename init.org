@@ -433,25 +433,25 @@ Trying some in-buffer completion framework that is not broken.
     :config
     (setq ibuffer-expert t)
     (setq ibuffer-saved-filter-groups
-	  (quote (("default"
-		   ("org" (mode . org-mode))
-		   ("dired" (mode . dired-mode))
-		   ("magit" (name . "^magit"))
-		   ("c-src" (mode . c-mode))
-		   ("python-src" (mode . python-mode))
-		   ("virt-manager" (name . "^Virt-manager"))
-		   ("brave" (name . "^Brave"))
-		   ("jabber" (name . "^*-jabber"))
-		   ("vterminal" (name . "^\\*vterminal"))
-		   ("emacs" (or
-			     (name . "^\\*scratch\\*$")
-			     (name . "^\\*Messages\\*$")))
-		   ))))
+  	  (quote (("default"
+  		   ("org" (mode . org-mode))
+  		   ("dired" (mode . dired-mode))
+  		   ("magit" (name . "^magit"))
+  		   ("c-src" (mode . c-mode))
+  		   ("python-src" (mode . python-mode))
+  		   ("virt-manager" (name . "^Virt-manager"))
+  		   ("brave" (name . "^Brave"))
+  		   ("jabber" (name . "^*-jabber"))
+  		   ("vterminal" (name . "^\\*vterminal"))
+  		   ("emacs" (or
+  			     (name . "^\\*scratch\\*$")
+  			     (name . "^\\*Messages\\*$")))
+  		   ))))
     (setq ibuffer-default-sorting-mode 'alphabetic)
     (add-hook 'ibuffer-mode-hook
-	      (lambda ()
-	        (ibuffer-switch-to-saved-filter-groups "default")
-	        )))
+  	      (lambda ()
+  	        (ibuffer-switch-to-saved-filter-groups "default")
+  	        )))
 
   (use-package vertico
     :straight t
@@ -478,60 +478,60 @@ Trying some in-buffer completion framework that is not broken.
   (use-package consult
     :straight t
     :bind (
-	   ("C-c M-x" . consult-mode-command)
-	   ("C-c h" . consult-history)
-	   ("C-c k" . consult-kmacro)
-	   ("C-c M-m" . consult-man)
-	   ("C-c i" . consult-info)
-	   ([remap Info-search] . consult-info)
+  	   ("C-c M-x" . consult-mode-command)
+  	   ("C-c h" . consult-history)
+  	   ("C-c k" . consult-kmacro)
+  	   ("C-c M-m" . consult-man)
+  	   ("C-c i" . consult-info)
+  	   ([remap Info-search] . consult-info)
 
-	   ("C-x b" . consult-buffer)
-	   ("C-x r b" . consult-bookmark)
-	   ("C-x p b" . consult-project-buffer)
+  	   ("C-x b" . consult-buffer)
+  	   ("C-x r b" . consult-bookmark)
+  	   ("C-x p b" . consult-project-buffer)
 
-	   ("M-#" . consult-register-load)
-	   ("M-'" . consult-register-store)
-	   ("C-M-#" . consult-register)
+  	   ("M-#" . consult-register-load)
+  	   ("M-'" . consult-register-store)
+  	   ("C-M-#" . consult-register)
 
-	   ("M-y" . consult-yank-pop)
+  	   ("M-y" . consult-yank-pop)
 
-	   ("M-g e" . consult-compile-error)
-	   ("M-g f" . consult-flymake)
-	   ("M-g g" . consult-goto-line)
-	   ("M-g M-g" . consult-goto-line)
-	   ("M-g o" . consult-outline)
-	   ("M-g m" . consult-mark)
-	   ("M-g k" . consult-global-mark)
-	   ("M-g i" . consult-imenu)
-	   ("M-g I" . consult-imenu-multi)
+  	   ("M-g e" . consult-compile-error)
+  	   ("M-g f" . consult-flymake)
+  	   ("M-g g" . consult-goto-line)
+  	   ("M-g M-g" . consult-goto-line)
+  	   ("M-g o" . consult-outline)
+  	   ("M-g m" . consult-mark)
+  	   ("M-g k" . consult-global-mark)
+  	   ("M-g i" . consult-imenu)
+  	   ("M-g I" . consult-imenu-multi)
 
-	   ("M-s d" . consult-find)
-	   ("M-s c" . consult-locate)
-	   ("M-s g" . consult-grep)
-	   ("M-s G" . consult-git-grep)
-	   ("M-s r" . consult-ripgrep)
-	   ("M-s l" . consult-line)
-	   ("M-s L" . consult-line-multi)
-	   ("M-s k" . consult-keep-lines)
-	   ("M-s u" . consult-focus-lines)
+  	   ("M-s d" . consult-find)
+  	   ("M-s c" . consult-locate)
+  	   ("M-s g" . consult-grep)
+  	   ("M-s G" . consult-git-grep)
+  	   ("M-s r" . consult-ripgrep)
+  	   ("M-s l" . consult-line)
+  	   ("M-s L" . consult-line-multi)
+  	   ("M-s k" . consult-keep-lines)
+  	   ("M-s u" . consult-focus-lines)
 
-	   ("M-s e" . consult-isearch-history)
-	   :map isearch-mode-map
-	   ("M-e" . consult-isearch-history)
-	   ("M-s e" . consult-isearch-history)
-	   ("M-s l" . consult-line)
-	   ("M-s L" . consult-line-multi)
+  	   ("M-s e" . consult-isearch-history)
+  	   :map isearch-mode-map
+  	   ("M-e" . consult-isearch-history)
+  	   ("M-s e" . consult-isearch-history)
+  	   ("M-s l" . consult-line)
+  	   ("M-s L" . consult-line-multi)
 
-	   :map minibuffer-local-map
-	   ("M-s" . consult-history)
-	   ("M-r" . consult-history))
+  	   :map minibuffer-local-map
+  	   ("M-s" . consult-history)
+  	   ("M-r" . consult-history))
     :hook (completion-list-mode . consult-preview-at-point-mode)
     :init
     (setq xref-show-xrefs-function #'consult-xref
-	  xref-show-definitions-function #'consult-xref)
+  	  xref-show-definitions-function #'consult-xref)
     :config
     (consult-customize consult-buffer
-		       :preview-key "M-.")
+  		       :preview-key "M-.")
     (setq consult-narrow-key ">"))
 
   (use-package corfu
@@ -1175,11 +1175,11 @@ Managing contacts with the ~bbdb~ package.
     (defun mg-denote-get-item (filter-regex)
       "Get a file path interactively starting from the denote-directory"
       (let* ((candidates (denote-directory-files filter-regex))
-	     (file-name (completing-read
-		         "Choose FILE: "
-		         candidates))
-	     (file-path file-name))
-	file-path))
+  	     (file-name (completing-read
+  		         "Choose FILE: "
+  		         candidates))
+  	     (file-path file-name))
+  	file-path))
 
     (defun mg-denote-get-file ()
       "Get a denote file interactively starting from the denote-directory"
@@ -1202,20 +1202,20 @@ Managing contacts with the ~bbdb~ package.
     (defun mg-insert-denote-or-normal-link (name)
       "Insert a denote link if the file specified by buffer-name is a denote item, otherwise a normal link"
       (if (denote-file-is-note-p (format "%s" name))
-	  (mg-denote-insert-link-from-file-path name)
-	(format "[[file:%s]]" name)))
+  	  (mg-denote-insert-link-from-file-path name)
+  	(format "[[file:%s]]" name)))
 
     (defun mg-denote-insert-link-from-file-path (file-path)
       "Insert a denote link provided a file path"
       (let ((file-description (denote--link-get-description file-path)))
-	(denote-link file-path (denote-filetype-heuristics file-path) file-description)))
+  	(denote-link file-path (denote-filetype-heuristics file-path) file-description)))
 
     (defun mg-denote-insert-zettel-link ()
       "Select a zettel from `denote-directory` and insert its link at current point"
       (interactive)
        (let ((file-path
-	      (mg-denote-get-zettel)))
-	 (mg-denote-insert-link-from-file-path file-path)))
+  	      (mg-denote-get-zettel)))
+  	 (mg-denote-insert-link-from-file-path file-path)))
 
     (defun mg-denote-grep-on-zettels ()
       "Grep for a search query, but only on zettels"
@@ -1242,12 +1242,12 @@ Managing contacts with the ~bbdb~ package.
     :straight t
     :config
     :bind (("C-c n m l" . list-denotes)
-	   ("C-c n m f" . denote-menu-filter-by-keyword)))
+  	   ("C-c n m f" . denote-menu-filter-by-keyword)))
 
   (use-package consult-denote
     :straight (consult-denote :type git :host github :repo "protesilaos/consult-denote" :branch "main")
     :bind (("C-c n f g" . consult-denote-grep)
-	   ("C-c n f c" . consult-denote-find)))
+  	   ("C-c n f c" . consult-denote-find)))
 #+end_src
 
 **** Citar
@@ -1756,10 +1756,6 @@ Utilities I use to perform calculations and statistics of several kinds. Not sur
 Adding some custom functions I use to make my life easier.
 
 #+begin_src emacs-lisp
-  (defun mg-get-kernel-version-from-repo ()
-    "Prompt the user for a git repository of the Linux kernel and return its version"
-    )
-
   (defun mg-new-empty-buffer ()
     "Create a new empty buffer"
     (interactive)
