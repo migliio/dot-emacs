@@ -785,7 +785,7 @@ Those questions are all answered by just looking at the agenda, fired up with ju
   	 ("C-c l" . org-store-link))
     :custom
     (org-src-tab-acts-natively t)
-    (org-agenda-files (list mg-journal-file mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))
+    (org-agenda-files (list mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))
     (org-archive-location "~/Vault/pkm/.archive/archive.org::* From %s")
     (org-export-backends '(beamer html latex icalendar ascii))
     (org-structure-template-alist
@@ -2062,7 +2062,6 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
 
   (defconst mg-work-projects-file "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org")
   (defconst mg-inbox-file "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org")
-  (defconst mg-journal-file "~/Vault/pkm/20240209T084736--journal__archive_personal.org")
   (defconst mg-agenda-file "~/Vault/pkm/20231210T224321--agenda__personal.org")
   (defconst mg-archive-file "~/Vault/pkm/.archive/archive.org")
   (defconst mg-capture-notes-file "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org")
