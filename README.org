@@ -1,7 +1,0 @@
-* Dot-emacs
-
-** Intro and motivation
-This is my ~emacs.d~ configuration. I use Emacs for various tasks. I utilize ~org-mode~ for note-taking, ~eglot~ as LSP utility, ~mu4e~ for managing emails, and ~elfeed~ for reading RSS feeds. I began using Emacs on [2020-04-30 Thu] and have been continuously customizing and using it since then.
-** Packages and documentation
-My Emacs configuration is documented in org-mode, and I export it into an Emacs Lisp source file using ~org-babel~. As a result, the configuration file itself serves as documentation. I intend to include comments and explanations for each package I employ, along with insights into my workflow.
-

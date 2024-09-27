@@ -1224,7 +1224,7 @@ Managing contacts with the ~bbdb~ package.
   	   (denote-directory-files denote-signature-regexp)))
         (consult-grep zettels)))
 
-    (defun mg-add-identifier-to-killring ()
+    (defun mg-denote-add-identifier-to-killring ()
       "Generate a denote identifier and add it to the kill-ring to use it as a timestamp"
       (interactive)
       (kill-new (denote-get-identifier))))
@@ -1565,15 +1565,15 @@ These are useful tweaks I use when coding. I plan not to divide this into furthe
     :after (org)
     :straight t
     :bind (
-	   ("C-c m >" . #'mc/mark-next-like-this)
-	   ("C-c m <" . #'mc/mark-previous-like-this)
-	   ("C-c m -" . #'mc/mark-next-like-this-word)
-	   ("C-c m e" . 'mc/mark-more-like-this-extended)
-	   ("C-c m s" . 'mc/mark-all-dwim)
-	   ("C-c m a" . mc/mark-all-like-this)
-	   ("C-c m r" . mc/mark-all-in-region)
-	   ("C-c m d" . mc/mark-all-like-this-dwim)
-	   ("C-c m w" . mc/mark-all-words-like-this))
+  	   ("C-c m >" . #'mc/mark-next-like-this)
+  	   ("C-c m <" . #'mc/mark-previous-like-this)
+  	   ("C-c m -" . #'mc/mark-next-like-this-word)
+  	   ("C-c m e" . 'mc/mark-more-like-this-extended)
+  	   ("C-c m s" . 'mc/mark-all-dwim)
+  	   ("C-c m a" . mc/mark-all-like-this)
+  	   ("C-c m r" . mc/mark-all-in-region)
+  	   ("C-c m d" . mc/mark-all-like-this-dwim)
+  	   ("C-c m w" . mc/mark-all-words-like-this))
     :custom
     (mc/always-run-for-all t)
     :init
@@ -1680,15 +1680,15 @@ Setting up Emacs as an IDE, for the most comprehensive experience as possible. T
     :ensure nil
     :config
     (add-to-list 'eglot-server-programs
-	         '((c-mode)
-		   . ("clangd")))
+  	         '((c-mode)
+  		   . ("clangd")))
     (if (eq system-type 'darwin)
-	(add-to-list 'eglot-server-programs
-		     '((python-mode)
-		       . ("/usr/bin/pylsp")))
+  	(add-to-list 'eglot-server-programs
+  		     '((python-mode)
+  		       . ("/usr/bin/pylsp")))
       (add-to-list 'eglot-server-programs
-		   '((python-mode)
-		     . ("~/.local/bin/pylsp"))))
+  		   '((python-mode)
+  		     . ("~/.local/bin/pylsp"))))
     (add-hook 'c-mode-hook 'eglot-ensure)
     (add-hook 'haskell-mode-hook 'eglot-ensure)
     (add-hook 'erlang-mode-hook 'eglot-ensure)
@@ -1833,7 +1833,7 @@ This is the list of keybindings I use.
   (global-set-key (kbd "C-c p s") #'mg-take-screenshot)
   (global-set-key (kbd "C-c p c m") #'mg-org-get-clock-minutes)
   (global-set-key (kbd "C-c p c d") #'mg-org-compute-deep-work-minutes)
-  (global-set-key (kbd "C-c p u t") #'mg-add-identifier-to-killring)
+  (global-set-key (kbd "C-c p u t") #'mg-denote-add-identifier-to-killring)
 
   ;; utils related bindings
   (global-set-key (kbd "M-n") #'forward-paragraph)
