@@ -1537,6 +1537,14 @@ Although I do not use it just for coding (but for templates in general, even in 
     (yas-global-mode 1))
 #+end_src
 
+I mostly write and review code for the [[https://kernel.org/][Linux kernel]]. I have a custom library with some useful functions I use on my daily work. They are not ground-breaking, rather they just speed-up some repeated operations.
+
+#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-coding.el"
+  (use-package mg-kernel
+    :ensure nil
+    :bind (("C-c u k v" . mg-get-kernel-version-from-source)))
+#+end_src
+
 The following piece of code introduces ~vterm~ as terminal emulator, with ~multi-vterm~ on top of it. I've been using ~vterm~ since the very beginning, and never felt the need to switch to any other terminal emulator (e.g., ~eshell~). The ~multi-vterm~ package, instead, allows to spawn multiple ~vterm~ buffer, that in conjunction with window splitting and multiple buffer basically creates a "terminal multiplexer" inside of Emacs.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-coding.el"
