@@ -17,7 +17,6 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 #+begin_example
 | ./  |                    |                                |       |
 | ├── | init.el            |                                |       |
-| ├── | init.org           |                                |       |
 | ├── | LICENSE.md         |                                |       |
 | ├── | mg-custom-modules/ |                                |       |
 | │   | ├──                | mg-citar-denote.el             |       |
@@ -27,10 +26,12 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | ├──                | mg-kernel.el                   |       |
 | │   | ├──                | mg-macos.el                    |       |
 | │   | ├──                | mg-modeline.el                 |       |
+| │   | ├──                | mg-org.el                      |       |
 | │   | ├──                | mg-org-gtd.el                  |       |
 | │   | ├──                | mg-pkm-utils.el                |       |
 | │   | └──                | mg-utils.el                    |       |
 | ├── | mg-emacs-modules/  |                                |       |
+| │   | ├──                | mg-emacs-bib.el                |       |
 | │   | ├──                | mg-emacs-browsing.el           |       |
 | │   | ├──                | mg-emacs-buffers-completion.el |       |
 | │   | ├──                | mg-emacs-buffers.el            |       |
@@ -52,7 +53,7 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | └──                | mg-emacs-themes.el             |       |
 | └── | mg-emacs.org       |                                |       |
 |     |                    |                                |       |
-| 3   | directories,       | 33                             | files |
+| 3   | directories,       | 34                             | files |
 #+end_example
 
 In general, this configuration is organized using modules, each designed to introduce a set of packages for a specific purpose. The objective is to minimize the number of packages introduced within a single module to ensure a clear separation of concerns. Introducing too many packages at once reduces clarity.
