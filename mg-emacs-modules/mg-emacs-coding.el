@@ -51,6 +51,10 @@
   :config
   (yas-global-mode 1))
 
+(use-package mg-kernel
+  :ensure nil
+  :bind (("C-c u k v" . mg-get-kernel-version-from-source)))
+
 (use-package vterm
   :straight t)
 
