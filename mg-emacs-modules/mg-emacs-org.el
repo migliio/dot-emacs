@@ -1,16 +1,20 @@
+(use-package mg-org
+  :ensure nil
+  :bind (("C-c p c d" . mg-org-compute-deep-work-minutes)))
+
 (use-package org
   :straight t
   :after (denote)
   :bind (("C-c a" . org-agenda)
-       ("C-c C-;" . org-insert-structure-template)
-       ("C-c c" . org-capture)
-       ("C-c C-z" . org-add-note)
-       ("C-c o p" . org-do-promote)
-       ("C-c o d" . org-do-demote)
-       ("C-c p o r" . org-clock-report)
-       ("C-c l" . org-store-link))
+	 ("C-c C-;" . org-insert-structure-template)
+	 ("C-c c" . org-capture)
+	 ("C-c C-z" . org-add-note)
+	 ("C-c o p" . org-do-promote)
+	 ("C-c o d" . org-do-demote)
+	 ("C-c p o r" . org-clock-report)
+	 ("C-c l" . org-store-link))
   :custom
-  (require 'mg-org)
+  (org-src-tab-acts-natively t)
   (org-agenda-files (list mg-journal-file mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))
   (org-archive-location "~/Vault/pkm/.archive/archive.org::* From %s")
   (org-export-backends '(beamer html latex icalendar ascii))
@@ -101,206 +105,197 @@
      ("ps" "Study project" plain (file+headline mg-work-projects-file "Study")
       "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")))
   (org-refile-targets '((mg-work-projects-file :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
-		      (mg-personal-projects-file :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
-		      (mg-books-file :regexp . "\\(?:\\(?:2023\\|2024\\)s\\)")
-		      (mg-agenda-file :regexp . "\\(?:Past\\)")))
+			(mg-personal-projects-file :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
+			(mg-books-file :regexp . "\\(?:\\(?:2023\\|2024\\)s\\)")
+			(mg-agenda-file :regexp . "\\(?:Past\\)")))
   (org-agenda-block-separator "==============================================================================")
   (org-agenda-custom-commands
    '(("a" "Agenda"
       ((agenda ""
-	     ((org-agenda-span 1)
-	      (org-agenda-skip-function
-	       (lambda ()
-		 (org-agenda-skip-entry-if 'done)))
-	      (org-deadline-warning-days 0)
-	      (org-scheduled-past-days 14)
-	      (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-	      (org-agenda-format-date "%A %-e %B %Y")
-	      (org-agenda-overriding-header "Today's schedule:\n")))
+	       ((org-agenda-span 1)
+		(org-agenda-skip-function
+		 (lambda ()
+		   (org-agenda-skip-entry-if 'done)))
+		(org-deadline-warning-days 0)
+		(org-scheduled-past-days 14)
+		(org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+		(org-agenda-format-date "%A %-e %B %Y")
+		(org-agenda-overriding-header "Today's schedule:\n")))
        (todo "DOING"
-	   ((org-agenda-skip-function
-	     '(org-agenda-skip-entry-if 'deadline))
-	    (org-agenda-prefix-format "  %i %-12:c [%e] ")
-	    (org-agenda-overriding-header "\nDOING Tasks:\n")))
+	     ((org-agenda-skip-function
+	       '(org-agenda-skip-entry-if 'deadline))
+	      (org-agenda-prefix-format "  %i %-12:c [%e] ")
+	      (org-agenda-overriding-header "\nDOING Tasks:\n")))
        (todo "NEXT"
-	   ((org-agenda-skip-function
-	     '(org-agenda-skip-entry-if 'deadline))
-	    (org-agenda-prefix-format "  %i %-12:c [%e] ")
-	    (org-agenda-overriding-header "\nNEXT Tasks:\n")))
+	     ((org-agenda-skip-function
+	       '(org-agenda-skip-entry-if 'deadline))
+	      (org-agenda-prefix-format "  %i %-12:c [%e] ")
+	      (org-agenda-overriding-header "\nNEXT Tasks:\n")))
        (agenda "" ((org-agenda-time-grid nil)
-		 (org-agenda-start-day "+1d")
-		 (org-agenda-start-on-weekday nil)
-		 (org-agenda-span 30)
-		 (org-agenda-show-all-dates nil)
-		 (org-deadline-warning-days 0)
-		 (org-agenda-entry-types '(:deadline))
-		 (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-		 (org-agenda-overriding-header "\nUpcoming deadlines (+30d):\n")))
+		   (org-agenda-start-day "+1d")
+		   (org-agenda-start-on-weekday nil)
+		   (org-agenda-span 30)
+		   (org-agenda-show-all-dates nil)
+		   (org-deadline-warning-days 0)
+		   (org-agenda-entry-types '(:deadline))
+		   (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
+		   (org-agenda-overriding-header "\nUpcoming deadlines (+30d):\n")))
        (tags-todo "inbox"
-		((org-agenda-prefix-format "  %?-12t% s")
-		 (org-agenda-overriding-header "\nInbox:\n")))
+		  ((org-agenda-prefix-format "  %?-12t% s")
+		   (org-agenda-overriding-header "\nInbox:\n")))
        (tags "CLOSED>=\"<today>\""
-	   ((org-agenda-overriding-header "\nCompleted today:\n")))
+	     ((org-agenda-overriding-header "\nCompleted today:\n")))
        (agenda ""
-	     ((org-agenda-start-on-weekday nil)
-	      (org-agenda-skip-function
-	       (lambda ()
-		 (org-agenda-skip-entry-if 'done)))
-	      (org-agenda-start-day "+1d")
-	      (org-agenda-span 5)
-	      (org-deadline-warning-days 0)
-	      (org-scheduled-past-days 0)
-	      (org-agenda-overriding-header "\nWeek at a glance:\n")))
+	       ((org-agenda-start-on-weekday nil)
+		(org-agenda-skip-function
+		 (lambda ()
+		   (org-agenda-skip-entry-if 'done)))
+		(org-agenda-start-day "+1d")
+		(org-agenda-span 5)
+		(org-deadline-warning-days 0)
+		(org-scheduled-past-days 0)
+		(org-agenda-overriding-header "\nWeek at a glance:\n")))
        ))))
   :config
   (when (display-graphic-p)
     (progn
       (require 'oc-biblatex)
       (setq org-cite-export-processors
-	  '((latex biblatex))
-	  org-latex-pdf-process (list mg-latex-cmd))))
+	    '((latex biblatex))
+	    org-latex-pdf-process (list mg-latex-cmd))))
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5)
-      org-format-latex-options (plist-put org-format-latex-options :background "Transparent")
-      org-latex-create-formula-image-program 'dvisvgm)
+	org-format-latex-options (plist-put org-format-latex-options :background "Transparent")
+	org-latex-create-formula-image-program 'dvisvgm)
   (require 'ox-latex)
   (add-to-list 'org-latex-classes
-	     '("res"
-	       "\\documentclass[margin]{res}\n
+	       '("res"
+		 "\\documentclass[margin]{res}\n
   \\setlength{\textwidth}{5.1in}"
-	       ("\\section{%s}" . "\\section*{%s}")
-	       ("\\subsection{%s}" . "\\subsection*{%s}")
-	       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-	       ("\\paragraph{%s}" . "\\paragraph*{%s}")
-	       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+		 ("\\section{%s}" . "\\section*{%s}")
+		 ("\\subsection{%s}" . "\\subsection*{%s}")
+		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
   (add-to-list 'org-latex-classes
-	     '("memoir"
-	       "\\documentclass[article]{memoir}\n
+	       '("memoir"
+		 "\\documentclass[article]{memoir}\n
   \\usepackage{color}
   \\usepackage{amssymb}
   \\usepackage{gensymb}
   \\usepackage{nicefrac}
   \\usepackage{units}"
-	       ("\\section{%s}" . "\\section*{%s}")
-	       ("\\subsection{%s}" . "\\subsection*{%s}")
-	       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-	       ("\\paragraph{%s}" . "\\paragraph*{%s}")
-	       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+		 ("\\section{%s}" . "\\section*{%s}")
+		 ("\\subsection{%s}" . "\\subsection*{%s}")
+		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
   (add-to-list 'org-latex-classes
-	     '("letter"
-	       "\\documentclass{letter}\n"
-	       ("\\section{%s}" . "\\section*{%s}")
-	       ("\\subsection{%s}" . "\\subsection*{%s}")
-	       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-	       ("\\paragraph{%s}" . "\\paragraph*{%s}")
-	       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+	       '("letter"
+		 "\\documentclass{letter}\n"
+		 ("\\section{%s}" . "\\section*{%s}")
+		 ("\\subsection{%s}" . "\\subsection*{%s}")
+		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
   (add-to-list 'org-latex-classes
-	     '("tuftebook"
-	       "\\documentclass{tufte-book}\n
+	       '("tuftebook"
+		 "\\documentclass{tufte-book}\n
   \\usepackage{color}
   \\usepackage{amssymb}
   \\usepackage{gensymb}
   \\usepackage{nicefrac}
   \\usepackage{units}"
-	       ("\\section{%s}" . "\\section*{%s}")
-	       ("\\subsection{%s}" . "\\subsection*{%s}")
-	       ("\\paragraph{%s}" . "\\paragraph*{%s}")
-	       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+		 ("\\section{%s}" . "\\section*{%s}")
+		 ("\\subsection{%s}" . "\\subsection*{%s}")
+		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
   (add-to-list 'org-latex-classes
-	     '("tuftehandout"
-	       "\\documentclass{tufte-handout}
+	       '("tuftehandout"
+		 "\\documentclass{tufte-handout}
   \\usepackage{color}
   \\usepackage{amssymb}
   \\usepackage{amsmath}
   \\usepackage{gensymb}
   \\usepackage{nicefrac}
   \\usepackage{units}"
-	       ("\\section{%s}" . "\\section*{%s}")
-	       ("\\subsection{%s}" . "\\subsection*{%s}")
-	       ("\\paragraph{%s}" . "\\paragraph*{%s}")
-	       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+		 ("\\section{%s}" . "\\section*{%s}")
+		 ("\\subsection{%s}" . "\\subsection*{%s}")
+		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
   (add-to-list 'org-latex-classes
-	     '("tufnotes"
-	       "\\documentclass{tufte-handout}
-				     \\usepackage{xcolor}
-					   \\usepackage{graphicx} %% allow embedded images
-					   \\setkeys{Gin}{width=\\linewidth,totalheight=\\textheight,keepaspectratio}
-					   \\usepackage{amsmath}  %% extended mathematics
-					   \\usepackage{booktabs} %% book-quality tables
-					   \\usepackage{units}    %% non-stacked fractions and better unit spacing
-					   \\usepackage{multicol} %% multiple column layout facilities
-					   \\RequirePackage[many]{tcolorbox}
-					   \\usepackage{fancyvrb} %% extended verbatim environments
-					     \\fvset{fontsize=\\normalsize}%% default font size for fancy-verbatim environments
+	       '("tufnotes"
+		 "\\documentclass{tufte-handout}
+				       \\usepackage{xcolor}
+					     \\usepackage{graphicx} %% allow embedded images
+					     \\setkeys{Gin}{width=\\linewidth,totalheight=\\textheight,keepaspectratio}
+					     \\usepackage{amsmath}  %% extended mathematics
+					     \\usepackage{booktabs} %% book-quality tables
+					     \\usepackage{units}    %% non-stacked fractions and better unit spacing
+					     \\usepackage{multicol} %% multiple column layout facilities
+					     \\RequirePackage[many]{tcolorbox}
+					     \\usepackage{fancyvrb} %% extended verbatim environments
+					       \\fvset{fontsize=\\normalsize}%% default font size for fancy-verbatim environments
 
-			    \\definecolor{g1}{HTML}{077358}
-			    \\definecolor{g2}{HTML}{00b096}
+			      \\definecolor{g1}{HTML}{077358}
+			      \\definecolor{g2}{HTML}{00b096}
 
-			    %%section format
-			    \\titleformat{\\section}
-			    {\\normalfont\\Large\\itshape\\color{g1}}%% format applied to label+text
-			    {\\llap{\\colorbox{g1}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesection}}}}%% label
-			    {1em}%% horizontal separation between label and title body
-			    {}%% before the title body
-			    []%% after the title body
+			      %%section format
+			      \\titleformat{\\section}
+			      {\\normalfont\\Large\\itshape\\color{g1}}%% format applied to label+text
+			      {\\llap{\\colorbox{g1}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesection}}}}%% label
+			      {1em}%% horizontal separation between label and title body
+			      {}%% before the title body
+			      []%% after the title body
 
-			    %% subsection format
-			    \\titleformat{\\subsection}%%
-			    {\\normalfont\\large\\itshape\\color{g2}}%% format applied to label+text
-			    {\\llap{\\colorbox{g2}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesubsection}}}}%% label
-			    {1em}%% horizontal separation between label and title body
-			    {}%% before the title body
-			    []%% after the title body
+			      %% subsection format
+			      \\titleformat{\\subsection}%%
+			      {\\normalfont\\large\\itshape\\color{g2}}%% format applied to label+text
+			      {\\llap{\\colorbox{g2}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesubsection}}}}%% label
+			      {1em}%% horizontal separation between label and title body
+			      {}%% before the title body
+			      []%% after the title body
 
-							  \\newtheorem{note}{Note}[section]
+							    \\newtheorem{note}{Note}[section]
 
-							  \\tcolorboxenvironment{note}{
-							   boxrule=0pt,
-							   boxsep=2pt,
-							   colback={green!10},
-							   enhanced jigsaw,
-							   borderline west={2pt}{0pt}{Green},
-							   sharp corners,
-							   before skip=10pt,
-							   after skip=10pt,
-							   breakable,
-						    }"
+							    \\tcolorboxenvironment{note}{
+							     boxrule=0pt,
+							     boxsep=2pt,
+							     colback={green!10},
+							     enhanced jigsaw,
+							     borderline west={2pt}{0pt}{Green},
+							     sharp corners,
+							     before skip=10pt,
+							     after skip=10pt,
+							     breakable,
+						      }"
 
-	       ("\\section{%s}" . "\\section*{%s}")
-	       ("\\subsection{%s}" . "\\subsection*{%s}")
-	       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-	       ("\\paragraph{%s}" . "\\paragraph*{%s}")
-	       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+		 ("\\section{%s}" . "\\section*{%s}")
+		 ("\\subsection{%s}" . "\\subsection*{%s}")
+		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
   (org-babel-do-load-languages
    'org-babel-load-languages '((C . t)
-			     (shell . t)
-			     (python .t)
-			     (emacs-lisp . t)
-			     (org . t)
-			     (gnuplot . t)
-			     (latex . t)
-			     (scheme . t)
-			     (lisp . t)
-			     (haskell . t)
-			     (R . t)))
+			       (shell . t)
+			       (python .t)
+			       (emacs-lisp . t)
+			       (org . t)
+			       (gnuplot . t)
+			       (latex . t)
+			       (scheme . t)
+			       (lisp . t)
+			       (haskell . t)
+			       (R . t)))
   ;; Enable and set org-crypt
   (require 'org-crypt)
   (org-crypt-use-before-save-magic)
-  (setq org-tags-exclude-from-inheritance (quote (crypt))))
+  (setq org-tags-exclude-from-inheritance (quote (crypt)))
 
-;; GPG key to use for encryption
-(setq org-crypt-key nil))
+  ;; GPG key to use for encryption
+  (setq org-crypt-key nil))
 
 (use-package mg-pkm-utils
   :ensure nil
-  :bind (("C-c p c d" . mg-compute-deep-work-minutes)
-       ("C-c p e" . mg-pkm-clean)
-       ;; refactor mg-pkm-clean to be all elisp based
-       ;; continue from here and from custom keybinds in init.org, then denote
-       ))
-
-(use-package mg-org
-  :ensure nil
-  :after org
-  :bind (("C-c p c d" . mg-org-compute-deep-work-minutes)))
+  :bind (("C-c p c d" . mg-compute-deep-work-minutes)))
 
 (provide 'mg-emacs-org)

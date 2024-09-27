@@ -1,3 +1,5 @@
+(require 'mg-org)
+
 (use-package denote
   :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main")
   :bind (("C-c n n" . denote)

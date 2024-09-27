@@ -43,12 +43,12 @@ retrive logbooks properties and their related timing."
     (format "<%s>" (org-read-date))
     (format "<%s>" (org-read-date))))
   (let* ((default-directory (denote-directory))
-       (target-files
-    	'(mg-work-projects-file
-    	  mg-archive-file)))
+  	 (target-files
+  	  '(mg-work-projects-file
+  	    mg-archive-file)))
     (insert (format "%s"
-    		  (apply '+ (mapcar (lambda (file)
-    				      (mg-org-get-clock-minutes file start-date end-date)) target-files))))))
+  		    (apply '+ (mapcar (lambda (file)
+  					(mg-org-get-clock-minutes file start-date end-date)) target-files))))))
 
 (defun mg-toggle-pdf-presentation-mode ()
   "Toggle a presentation mode to show PDFs in a clean layout.

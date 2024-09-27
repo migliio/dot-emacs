@@ -31,20 +31,20 @@
 ;;; Code:
 
 (defvar mg-modeline-buffer-status
-    '(:eval
-      (if (file-remote-p default-directory)
-	  (propertize " @ "
-		      'mouse-face 'mode-line-highlight)
-	(propertize " ^ "
-		    'mouse-face 'mode-line-highlight)))
+  '(:eval
+    (if (file-remote-p default-directory)
+	(propertize " @ "
+		    'mouse-face 'mode-line-highlight)
+      (propertize " ^ "
+		  'mouse-face 'mode-line-highlight)))
   "This is the propertized variable containing the status of the
 current buffer. The status specifies whether this buffer is
 remote or local.")
 
 (defvar mg-modeline-buffer-name
-    '(:eval
-      (propertize (buffer-name) 'face 'mode-line-buffer-id))
-    "This is the propertized variable containing the current buffer's
+  '(:eval
+    (propertize (buffer-name) 'face 'mode-line-buffer-id))
+  "This is the propertized variable containing the current buffer's
 name.")
 
 (defun mg-modeline--major-mode ()
@@ -54,33 +54,33 @@ opened buffer. The major mode is obtained by looking at the
 haas also a `exwm--input-mode' further specification (i.e., Char
 or Line) that is also useful to specify in the modeline."
   (let* ((mode
-	 (mapconcat 'capitalize
-		    (butlast (split-string (symbol-name major-mode) "-")) " "))
+	  (mapconcat 'capitalize
+		     (butlast (split-string (symbol-name major-mode) "-")) " "))
 	 (mode-final
 	  (if (string-equal mode "Exwm")
 	      (concat "Exwm: "
-	       (mapconcat 'capitalize
-			  (butlast (split-string (symbol-name exwm--input-mode) "-"))))
+		      (mapconcat 'capitalize
+				 (butlast (split-string (symbol-name exwm--input-mode) "-"))))
 	    mode))
 	 (indicator (cond
 		     ((derived-mode-p 'text-mode) "§")
 		     ((derived-mode-p 'prog-mode) "λ")
 		     ((derived-mode-p 'comint-mode) ">_")
 		     (t "o"))))
-	  (format "%s (%s)" indicator mode-final)))
+    (format "%s (%s)" indicator mode-final)))
 
 (defvar mg-modeline-major-mode
-    '(:eval
-      (mg-modeline--major-mode))
-      "This is the variable containing the major mode for the current
+  '(:eval
+    (mg-modeline--major-mode))
+  "This is the variable containing the major mode for the current
  buffer, as returned by the `mg-modeline--major-mode' function")
 
 (defvar mg-modeline-buffer-mode
-    '(:eval
-      (if buffer-read-only
-	    "*L*"
-	"*U*"))
-    "This is the variable indicating whether the buffer is in
+  '(:eval
+    (if buffer-read-only
+	"*L*"
+      "*U*"))
+  "This is the variable indicating whether the buffer is in
  read-only mode or not." )
 
 (setq mode-line-end-spaces
@@ -88,21 +88,21 @@ or Line) that is also useful to specify in the modeline."
 	mode-line-misc-info))
 
 (setq-default mode-line-format
-      '("%e"
-	mg-modeline-buffer-status
-	mg-modeline-buffer-mode
-	" "
-	mg-modeline-buffer-name
-	" "
-	mode-line-position
-	"  "
-	(vc-mode vc-mode)
-	"  "
-	mg-modeline-major-mode
-	"  "
-	(:eval
-	 (when (mode-line-window-selected-p)
-	   mode-line-end-spaces))))
+	      '("%e"
+		mg-modeline-buffer-status
+		mg-modeline-buffer-mode
+		" "
+		mg-modeline-buffer-name
+		" "
+		mode-line-position
+		"  "
+		(vc-mode vc-mode)
+		"  "
+		mg-modeline-major-mode
+		"  "
+		(:eval
+		 (when (mode-line-window-selected-p)
+		   mode-line-end-spaces))))
 
 (dolist (construct
 	 '(mg-modeline-major-mode

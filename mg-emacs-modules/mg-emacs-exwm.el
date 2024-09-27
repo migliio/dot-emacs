@@ -91,10 +91,10 @@ work."
 	       (mg-starter)))
 	    ([?\s-w] . exwm-workspace-switch)
 	    ([?\s-`] . (lambda () (interactive) (exwm-workspace-switch-create 0)))
-	([?\s-b] .
-	 (lambda ()
-	   (interactive)
-	   (start-process "" nil mg-browser)))
+	    ([?\s-b] .
+	     (lambda ()
+	       (interactive)
+	       (start-process "" nil mg-browser)))
 	    ([?\s-i] .
 	     (lambda ()
 	       (interactive)
