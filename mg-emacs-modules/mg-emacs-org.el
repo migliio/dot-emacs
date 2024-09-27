@@ -15,7 +15,7 @@
 	 ("C-c l" . org-store-link))
   :custom
   (org-src-tab-acts-natively t)
-  (org-agenda-files (list mg-journal-file mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))
+  (org-agenda-files (list mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))
   (org-archive-location "~/Vault/pkm/.archive/archive.org::* From %s")
   (org-export-backends '(beamer html latex icalendar ascii))
   (org-structure-template-alist

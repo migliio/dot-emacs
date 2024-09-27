@@ -30,7 +30,6 @@
 
 (defconst mg-work-projects-file "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org")
 (defconst mg-inbox-file "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org")
-(defconst mg-journal-file "~/Vault/pkm/20240209T084736--journal__archive_personal.org")
 (defconst mg-agenda-file "~/Vault/pkm/20231210T224321--agenda__personal.org")
 (defconst mg-archive-file "~/Vault/pkm/.archive/archive.org")
 (defconst mg-capture-notes-file "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org")

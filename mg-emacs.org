@@ -1334,6 +1334,12 @@ Since natural language is still a language, let's enable spellchecking in this m
     (add-hook hook (lambda () (flyspell-mode 1))))
 #+end_src
 
+Since I work with the Linux kernel every single day, I want Emacs to format C code as stated by the kernel community's directives. The code below sets the C style to be compliant to those directives.
+
+#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-languages.el"
+  (setq c-default-style "linux")
+#+end_src
+
 The following is a series of packages to enable LSP and major-modes for some programming languages. I've been using ~eglot~ as LSP client for quite a while now, and I'd say that I'm really satisfied with it. The code below is basically a setup of some configuration options for ~eglot~ (already shipped with Emacs 29) and the declarations for some programming modes. I used ~lsp-mode~ in the past, but I think ~eglot~ has the perfect balance between simplicity and feature-richness.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-languages.el"
