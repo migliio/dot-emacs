@@ -16,7 +16,7 @@
   (("C-c n c o" . citar-open)
    (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
   :config
-  (setq citar-bibliography '(mg-bibliography-path)))
+  (setq citar-bibliography (list mg-bibliography-path)))
 
 (use-package citar-denote
   :straight t

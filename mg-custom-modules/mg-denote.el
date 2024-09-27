@@ -23,7 +23,10 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; This library introduces some custom Emacs Lisp code to extend the functionalities provided by `denote'. Along with `org', `denote' is probably one of the packages that I use (and tweak) the most within Emacs.
+;; This library introduces some custom Emacs Lisp code to extend the
+;; functionalities provided by `denote'. Along with `org', `denote' is
+;; probably one of the packages that I use (and tweak) the most within
+;; Emacs.
 
 ;;; Code:
 
@@ -33,7 +36,7 @@
   (kill-new (denote-get-identifier)))
 
 (defun mg-denote-get-item (filter-regex)
-  "Get a file path interactively starting from the denote-directory"
+  "Get a file path interactively starting from the denote-directory."
   (let* ((candidates (denote-directory-files filter-regex))
 	 (file-name (completing-read
 		     "Choose FILE: "
@@ -51,7 +54,7 @@
   (find-file (mg-denote-get-file)))
 
 (defun mg-denote-get-zettel ()
-  "Get zettel interactively starting from the denote directory"
+  "Get zettel interactively starting from the denote directory."
   (mg-denote-get-item denote-signature-regexp))
 
 (defun mg-denote-find-zettel ()
@@ -60,7 +63,7 @@
   (find-file (mg-denote-get-zettel)))
 
 (defun mg-insert-denote-or-normal-link (name)
-  "Insert a denote link if the file specified by buffer-name is a denote item, otherwise a normal link"
+  "Insert a denote link if the file specified by buffer-name is a denote item, otherwise a normal link."
   (if (denote-file-is-note-p (format "%s" name))
       (mg-denote-insert-link-from-file-path name)
     (format "[[file:%s]]" name)))
@@ -71,15 +74,22 @@
     (denote-link file-path (denote-filetype-heuristics file-path) file-description)))
 
 (defun mg-denote-insert-zettel-link ()
-  "Select a zettel from `denote-directory` and insert its link at current point"
+  "Select a zettel from `denote-directory` and insert its link at current point."
   (interactive)
   (let ((file-path
 	 (mg-denote-get-zettel)))
     (mg-denote-insert-link-from-file-path file-path)))
 
 (defun mg-add-identifier-to-killring ()
-  "Generate a denote identifier and add it to the kill-ring to use it as a timestamp"
+  "Generate a denote identifier and add it to the kill-ring to use it as a timestamp."
   (interactive)
   (kill-new (denote-get-identifier)))
+
+(defun mg-denote-grep-on-zettels ()
+    "Grep for a search query, but only on zettels."
+    (interactive)
+    (let ((zettels
+	   (denote-directory-files denote-signature-regexp)))
+      (consult-grep zettels)))
 
 ;;; mg-denote.el ends here
