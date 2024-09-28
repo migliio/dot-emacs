@@ -49,15 +49,15 @@
   :ensure nil
   :config
   (add-to-list 'eglot-server-programs
-	       '((c-mode)
-		 . ("clangd")))
+	         '((c-mode)
+		   . ("clangd")))
   (if (eq system-type 'darwin)
-      (add-to-list 'eglot-server-programs
-		   '((python-mode)
-		     . ("/usr/bin/pylsp")))
+	(add-to-list 'eglot-server-programs
+		     '((python-mode)
+		       . ("/usr/bin/pylsp")))
     (add-to-list 'eglot-server-programs
-		 '((python-mode)
-		   . ("~/.local/bin/pylsp"))))
+		   '((python-mode)
+		     . ("~/.local/bin/pylsp"))))
   (add-hook 'c-mode-hook 'eglot-ensure)
   (add-hook 'haskell-mode-hook 'eglot-ensure)
   (add-hook 'erlang-mode-hook 'eglot-ensure)

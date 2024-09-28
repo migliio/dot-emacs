@@ -49,25 +49,26 @@
   ;; Function to extract and concatenate text before the link and the link description
   (let ((start 0) (parts '()))
     (while (string-match "\\(.*?\\)\\(\\[\\[.*?\\]\\[\\(.*?\\)\\]\\]\\)" heading start)
-      (push (match-string 1 heading) parts)  ; Text before the link
-      (push (match-string 3 heading) parts)  ; Link description
-      (setq start (match-end 0)))
+	(push (match-string 1 heading) parts)  ; Text before the link
+	(push (match-string 3 heading) parts)  ; Link description
+	(setq start (match-end 0)))
     (push (substring heading start) parts)  ; Remaining text after last link
     (string-join (reverse parts) "")))
 
 (require 'mg-emacs-org)
+
 (defun mg-org-get-clock-minutes (file start-date end-date)
-  "Get minutes from org-clock of a specific file and date"
+  "Get minutes from org-clock of a specific file and date."
   (interactive
    (list
     (read-file-name "Get clock data from FILE: ")
     (format "<%s>" (org-read-date))
     (format "<%s>" (org-read-date))))
   (let ((minutes (nth 1
-		      (with-current-buffer (find-file-noselect file)
-			(org-clock-get-table-data file `( :maxlevel 4
-							  :tstart ,start-date
-							  :tend ,end-date))))))
+		        (with-current-buffer (find-file-noselect file)
+			  (org-clock-get-table-data file `( :maxlevel 4
+							    :tstart ,start-date
+							    :tend ,end-date))))))
     minutes))
 
 (provide 'mg-org)
