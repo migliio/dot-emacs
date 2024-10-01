@@ -1,28 +1,28 @@
 (use-package notmuch
   :straight t
   :bind (
-	   :map global-map
-	   ("C-x m" . notmuch)
-	   :map notmuch-search-mode-map
-	   ("a" . nil)
-	   ("A" . nil)
-	   ("/" . notmuch-search-filter)
-	   ("r" . notmuch-search-reply-to-thread)
-	   ("R" . notmuch-search-reply-to-thread-sender)
-	   :map notmuch-show-mode-map
-	   ("a" . nil)
-	   ("A" . nil)
-	   ("r" . notmuch-show-reply)
-	   ("R" . notmuch-show-reply-sender))
+	 :map global-map
+	 ("C-x m" . notmuch)
+	 :map notmuch-search-mode-map
+	 ("a" . nil)
+	 ("A" . nil)
+	 ("/" . notmuch-search-filter)
+	 ("r" . notmuch-search-reply-to-thread)
+	 ("R" . notmuch-search-reply-to-thread-sender)
+	 :map notmuch-show-mode-map
+	 ("a" . nil)
+	 ("A" . nil)
+	 ("r" . notmuch-show-reply)
+	 ("R" . notmuch-show-reply-sender))
   :custom
   (notmuch-show-logo nil)
   (notmuch-archive-tags nil
-			  notmuch-message-replied-tags '("+replied")
-			  notmuch-message-forwarded-tags '("+forwarded")
-			  notmuch-show-mark-read-tags '("-unread")
-			  notmuch-draft-tags '("+draft")
-			  notmuch-draft-folder "drafts"
-			  notmuch-draft-save-plaintext 'ask)
+			notmuch-message-replied-tags '("+replied")
+			notmuch-message-forwarded-tags '("+forwarded")
+			notmuch-show-mark-read-tags '("-unread")
+			notmuch-draft-tags '("+draft")
+			notmuch-draft-folder "drafts"
+			notmuch-draft-save-plaintext 'ask)
   (notmuch-show-relative-dates t)
   (notmuch-show-all-multipart/alternative-parts nil)
   (notmuch-show-indent-messages-width 0)
@@ -32,7 +32,11 @@
   (notmuch-wash-wrap-lines-length 120)
   (notmuch-unthreaded-show-out nil)
   (notmuch-message-headers '("To" "Cc" "Subject" "Date"))
-  (notmuch-message-headers-visible t))
+  (notmuch-message-headers-visible t)
+  :config
+  (let ((count most-positive-fixnum)) ; I don't like the buttonisation of long quotes
+    (setq notmuch-wash-citation-lines-prefix count
+	  notmuch-wash-citation-lines-suffix count)))
 
 (use-package ol-notmuch
   :straight (ol-notmuch :type git :host github :repo "tarsius/ol-notmuch")

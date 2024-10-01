@@ -58,7 +58,7 @@ retrive logbooks properties and their related timing."
   (interactive)
   (toggle-frame-fullscreen)
   (if (not (bound-and-true-p hide-mode-line-mode))
-	(hide-mode-line-mode 1)
+      (hide-mode-line-mode 1)
     (hide-mode-line-mode 0))
   (pdf-view-fit-page-to-window))
 

@@ -65,10 +65,10 @@
     (format "<%s>" (org-read-date))
     (format "<%s>" (org-read-date))))
   (let ((minutes (nth 1
-		        (with-current-buffer (find-file-noselect file)
-			  (org-clock-get-table-data file `( :maxlevel 4
-							    :tstart ,start-date
-							    :tend ,end-date))))))
+		      (with-current-buffer (find-file-noselect file)
+			(org-clock-get-table-data file `( :maxlevel 4
+							  :tstart ,start-date
+							  :tend ,end-date))))))
     minutes))
 
 (provide 'mg-org)

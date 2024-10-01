@@ -2,14 +2,14 @@
   :after (org)
   :straight t
   :bind (("C-c m >" . #'mc/mark-next-like-this)
-	   ("C-c m <" . #'mc/mark-previous-like-this)
-	   ("C-c m -" . #'mc/mark-next-like-this-word)
-	   ("C-c m e" . 'mc/mark-more-like-this-extended)
-	   ("C-c m s" . 'mc/mark-all-dwim)
-	   ("C-c m a" . mc/mark-all-like-this)
-	   ("C-c m r" . mc/mark-all-in-region)
-	   ("C-c m d" . mc/mark-all-like-this-dwim)
-	   ("C-c m w" . mc/mark-all-words-like-this))
+	 ("C-c m <" . #'mc/mark-previous-like-this)
+	 ("C-c m -" . #'mc/mark-next-like-this-word)
+	 ("C-c m e" . 'mc/mark-more-like-this-extended)
+	 ("C-c m s" . 'mc/mark-all-dwim)
+	 ("C-c m a" . mc/mark-all-like-this)
+	 ("C-c m r" . mc/mark-all-in-region)
+	 ("C-c m d" . mc/mark-all-like-this-dwim)
+	 ("C-c m w" . mc/mark-all-words-like-this))
   :custom
   (mc/always-run-for-all t)
   :init

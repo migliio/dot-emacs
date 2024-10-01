@@ -1195,6 +1195,7 @@ This module introduces several packages that I use to manage bibliographic entri
     (citar-symbol-separator "  ")
     :bind
     (("C-c n c o" . citar-open)
+     ("C-c n c b" . citar-open-entry)
      (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
     :config
     (setq citar-bibliography (list mg-bibliography-path)))

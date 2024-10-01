@@ -36,9 +36,9 @@
     (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
     (add-to-list 'default-frame-alist '(ns-appearance . dark))
     (setq ns-use-proxy-icon nil
-	    mac-option-modifier 'meta
-	    frame-title-format nil
-	    mac-frame-tabbing nil)))
+	  mac-option-modifier 'meta
+	  frame-title-format nil
+	  mac-frame-tabbing nil)))
 
 (provide 'mg-macos)
 ;;; mg-macos.el ends here
