@@ -17,7 +17,6 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 #+begin_example
 | ./  |                    |                                |       |
 | ├── | init.el            |                                |       |
-| ├── | init.org           |                                |       |
 | ├── | LICENSE.md         |                                |       |
 | ├── | mg-custom-modules/ |                                |       |
 | │   | ├──                | mg-citar-denote.el             |       |
@@ -27,10 +26,12 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | ├──                | mg-kernel.el                   |       |
 | │   | ├──                | mg-macos.el                    |       |
 | │   | ├──                | mg-modeline.el                 |       |
+| │   | ├──                | mg-org.el                      |       |
 | │   | ├──                | mg-org-gtd.el                  |       |
 | │   | ├──                | mg-pkm-utils.el                |       |
 | │   | └──                | mg-utils.el                    |       |
 | ├── | mg-emacs-modules/  |                                |       |
+| │   | ├──                | mg-emacs-bib.el                |       |
 | │   | ├──                | mg-emacs-browsing.el           |       |
 | │   | ├──                | mg-emacs-buffers-completion.el |       |
 | │   | ├──                | mg-emacs-buffers.el            |       |
@@ -52,7 +53,7 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | └──                | mg-emacs-themes.el             |       |
 | └── | mg-emacs.org       |                                |       |
 |     |                    |                                |       |
-| 3   | directories,       | 33                             | files |
+| 3   | directories,       | 34                             | files |
 #+end_example
 
 In general, this configuration is organized using modules, each designed to introduce a set of packages for a specific purpose. The objective is to minimize the number of packages introduced within a single module to ensure a clear separation of concerns. Introducing too many packages at once reduces clarity.
@@ -1147,7 +1148,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
     (("C-c n f f" . mg-denote-find-file)
      ("C-c n z f" . mg-denote-find-zettel)
      ("C-c n z g" . mg-denote-grep-on-zettels)
-     ("C-c n u" . mg-copy-denote-like-timestamp-to-killring)
+     ("C-c n u" . mg-denote-copy-timestamp-to-killring)
      ("C-c n z i" . mg-denote-insert-zettel-link)))
 
   (use-package denote-explore
@@ -1316,37 +1317,6 @@ I started using ~notmuch~ not so long ago. During a conversation with [[https://
   	 ("R" . notmuch-show-reply-sender))
     :custom
     (notmuch-show-logo nil)
-    (notmuch-column-control 1.0)
-    (notmuch-hello-auto-refresh t)
-    (notmuch-hello-recent-searches-max 20)
-    (notmuch-hello-thousands-separator "")
-    (notmuch-hello-sections '(notmuch-hello-insert-saved-searches))
-    (notmuch-show-all-tags-list t)
-    (notmuch-search-oldest-first nil)
-    (notmuch-search-result-format
-     '(("date" . "%12s  ")
-       ("count" . "%-7s  ")
-       ("authors" . "%-20s  ")
-       ("subject" . "%-80s  ")
-       ("tags" . "(%s)")))
-    (notmuch-tree-result-format
-     '(("date" . "%12s  ")
-       ("authors" . "%-20s  ")
-       ((("tree" . "%s")
-         ("subject" . "%s"))
-        . " %-80s  ")
-       ("tags" . "(%s)")))
-    (notmuch-show-empty-saved-searches t)
-    (notmuch-saved-searches
-     `(( :name "inbox"
-         :query "tag:inbox"
-         :sort-order newest-first
-         :key ,(kbd "i"))
-       ( :name "unread (inbox)"
-         :query "tag:unread and tag:inbox"
-         :sort-order newest-first
-         :key ,(kbd "u"))
-       ))
     (notmuch-archive-tags nil
   			notmuch-message-replied-tags '("+replied")
   			notmuch-message-forwarded-tags '("+forwarded")
@@ -2149,15 +2119,16 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
     ;; Function to extract and concatenate text before the link and the link description
     (let ((start 0) (parts '()))
       (while (string-match "\\(.*?\\)\\(\\[\\[.*?\\]\\[\\(.*?\\)\\]\\]\\)" heading start)
-        (push (match-string 1 heading) parts)  ; Text before the link
-        (push (match-string 3 heading) parts)  ; Link description
-        (setq start (match-end 0)))
+  	(push (match-string 1 heading) parts)  ; Text before the link
+  	(push (match-string 3 heading) parts)  ; Link description
+  	(setq start (match-end 0)))
       (push (substring heading start) parts)  ; Remaining text after last link
       (string-join (reverse parts) "")))
 
   (require 'mg-emacs-org)
+
   (defun mg-org-get-clock-minutes (file start-date end-date)
-    "Get minutes from org-clock of a specific file and date"
+    "Get minutes from org-clock of a specific file and date."
     (interactive
      (list
       (read-file-name "Get clock data from FILE: ")
@@ -2283,12 +2254,12 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
 
   ;;; Code:
 
-  (defun mg-copy-denote-like-timestamp-to-killring ()
+  (defun mg-denote-copy-timestamp-to-killring ()
     "Helper function to get a convenient denote-style timestamp."
     (interactive)
     (kill-new (denote-get-identifier)))
 
-  (defun mg-denote-get-item (filter-regex)
+  (defun mg-denote--get-item (filter-regex)
     "Get a file path interactively starting from the denote-directory."
     (let* ((candidates (denote-directory-files filter-regex))
   	 (file-name (completing-read
@@ -2297,31 +2268,31 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   	 (file-path file-name))
       file-path))
 
-  (defun mg-denote-get-file ()
+  (defun mg-denote--get-file ()
     "Get a denote file interactively starting from the denote-directory"
-    (mg-denote-get-item denote-id-regexp))
+    (mg-denote--get-item denote-id-regexp))
 
   (defun mg-denote-find-file ()
     "Find files interactively starting from the denote-directory."
     (interactive)
-    (find-file (mg-denote-get-file)))
+    (find-file (mg-denote--get-file)))
 
-  (defun mg-denote-get-zettel ()
+  (defun mg-denote--get-zettel ()
     "Get zettel interactively starting from the denote directory."
-    (mg-denote-get-item denote-signature-regexp))
+    (mg-denote--get-item denote-signature-regexp))
 
   (defun mg-denote-find-zettel ()
     "Find zettels interactively starting from the denote-directory."
     (interactive)
-    (find-file (mg-denote-get-zettel)))
+    (find-file (mg-denote--get-zettel)))
 
   (defun mg-insert-denote-or-normal-link (name)
     "Insert a denote link if the file specified by buffer-name is a denote item, otherwise a normal link."
     (if (denote-file-is-note-p (format "%s" name))
-        (mg-denote-insert-link-from-file-path name)
+	(mg-denote--insert-link-from-file-path name)
       (format "[[file:%s]]" name)))
 
-  (defun mg-denote-insert-link-from-file-path (file-path)
+  (defun mg-denote--insert-link-from-file-path (file-path)
     "Insert a denote link provided a file path"
     (let ((file-description (denote--link-get-description file-path)))
       (denote-link file-path (denote-filetype-heuristics file-path) file-description)))
@@ -2330,13 +2301,8 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
     "Select a zettel from `denote-directory` and insert its link at current point."
     (interactive)
     (let ((file-path
-  	 (mg-denote-get-zettel)))
-      (mg-denote-insert-link-from-file-path file-path)))
-
-  (defun mg-add-identifier-to-killring ()
-    "Generate a denote identifier and add it to the kill-ring to use it as a timestamp."
-    (interactive)
-    (kill-new (denote-get-identifier)))
+	   (mg-denote--get-zettel)))
+      (mg-denote--insert-link-from-file-path file-path)))
 
   (defun mg-denote-grep-on-zettels ()
     "Grep for a search query, but only on zettels."

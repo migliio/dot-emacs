@@ -32,13 +32,13 @@
 highlights the current line. I use it extensively when in coding."
   :initial nil
   (if mg-line-numbers-highlight-line-mode
-      (progn
-	(display-line-numbers-mode 1)
-	(hl-line-mode 1)
-	(setq display-line-numbers-type 'relative))
+	(progn
+	  (display-line-numbers-mode 1)
+	  (hl-line-mode 1)
+	  (setq display-line-numbers-type 'relative))
     (progn
-      (display-line-numbers-mode 0)
-      (hl-line-mode 0))))
+	(display-line-numbers-mode 0)
+	(hl-line-mode 0))))
 
 (provide 'mg-defaults-extensions)
 ;;; mg-defaults-extensions.el ends here

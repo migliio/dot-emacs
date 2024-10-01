@@ -44,10 +44,10 @@ better, but for now it just proved to work."
    (list
     (read-file-name "Kernel SOURCE: ")))
   (let* ((command (format "cd %s && make kernelversion" source))
-	 (kernel-version
-	  (shell-command-to-string command)))
+	   (kernel-version
+	    (shell-command-to-string command)))
     (if (string-match-p "\\<[0-9]+\\." kernel-version)
-	(message "Kernel version for specificed SOURCE is %s" kernel-version)
-      (user-error "Can't identify a kernel version for the specified SOURCE %s" source))))
+	  (message "Kernel version for specificed SOURCE is %s" kernel-version)
+	(user-error "Can't identify a kernel version for the specified SOURCE %s" source))))
 
 ;;; mg-kernel.el ends here

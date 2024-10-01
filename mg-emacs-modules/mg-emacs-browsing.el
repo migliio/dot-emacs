@@ -4,8 +4,8 @@
   (engine/set-keymap-prefix (kbd "C-c u e"))
   (defun mg-engine-mode-exact-phrase-transform (search-term)
     (if current-prefix-arg
-	(concat "\"" search-term "\"")
-      search-term))
+	  (concat "\"" search-term "\"")
+	search-term))
   (defengine archwiki
     "https://wiki.archlinux.org/index.php?search=%s"
     :keybinding "a")

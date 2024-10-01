@@ -41,7 +41,7 @@
 
   This function gets the major modes by leveraging on `auto-mode-alist', which is a list of cons nodes of the form \"(<name-pattern> . <major-mode-string>)\". However, there are multiple entries per each major mode, thus we shoud filter duplicates afterwards."
   (let ((modes
-         (mapcar (lambda (alist-cons) (cdr alist-cons)) auto-mode-alist)))
+	   (mapcar (lambda (alist-cons) (cdr alist-cons)) auto-mode-alist)))
     (delete-dups modes)))
 
 (defun mg-get-today-timestamp ()

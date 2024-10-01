@@ -65,11 +65,11 @@
   "Add the file name visited by the current buffer to the killring."
   (interactive)
   (let ((filename (if (equal major-mode 'dired-mode)
-  		      default-directory
-  		    (buffer-file-name))))
+		      default-directory
+		    (buffer-file-name))))
     (when filename
-      (kill-new filename)
-      (message "Added file name '%s' to the killring." filename))))
+	(kill-new filename)
+	(message "Added file name '%s' to the killring." filename))))
 
 (defconst mg-get-battery-percentage-cmd "acpi -b | grep -E -o '[0-9][0-9][0-9]?%'"
   "This is a string representing a shell command to get the current battery percentage.")
@@ -102,41 +102,41 @@
   "This is a string representing a shell command to get the current keyboard layout.")
 
 (defconst mg-shutdown-system-cmd "/usr/sbin/shutdown now"
-  "This is a string representing a shell command to shutdown the machine.")    
+  "This is a string representing a shell command to shutdown the machine.")
 
 (defun mg--get-formatted-cpu-infos ()
   "Get all the battery-related information and format them."
   (format "%s @ %s"
-  	  (string-trim (shell-command-to-string mg-get-cpu-usage-cmd))
-  	  (string-trim (shell-command-to-string mg-get-cpu-temp-cmd))))
+	  (string-trim (shell-command-to-string mg-get-cpu-usage-cmd))
+	  (string-trim (shell-command-to-string mg-get-cpu-temp-cmd))))
 
 (defun mg--get-formatted-battery-infos ()
   "Get all the battery-related information and format them."
   (format "%s (%s) : %s"
-	  (string-trim (shell-command-to-string mg-get-battery-percentage-cmd))
-	  (string-trim (shell-command-to-string mg-get-battery-status-cmd))
-	  (string-trim (shell-command-to-string mg-get-battery-remaining-time-cmd))))
+	    (string-trim (shell-command-to-string mg-get-battery-percentage-cmd))
+	    (string-trim (shell-command-to-string mg-get-battery-status-cmd))
+	    (string-trim (shell-command-to-string mg-get-battery-remaining-time-cmd))))
 
 (defun mg--get-formatted-ram-infos ()
   "Get all the battery-related information and format them."
   (format "%s @ %s"
-  	  (string-trim (shell-command-to-string mg-get-cpu-usage-cmd))
-  	  (string-trim (shell-command-to-string mg-get-cpu-temp-cmd))))
+	  (string-trim (shell-command-to-string mg-get-cpu-usage-cmd))
+	  (string-trim (shell-command-to-string mg-get-cpu-temp-cmd))))
 
 (defun mg--get-formatted-disk-infos ()
   "Get all the disk-related information and format them."
   (format "%s"
-  	  (string-trim (shell-command-to-string mg-get-disk-usage-cmd))))
+	  (string-trim (shell-command-to-string mg-get-disk-usage-cmd))))
 
 (defun mg--get-formatted-volume-infos ()
   "Get all the volume-related information and format them."
   (format "%s"
-  	  (string-trim (shell-command-to-string mg-get-volume-percentage-cmd))))
+	  (string-trim (shell-command-to-string mg-get-volume-percentage-cmd))))
 
 (defun mg--get-formatted-keyboard-infos ()
   "Get all the keyboard-related information and format them."
   (format "%s"
-  	  (string-trim (shell-command-to-string mg-get-keyboard-layout-cmd))))
+	  (string-trim (shell-command-to-string mg-get-keyboard-layout-cmd))))
 
 (defun mg-show-machine-info ()
   "Show the some system information for the current machine.
@@ -144,13 +144,13 @@
   This function basically substitutes a full-fledged system-tray with additional information such as remaning battery time, memory and disk usage, etc. It better works in conjuction with a simple modeline and EXWM, and makes no sense when Emacs runs in a complete DE."
   (interactive)
   (let* ((battery-info (mg--get-formatted-battery-infos))
-	 (cpu-info (mg--get-formatted-cpu-infos))
-	 (ram-info (mg--get-formatted-ram-infos))
-	 (disk-info (mg--get-formatted-disk-infos))
-	 (volume-info (mg--get-formatted-volume-infos))
-	 (keyboard-layout-info (mg--get-formatted-keyboard-infos)))
+	   (cpu-info (mg--get-formatted-cpu-infos))
+	   (ram-info (mg--get-formatted-ram-infos))
+	   (disk-info (mg--get-formatted-disk-infos))
+	   (volume-info (mg--get-formatted-volume-infos))
+	   (keyboard-layout-info (mg--get-formatted-keyboard-infos)))
     (message "System-level info => BAT: %s - CPU: %s - MEM: %s - DSK: %s - VOL: %s - KBD: %s"
-  	     battery-info cpu-info ram-info disk-info volume-info keyboard-layout-info)))
+	     battery-info cpu-info ram-info disk-info volume-info keyboard-layout-info)))
 
 (defun mg-shutdown-machine-with-confirmation
     "Ask for confirmation and shut down the system if confirmed."
@@ -166,18 +166,18 @@ as input, then we should switch from string to canonical symbol
 through `intern'."
   (interactive)
   (let* ((input-buff-name (read-string "Insert the buffer NAME: "))
-	 (new-buff (generate-new-buffer
-		    (if (string= "" input-buff-name)
-			"untitled"
-		      input-buff-name)))
-	 (major-modes-list (mg--get-major-modes))
-	 (mode
-	  (completing-read "Select the MAJOR MODE to enable: " major-modes-list))
-	 (mode-symbol (intern mode)))
+	   (new-buff (generate-new-buffer
+		      (if (string= "" input-buff-name)
+			  "untitled"
+		        input-buff-name)))
+	   (major-modes-list (mg--get-major-modes))
+	   (mode
+	    (completing-read "Select the MAJOR MODE to enable: " major-modes-list))
+	   (mode-symbol (intern mode)))
     (switch-to-buffer new-buff)
     (if (fboundp mode-symbol)
-	(funcall mode-symbol)
-      (user-error "The selected mode doesn't exist or it is not lazily loaded"))
+	  (funcall mode-symbol)
+	(user-error "The selected mode doesn't exist or it is not lazily loaded"))
     (funcall (intern mode))
     new-buff))
 
