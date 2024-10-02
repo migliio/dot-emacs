@@ -38,10 +38,10 @@
 (defun mg-denote--get-item (filter-regex)
   "Get a file path interactively starting from the denote-directory."
   (let* ((candidates (denote-directory-files filter-regex))
-	   (file-name (completing-read
-		       "Choose FILE: "
-		       candidates))
-	   (file-path file-name))
+	 (file-name (completing-read
+		     "Choose FILE: "
+		     candidates))
+	 (file-path file-name))
     file-path))
 
 (defun mg-denote--get-file ()
@@ -65,7 +65,7 @@
 (defun mg-insert-denote-or-normal-link (name)
   "Insert a denote link if the file specified by buffer-name is a denote item, otherwise a normal link."
   (if (denote-file-is-note-p (format "%s" name))
-	(mg-denote--insert-link-from-file-path name)
+      (mg-denote--insert-link-from-file-path name)
     (format "[[file:%s]]" name)))
 
 (defun mg-denote--insert-link-from-file-path (file-path)
@@ -77,14 +77,14 @@
   "Select a zettel from `denote-directory` and insert its link at current point."
   (interactive)
   (let ((file-path
-	   (mg-denote--get-zettel)))
+	 (mg-denote--get-zettel)))
     (mg-denote--insert-link-from-file-path file-path)))
 
 (defun mg-denote-grep-on-zettels ()
-    "Grep for a search query, but only on zettels."
-    (interactive)
-    (let ((zettels
-	     (denote-directory-files denote-signature-regexp)))
-	(consult-grep zettels)))
+  "Grep for a search query, but only on zettels."
+  (interactive)
+  (let ((zettels
+	 (denote-directory-files denote-signature-regexp)))
+    (consult-grep zettels)))
 
 ;;; mg-denote.el ends here

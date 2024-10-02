@@ -36,29 +36,29 @@
 (defun mg-org-compute-deep-work-minutes (start-date end-date)
   "Compute the minutes of deep work from START-DATE to END-DATE.
 
-This function searches into both projects and archive files to
-retrive logbooks properties and their related timing."
+  This function searches into both projects and archive files to
+  retrive logbooks properties and their related timing."
   (interactive
    (list
     (format "<%s>" (org-read-date))
     (format "<%s>" (org-read-date))))
   (let* ((default-directory (denote-directory))
-	 (target-files
-	  '(mg-work-projects-file
-	    mg-archive-file)))
+  	 (target-files
+  	  '(mg-work-projects-file
+  	    mg-archive-file)))
     (insert (format "%s"
-		    (apply '+ (mapcar (lambda (file)
-					(mg-org-get-clock-minutes file start-date end-date)) target-files))))))
+  		    (apply '+ (mapcar (lambda (file)
+  					(mg-org-get-clock-minutes file start-date end-date)) target-files))))))
 
 (defun mg-toggle-pdf-presentation-mode ()
   "Toggle a presentation mode to show PDFs in a clean layout.
 
-  When showing a PDF in docview, the modeline should be hidden, and
-  the document itself should be centered, for better visibility."
+    When showing a PDF in docview, the modeline should be hidden, and
+    the document itself should be centered, for better visibility."
   (interactive)
   (toggle-frame-fullscreen)
   (if (not (bound-and-true-p hide-mode-line-mode))
-	(hide-mode-line-mode 1)
+      (hide-mode-line-mode 1)
     (hide-mode-line-mode 0))
   (pdf-view-fit-page-to-window))
 

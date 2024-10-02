@@ -49,9 +49,9 @@
   ;; Function to extract and concatenate text before the link and the link description
   (let ((start 0) (parts '()))
     (while (string-match "\\(.*?\\)\\(\\[\\[.*?\\]\\[\\(.*?\\)\\]\\]\\)" heading start)
-	(push (match-string 1 heading) parts)  ; Text before the link
-	(push (match-string 3 heading) parts)  ; Link description
-	(setq start (match-end 0)))
+      (push (match-string 1 heading) parts)  ; Text before the link
+      (push (match-string 3 heading) parts)  ; Link description
+      (setq start (match-end 0)))
     (push (substring heading start) parts)  ; Remaining text after last link
     (string-join (reverse parts) "")))
 
@@ -65,11 +65,58 @@
     (format "<%s>" (org-read-date))
     (format "<%s>" (org-read-date))))
   (let ((minutes (nth 1
-		        (with-current-buffer (find-file-noselect file)
-			  (org-clock-get-table-data file `( :maxlevel 4
-							    :tstart ,start-date
-							    :tend ,end-date))))))
+		      (with-current-buffer (find-file-noselect file)
+			(org-clock-get-table-data file `( :maxlevel 4
+							  :tstart ,start-date
+							  :tend ,end-date))))))
     minutes))
+
+(defun mg-org-get-tasks ()
+  "Get active tasks from all `org-agenda-files'.
+
+  This function returns a list of tasks taken from files belonging
+  to the `org-agenda-files' list. NOTE: It needs to be tweaked and
+  generalized to filter based on `org-todo-keywords'."
+  (let ((tasks nil))
+    (dolist (file org-agenda-files)
+      (let* ((buffer-exists (get-file-buffer file))
+  	     (buffer (or buffer-exists (find-file-noselect file))))
+  	(with-current-buffer buffer
+  	  (let ((task-list (save-excursion
+  			     (org-agenda-get-todos))))
+  	    (push task-list tasks)))
+  	(unless buffer-exists
+  	  (kill-buffer buffer))))
+    (flatten-tree tasks)))
+
+(defun mg-org--task-prompt ()
+  "Prompt the user for a task.
+
+The task can be selected from the list of tasks returned by
+`mg-org-get-tasks'."
+  (completing-read "Select task: " (mg-org-get-tasks) nil :require-match))
+
+(defun mg-org-block-time ()
+  "Prompt the user for time and task and block time.
+
+The user is continuously prompted with a date-time to select -
+the current day is supposed to be selected -, and it prompts the
+a list of pending org-agenda todo tasks. It creates and hidden
+file with the time-blocking and then it adds it to the
+`org-agenda-files'."
+  (interactive)
+  (let ((default-directory "/tmp/"))
+    (with-current-buffer (find-file (format ".%s--timeblock.org" (format-time-string "%Y%m%dT%H%M%S")))
+      ;; In case of one file, to avoid overwritting stuff:
+      ;; (goto-char (point-max))
+      (org-agenda-file-to-front)
+      (catch 'no-time
+  	(while t
+  	  (let ((time (org-read-date)))
+  	    (unless (string-match-p "[0-9-]\\{10\\} .*" time)
+  	      (throw 'no-time time))
+  	    (insert (format "* %s\n" (string-trim (my-org-task-prompt))))
+  	    (insert (format "SCHEDULED: <%s>\n\n" time))))))))
 
 (provide 'mg-org)
 ;;; mg-org.el ends here

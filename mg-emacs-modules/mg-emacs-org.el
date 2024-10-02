@@ -1,6 +1,7 @@
 (use-package mg-org
   :ensure nil
-  :bind (("C-c p c d" . mg-org-compute-deep-work-minutes)))
+  :bind (("C-c o c d" . mg-org-compute-deep-work-minutes)
+	 ("C-c o b" . mg-org-block-time)))
 
 (use-package org
   :straight t

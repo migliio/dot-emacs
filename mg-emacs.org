@@ -158,21 +158,21 @@ Historically, this module enclosed a bunch of other customizations for variables
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-defaults.el"
   (use-package emacs
     :bind (("M-n" . forward-paragraph)
-	   ("M-p" . backward-paragraph)
-	   ("C-c u r s" . replace-string)
-	   ("C-c u r q" . query-replace-regexp)
-	   ("C-c u r r" . query-replace)
-	   ("C-c u r c" . comment-region)
-	   ("C-c u r u" . uncomment-region)
-	   ("C-c u r i" . indent-region)
-	   ("C-c u r a r" . align-regexp)
-	   ("C-c u r a e" . align-entire)
-	   ("C-c u c w" . whitespace-mode)
-	   ("C-c u m" . compile)
-	   ("C-c u w f" . toggle-frame-fullscreen)
-	   ("C-c u w m" . toggle-frame-maximized)
-	   ("C-x C-n" . next-buffer)
-	   ("C-x C-p" . previous-buffer))
+  	   ("M-p" . backward-paragraph)
+  	   ("C-c u r s" . replace-string)
+  	   ("C-c u r q" . query-replace-regexp)
+  	   ("C-c u r r" . query-replace)
+  	   ("C-c u r c" . comment-region)
+  	   ("C-c u r u" . uncomment-region)
+  	   ("C-c u r i" . indent-region)
+  	   ("C-c u r a r" . align-regexp)
+  	   ("C-c u r a e" . align-entire)
+  	   ("C-c u c w" . whitespace-mode)
+  	   ("C-c u m" . compile)
+  	   ("C-c u w f" . toggle-frame-fullscreen)
+  	   ("C-c u w m" . toggle-frame-maximized)
+  	   ("C-x C-n" . next-buffer)
+  	   ("C-x C-p" . previous-buffer))
     :init
     (global-set-key (kbd "C-x C-n") nil)
     (global-set-key (kbd "C-x C-p") nil)
@@ -181,53 +181,53 @@ Historically, this module enclosed a bunch of other customizations for variables
     (defconst mg-emacs-root "~/.emacs.d")
     (defconst mg-sendmail-bin "/usr/bin/msmtp")
     (setq inhibit-startup-screen t
-	  completion-cycle-threshold 3
-	  tab-always-indent 'complete
-	  create-lockfiles nil
-	  user-emacs-directory (expand-file-name "~/.cache/emacs/")
-	  url-history-file (expand-file-name "url/history" user-emacs-directory)
-	  custom-file (if (boundp 'server-socket-dir)
-			  (expand-file-name "custom.el" server-socket-dir)
-		        (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory))
-	  backup-by-copying t
-	  delete-old-versions t
-	  kept-new-versions 6
-	  kept-old-versions 2
-	  message-send-mail-function 'message-send-mail-with-sendmail
-	  sendmail-program mg-sendmail-bin
-	  version-control t
-	  auto-save-list-file-prefix emacs-tmp-dir
-	  auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
-	  backup-directory-alist `((".*" . ,emacs-tmp-dir)))
+  	  completion-cycle-threshold 3
+  	  tab-always-indent 'complete
+  	  create-lockfiles nil
+  	  user-emacs-directory (expand-file-name "~/.cache/emacs/")
+  	  url-history-file (expand-file-name "url/history" user-emacs-directory)
+  	  custom-file (if (boundp 'server-socket-dir)
+  			  (expand-file-name "custom.el" server-socket-dir)
+  		        (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory))
+  	  backup-by-copying t
+  	  delete-old-versions t
+  	  kept-new-versions 6
+  	  kept-old-versions 2
+  	  message-send-mail-function 'message-send-mail-with-sendmail
+  	  sendmail-program mg-sendmail-bin
+  	  version-control t
+  	  auto-save-list-file-prefix emacs-tmp-dir
+  	  auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
+  	  backup-directory-alist `((".*" . ,emacs-tmp-dir)))
     (setq-default frame-title-format '("%b")
-		  ring-bell-function 'ignore
-		  tab-width 8
-		  frame-resize-pixelwise t
-		  linum-format "%4d "
-		  use-short-answers t
-		  make-backup-files nil
-		  global-auto-revert-mode t
-		  confirm-kill-processes nil
-		  process-connection-type nil
-		  org-src-fontify-natively t
-		  warning-minimum-level :emergency
-		  set-language-environment "UTF-8"
-		  system-time-locale "C"
-		  native-comp-async-report-warnings-errors nil)
+  		  ring-bell-function 'ignore
+  		  tab-width 8
+  		  frame-resize-pixelwise t
+  		  linum-format "%4d "
+  		  use-short-answers t
+  		  make-backup-files nil
+  		  global-auto-revert-mode t
+  		  confirm-kill-processes nil
+  		  process-connection-type nil
+  		  org-src-fontify-natively t
+  		  warning-minimum-level :emergency
+  		  set-language-environment "UTF-8"
+  		  system-time-locale "C"
+  		  native-comp-async-report-warnings-errors nil)
     (load custom-file t)
     (add-hook 'window-setup-hook 'toggle-frame-maximized t)
     (add-to-list 'yank-excluded-properties 'face)
     (if (display-graphic-p)
-	(dolist (mode
-	         '(tool-bar-mode
-		   scroll-bar-mode
-		   menu-bar-mode
-		   tooltip-mode
-		   blink-cursor-mode))
-	  (funcall mode 0)))
+  	(dolist (mode
+  	         '(tool-bar-mode
+  		   scroll-bar-mode
+  		   menu-bar-mode
+  		   tooltip-mode
+  		   blink-cursor-mode))
+  	  (funcall mode 0)))
     (dolist (mode
-	     '(global-visual-line-mode
-	       show-paren-mode))
+  	     '(global-visual-line-mode
+  	       show-paren-mode))
       (funcall mode 1)))
 
   (when (eq system-type 'darwin)
@@ -237,22 +237,34 @@ Historically, this module enclosed a bunch of other customizations for variables
   (use-package mg-emacs
     :ensure nil
     :bind (("C-c p s" . mg-take-screenshot)
-	   ("C-c u f" . mg-add-current-file-name-to-killring)
-	   ("C-c u s i" . mg-show-machine-info)
-	   ("C-c u s s" . mg-shutdown-machine-with-confirmation)
-	   ("C-c u t" . mg-insert-today-timestamp-formatted)))
+  	   ("C-c u f" . mg-add-current-file-name-to-killring)
+  	   ("C-c u s i" . mg-show-machine-info)
+  	   ("C-c u n" . mg-new-buffer-with-mode)
+  	   ("C-c u s s" . mg-shutdown-machine-with-confirmation)
+  	   ("C-c u t" . mg-insert-today-timestamp-formatted)))
 
   (use-package mg-defaults-extensions
     :ensure nil
     :config
     (add-hook 'prog-mode-hook
-	      #'mg-line-numbers-highlight-line-mode))
+  	      #'mg-line-numbers-highlight-line-mode))
 
   (use-package mg-utils
     :ensure nil)
 #+end_src
 
 The ~mg-line-numbers-highlight-line-mode~ minor mode is only used when the ~prog-mode~ major mode is enabled. There is no reason for my specific use cases to have line numbers outside of coding. However, I use this feature quite extensively when programming. In text editors like Emacs, relative line numbers add a 10x speed in the way you insert/remove/modify text.
+
+Next, I enable ~which-key~ to remind me what keybinds to use to perform some actions. This is convenient because I often forget some keybindings that are not constantly part of my workflow. The idea of which-key is to pop a small list in the minibuffer showing pairs of ~(<next_key>, <emacs-command>)~ to facilitate the choice of pressing the next key in the sequence of keys for launching a certain Emacs command.
+
+#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-defaults.el"
+  (use-package which-key
+    :straight t
+    :init (which-key-mode)
+    :diminish which-key-mode
+    :config
+    (setq which-key-idle-delay 0.3))
+#+end_src
 
 Starting from [2024-04-14 Sun], I decided to implement my own mode-line to keep things simple and under control. I thought there was so much wasted space in the default one, and most of the information were not completely clear. Now, I can immediately see whether I'm editing a local or remote file (i.e., by looking at either ~"@"~ or ~"^"~ characters on the left-hand side of the modeline), which derived mode I'm in, and whether the current buffer is in read-only mode. Those are all information already specified by the default modeline, but their arrangement and syntax was unclear to me. The below snippet flows into the ~mg-custom-modeline.el~ module.
 
@@ -772,7 +784,8 @@ Those questions are all answered by just looking at the agenda, fired up with ju
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-org.el"
   (use-package mg-org
     :ensure nil
-    :bind (("C-c p c d" . mg-org-compute-deep-work-minutes)))
+    :bind (("C-c o c d" . mg-org-compute-deep-work-minutes)
+  	 ("C-c o b" . mg-org-block-time)))
 
   (use-package org
     :straight t
@@ -1068,7 +1081,7 @@ Those questions are all answered by just looking at the agenda, fired up with ju
 
   (use-package mg-pkm-utils
     :ensure nil
-    :bind (("C-c p c d" . mg-compute-deep-work-minutes)))
+    :bind (("C-c p c d" . mg-org-compute-deep-work-minutes)))
 
   (provide 'mg-emacs-org)
 #+end_src
@@ -1632,14 +1645,6 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   (defconst mg-pkm-base-directory "~/Vault/pkm"
     "This constant keeps track of the base directory for my entire knowledge base.")
 
-  (defun mg--get-major-modes ()
-    "Utility function to get loaded major modes.
-
-    This function gets the major modes by leveraging on `auto-mode-alist', which is a list of cons nodes of the form \"(<name-pattern> . <major-mode-string>)\". However, there are multiple entries per each major mode, thus we shoud filter duplicates afterwards."
-    (let ((modes
-	   (mapcar (lambda (alist-cons) (cdr alist-cons)) auto-mode-alist)))
-      (delete-dups modes)))
-
   (defun mg-get-today-timestamp ()
     "Helper function to get today's timestamp with the abbreviated day name."
     (format-time-string "%Y-%m-%d %a"))
@@ -1718,11 +1723,11 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
     "Add the file name visited by the current buffer to the killring."
     (interactive)
     (let ((filename (if (equal major-mode 'dired-mode)
-		      default-directory
-		    (buffer-file-name))))
+  		      default-directory
+  		    (buffer-file-name))))
       (when filename
-	(kill-new filename)
-	(message "Added file name '%s' to the killring." filename))))
+  	(kill-new filename)
+  	(message "Added file name '%s' to the killring." filename))))
 
   (defconst mg-get-battery-percentage-cmd "acpi -b | grep -E -o '[0-9][0-9][0-9]?%'"
     "This is a string representing a shell command to get the current battery percentage.")
@@ -1760,36 +1765,36 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   (defun mg--get-formatted-cpu-infos ()
     "Get all the battery-related information and format them."
     (format "%s @ %s"
-	  (string-trim (shell-command-to-string mg-get-cpu-usage-cmd))
-	  (string-trim (shell-command-to-string mg-get-cpu-temp-cmd))))
+  	  (string-trim (shell-command-to-string mg-get-cpu-usage-cmd))
+  	  (string-trim (shell-command-to-string mg-get-cpu-temp-cmd))))
 
   (defun mg--get-formatted-battery-infos ()
     "Get all the battery-related information and format them."
     (format "%s (%s) : %s"
-	    (string-trim (shell-command-to-string mg-get-battery-percentage-cmd))
-	    (string-trim (shell-command-to-string mg-get-battery-status-cmd))
-	    (string-trim (shell-command-to-string mg-get-battery-remaining-time-cmd))))
+  	    (string-trim (shell-command-to-string mg-get-battery-percentage-cmd))
+  	    (string-trim (shell-command-to-string mg-get-battery-status-cmd))
+  	    (string-trim (shell-command-to-string mg-get-battery-remaining-time-cmd))))
 
   (defun mg--get-formatted-ram-infos ()
     "Get all the battery-related information and format them."
     (format "%s @ %s"
-	  (string-trim (shell-command-to-string mg-get-cpu-usage-cmd))
-	  (string-trim (shell-command-to-string mg-get-cpu-temp-cmd))))
+  	  (string-trim (shell-command-to-string mg-get-cpu-usage-cmd))
+  	  (string-trim (shell-command-to-string mg-get-cpu-temp-cmd))))
 
   (defun mg--get-formatted-disk-infos ()
     "Get all the disk-related information and format them."
     (format "%s"
-	  (string-trim (shell-command-to-string mg-get-disk-usage-cmd))))
+  	  (string-trim (shell-command-to-string mg-get-disk-usage-cmd))))
 
   (defun mg--get-formatted-volume-infos ()
     "Get all the volume-related information and format them."
     (format "%s"
-	  (string-trim (shell-command-to-string mg-get-volume-percentage-cmd))))
+  	  (string-trim (shell-command-to-string mg-get-volume-percentage-cmd))))
 
   (defun mg--get-formatted-keyboard-infos ()
     "Get all the keyboard-related information and format them."
     (format "%s"
-	  (string-trim (shell-command-to-string mg-get-keyboard-layout-cmd))))
+  	  (string-trim (shell-command-to-string mg-get-keyboard-layout-cmd))))
 
   (defun mg-show-machine-info ()
     "Show the some system information for the current machine.
@@ -1797,42 +1802,18 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
     This function basically substitutes a full-fledged system-tray with additional information such as remaning battery time, memory and disk usage, etc. It better works in conjuction with a simple modeline and EXWM, and makes no sense when Emacs runs in a complete DE."
     (interactive)
     (let* ((battery-info (mg--get-formatted-battery-infos))
-	   (cpu-info (mg--get-formatted-cpu-infos))
-	   (ram-info (mg--get-formatted-ram-infos))
-	   (disk-info (mg--get-formatted-disk-infos))
-	   (volume-info (mg--get-formatted-volume-infos))
-	   (keyboard-layout-info (mg--get-formatted-keyboard-infos)))
+  	   (cpu-info (mg--get-formatted-cpu-infos))
+  	   (ram-info (mg--get-formatted-ram-infos))
+  	   (disk-info (mg--get-formatted-disk-infos))
+  	   (volume-info (mg--get-formatted-volume-infos))
+  	   (keyboard-layout-info (mg--get-formatted-keyboard-infos)))
       (message "System-level info => BAT: %s - CPU: %s - MEM: %s - DSK: %s - VOL: %s - KBD: %s"
-	     battery-info cpu-info ram-info disk-info volume-info keyboard-layout-info)))
+  	     battery-info cpu-info ram-info disk-info volume-info keyboard-layout-info)))
 
   (defun mg-shutdown-machine-with-confirmation
       "Ask for confirmation and shut down the system if confirmed."
     (when (yes-or-no-p "Are you sure you want to shut down the system? ")
       (shell-command mg-shutdown-system-cmd)))
-
-  (defun mg-new-buffer-with-mode ()
-    "Create a new buffer and prompt the user for the major-mode to enable.
-
-  NOTE: as returned by auto-mode-alist cdr's, major modes are
-  strings. The `funcall' function takes a function canonical name
-  as input, then we should switch from string to canonical symbol
-  through `intern'."
-    (interactive)
-    (let* ((input-buff-name (read-string "Insert the buffer NAME: "))
-	   (new-buff (generate-new-buffer
-		      (if (string= "" input-buff-name)
-			  "untitled"
-		        input-buff-name)))
-	   (major-modes-list (mg--get-major-modes))
-	   (mode
-	    (completing-read "Select the MAJOR MODE to enable: " major-modes-list))
-	   (mode-symbol (intern mode)))
-      (switch-to-buffer new-buff)
-      (if (fboundp mode-symbol)
-	  (funcall mode-symbol)
-	(user-error "The selected mode doesn't exist or it is not lazily loaded"))
-      (funcall (intern mode))
-      new-buff))
 
   ;;; mg-emacs.el ends here
 #+end_src
@@ -2112,9 +2093,9 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
     ;; Function to extract and concatenate text before the link and the link description
     (let ((start 0) (parts '()))
       (while (string-match "\\(.*?\\)\\(\\[\\[.*?\\]\\[\\(.*?\\)\\]\\]\\)" heading start)
-  	(push (match-string 1 heading) parts)  ; Text before the link
-  	(push (match-string 3 heading) parts)  ; Link description
-  	(setq start (match-end 0)))
+        (push (match-string 1 heading) parts)  ; Text before the link
+        (push (match-string 3 heading) parts)  ; Link description
+        (setq start (match-end 0)))
       (push (substring heading start) parts)  ; Remaining text after last link
       (string-join (reverse parts) "")))
 
@@ -2128,11 +2109,58 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
       (format "<%s>" (org-read-date))
       (format "<%s>" (org-read-date))))
     (let ((minutes (nth 1
-  		        (with-current-buffer (find-file-noselect file)
-  			  (org-clock-get-table-data file `( :maxlevel 4
-  							    :tstart ,start-date
-  							    :tend ,end-date))))))
+  		      (with-current-buffer (find-file-noselect file)
+  			(org-clock-get-table-data file `( :maxlevel 4
+  							  :tstart ,start-date
+  							  :tend ,end-date))))))
       minutes))
+
+  (defun mg-org-get-tasks ()
+    "Get active tasks from all `org-agenda-files'.
+
+    This function returns a list of tasks taken from files belonging
+    to the `org-agenda-files' list. NOTE: It needs to be tweaked and
+    generalized to filter based on `org-todo-keywords'."
+    (let ((tasks nil))
+      (dolist (file org-agenda-files)
+        (let* ((buffer-exists (get-file-buffer file))
+    	     (buffer (or buffer-exists (find-file-noselect file))))
+    	(with-current-buffer buffer
+    	  (let ((task-list (save-excursion
+    			     (org-agenda-get-todos))))
+    	    (push task-list tasks)))
+    	(unless buffer-exists
+    	  (kill-buffer buffer))))
+      (flatten-tree tasks)))
+
+  (defun mg-org--task-prompt ()
+    "Prompt the user for a task.
+
+  The task can be selected from the list of tasks returned by
+  `mg-org-get-tasks'."
+    (completing-read "Select task: " (mg-org-get-tasks) nil :require-match))
+
+  (defun mg-org-block-time ()
+    "Prompt the user for time and task and block time.
+
+  The user is continuously prompted with a date-time to select -
+  the current day is supposed to be selected -, and it prompts the
+  a list of pending org-agenda todo tasks. It creates and hidden
+  file with the time-blocking and then it adds it to the
+  `org-agenda-files'."
+    (interactive)
+    (let ((default-directory "/tmp/"))
+      (with-current-buffer (find-file (format ".%s--timeblock.org" (format-time-string "%Y%m%dT%H%M%S")))
+        ;; In case of one file, to avoid overwritting stuff:
+        ;; (goto-char (point-max))
+        (org-agenda-file-to-front)
+        (catch 'no-time
+    	(while t
+    	  (let ((time (org-read-date)))
+    	    (unless (string-match-p "[0-9-]\\{10\\} .*" time)
+    	      (throw 'no-time time))
+    	    (insert (format "* %s\n" (string-trim (mg-org--task-prompt))))
+    	    (insert (format "SCHEDULED: <%s>\n\n" time))))))))
 
   (provide 'mg-org)
   ;;; mg-org.el ends here
@@ -2179,29 +2207,29 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   (defun mg-org-compute-deep-work-minutes (start-date end-date)
     "Compute the minutes of deep work from START-DATE to END-DATE.
 
-  This function searches into both projects and archive files to
-  retrive logbooks properties and their related timing."
+    This function searches into both projects and archive files to
+    retrive logbooks properties and their related timing."
     (interactive
      (list
       (format "<%s>" (org-read-date))
       (format "<%s>" (org-read-date))))
     (let* ((default-directory (denote-directory))
-	 (target-files
-	  '(mg-work-projects-file
-	    mg-archive-file)))
+    	 (target-files
+    	  `(,mg-work-projects-file
+    	    ,mg-archive-file)))
       (insert (format "%s"
-		    (apply '+ (mapcar (lambda (file)
-					(mg-org-get-clock-minutes file start-date end-date)) target-files))))))
+    		    (apply '+ (mapcar (lambda (file)
+    					(mg-org-get-clock-minutes file start-date end-date)) target-files))))))
 
   (defun mg-toggle-pdf-presentation-mode ()
     "Toggle a presentation mode to show PDFs in a clean layout.
 
-    When showing a PDF in docview, the modeline should be hidden, and
-    the document itself should be centered, for better visibility."
+      When showing a PDF in docview, the modeline should be hidden, and
+      the document itself should be centered, for better visibility."
     (interactive)
     (toggle-frame-fullscreen)
     (if (not (bound-and-true-p hide-mode-line-mode))
-	(hide-mode-line-mode 1)
+        (hide-mode-line-mode 1)
       (hide-mode-line-mode 0))
     (pdf-view-fit-page-to-window))
 
@@ -2255,10 +2283,10 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   (defun mg-denote--get-item (filter-regex)
     "Get a file path interactively starting from the denote-directory."
     (let* ((candidates (denote-directory-files filter-regex))
-	   (file-name (completing-read
-		       "Choose FILE: "
-		       candidates))
-	   (file-path file-name))
+  	 (file-name (completing-read
+  		     "Choose FILE: "
+  		     candidates))
+  	 (file-path file-name))
       file-path))
 
   (defun mg-denote--get-file ()
@@ -2282,7 +2310,7 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   (defun mg-insert-denote-or-normal-link (name)
     "Insert a denote link if the file specified by buffer-name is a denote item, otherwise a normal link."
     (if (denote-file-is-note-p (format "%s" name))
-	(mg-denote--insert-link-from-file-path name)
+        (mg-denote--insert-link-from-file-path name)
       (format "[[file:%s]]" name)))
 
   (defun mg-denote--insert-link-from-file-path (file-path)
@@ -2294,15 +2322,15 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
     "Select a zettel from `denote-directory` and insert its link at current point."
     (interactive)
     (let ((file-path
-	   (mg-denote--get-zettel)))
+  	 (mg-denote--get-zettel)))
       (mg-denote--insert-link-from-file-path file-path)))
 
   (defun mg-denote-grep-on-zettels ()
-      "Grep for a search query, but only on zettels."
-      (interactive)
-      (let ((zettels
-	     (denote-directory-files denote-signature-regexp)))
-	(consult-grep zettels)))
+    "Grep for a search query, but only on zettels."
+    (interactive)
+    (let ((zettels
+  	 (denote-directory-files denote-signature-regexp)))
+      (consult-grep zettels)))
 
   ;;; mg-denote.el ends here
 #+end_src

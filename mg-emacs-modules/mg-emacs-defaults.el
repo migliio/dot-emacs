@@ -93,6 +93,13 @@
 (use-package mg-utils
   :ensure nil)
 
+(use-package which-key
+  :straight t
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 0.3))
+
 (use-package mg-modeline
   :ensure nil)
 
