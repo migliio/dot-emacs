@@ -80,9 +80,9 @@ Just to mention it, I want a single instance of Emacs running in the background.
     (server-start))
 
   (add-to-list 'load-path (expand-file-name
-			 "~/.emacs.d/mg-emacs-modules/"))
+  			 "~/.emacs.d/mg-emacs-modules/"))
   (add-to-list 'load-path (expand-file-name
-			 "~/.emacs.d/mg-custom-modules/"))
+  			 "~/.emacs.d/mg-custom-modules/"))
 
   (require 'mg-emacs-package-managers)
   (require 'mg-emacs-defaults)
@@ -129,18 +129,18 @@ Then, the module handles the bootstrapping phase of ~straight.el~ as well. The c
 
   (defvar bootstrap-version)
   (let ((bootstrap-file
-	 (expand-file-name
-	  "straight/repos/straight.el/bootstrap.el"
-	  (or (bound-and-true-p straight-base-dir)
-	      user-emacs-directory)))
-	(bootstrap-version 7))
+         (expand-file-name
+  	"straight/repos/straight.el/bootstrap.el"
+  	(or (bound-and-true-p straight-base-dir)
+  	    user-emacs-directory)))
+        (bootstrap-version 7))
     (unless (file-exists-p bootstrap-file)
       (with-current-buffer
-	  (url-retrieve-synchronously
-	   "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-	   'silent 'inhibit-cookies)
-	(goto-char (point-max))
-	(eval-print-last-sexp)))
+  	(url-retrieve-synchronously
+  	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+  	 'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
 
   (provide 'mg-emacs-package-managers)
@@ -158,21 +158,21 @@ Historically, this module enclosed a bunch of other customizations for variables
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-defaults.el"
   (use-package emacs
     :bind (("M-n" . forward-paragraph)
-  	   ("M-p" . backward-paragraph)
-  	   ("C-c u r s" . replace-string)
-  	   ("C-c u r q" . query-replace-regexp)
-  	   ("C-c u r r" . query-replace)
-  	   ("C-c u r c" . comment-region)
-  	   ("C-c u r u" . uncomment-region)
-  	   ("C-c u r i" . indent-region)
-  	   ("C-c u r a r" . align-regexp)
-  	   ("C-c u r a e" . align-entire)
-  	   ("C-c u c w" . whitespace-mode)
-  	   ("C-c u m" . compile)
-  	   ("C-c u w f" . toggle-frame-fullscreen)
-  	   ("C-c u w m" . toggle-frame-maximized)
-  	   ("C-x C-n" . next-buffer)
-  	   ("C-x C-p" . previous-buffer))
+  	 ("M-p" . backward-paragraph)
+  	 ("C-c u r s" . replace-string)
+  	 ("C-c u r q" . query-replace-regexp)
+  	 ("C-c u r r" . query-replace)
+  	 ("C-c u r c" . comment-region)
+  	 ("C-c u r u" . uncomment-region)
+  	 ("C-c u r i" . indent-region)
+  	 ("C-c u r a r" . align-regexp)
+  	 ("C-c u r a e" . align-entire)
+  	 ("C-c u c w" . whitespace-mode)
+  	 ("C-c u m" . compile)
+  	 ("C-c u w f" . toggle-frame-fullscreen)
+  	 ("C-c u w m" . toggle-frame-maximized)
+  	 ("C-x C-n" . next-buffer)
+  	 ("C-x C-p" . previous-buffer))
     :init
     (global-set-key (kbd "C-x C-n") nil)
     (global-set-key (kbd "C-x C-p") nil)
@@ -181,53 +181,53 @@ Historically, this module enclosed a bunch of other customizations for variables
     (defconst mg-emacs-root "~/.emacs.d")
     (defconst mg-sendmail-bin "/usr/bin/msmtp")
     (setq inhibit-startup-screen t
-  	  completion-cycle-threshold 3
-  	  tab-always-indent 'complete
-  	  create-lockfiles nil
-  	  user-emacs-directory (expand-file-name "~/.cache/emacs/")
-  	  url-history-file (expand-file-name "url/history" user-emacs-directory)
-  	  custom-file (if (boundp 'server-socket-dir)
-  			  (expand-file-name "custom.el" server-socket-dir)
-  		        (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory))
-  	  backup-by-copying t
-  	  delete-old-versions t
-  	  kept-new-versions 6
-  	  kept-old-versions 2
-  	  message-send-mail-function 'message-send-mail-with-sendmail
-  	  sendmail-program mg-sendmail-bin
-  	  version-control t
-  	  auto-save-list-file-prefix emacs-tmp-dir
-  	  auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
-  	  backup-directory-alist `((".*" . ,emacs-tmp-dir)))
+  	completion-cycle-threshold 3
+  	tab-always-indent 'complete
+  	create-lockfiles nil
+  	user-emacs-directory (expand-file-name "~/.cache/emacs/")
+  	url-history-file (expand-file-name "url/history" user-emacs-directory)
+  	custom-file (if (boundp 'server-socket-dir)
+  			(expand-file-name "custom.el" server-socket-dir)
+  		      (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory))
+  	backup-by-copying t
+  	delete-old-versions t
+  	kept-new-versions 6
+  	kept-old-versions 2
+  	message-send-mail-function 'message-send-mail-with-sendmail
+  	sendmail-program mg-sendmail-bin
+  	version-control t
+  	auto-save-list-file-prefix emacs-tmp-dir
+  	auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
+  	backup-directory-alist `((".*" . ,emacs-tmp-dir)))
     (setq-default frame-title-format '("%b")
-  		  ring-bell-function 'ignore
-  		  tab-width 8
-  		  frame-resize-pixelwise t
-  		  linum-format "%4d "
-  		  use-short-answers t
-  		  make-backup-files nil
-  		  global-auto-revert-mode t
-  		  confirm-kill-processes nil
-  		  process-connection-type nil
-  		  org-src-fontify-natively t
-  		  warning-minimum-level :emergency
-  		  set-language-environment "UTF-8"
-  		  system-time-locale "C"
-  		  native-comp-async-report-warnings-errors nil)
+  		ring-bell-function 'ignore
+  		tab-width 8
+  		frame-resize-pixelwise t
+  		linum-format "%4d "
+  		use-short-answers t
+  		make-backup-files nil
+  		global-auto-revert-mode t
+  		confirm-kill-processes nil
+  		process-connection-type nil
+  		org-src-fontify-natively t
+  		warning-minimum-level :emergency
+  		set-language-environment "UTF-8"
+  		system-time-locale "C"
+  		native-comp-async-report-warnings-errors nil)
     (load custom-file t)
     (add-hook 'window-setup-hook 'toggle-frame-maximized t)
     (add-to-list 'yank-excluded-properties 'face)
     (if (display-graphic-p)
-  	(dolist (mode
-  	         '(tool-bar-mode
-  		   scroll-bar-mode
-  		   menu-bar-mode
-  		   tooltip-mode
-  		   blink-cursor-mode))
-  	  (funcall mode 0)))
+        (dolist (mode
+  	       '(tool-bar-mode
+  		 scroll-bar-mode
+  		 menu-bar-mode
+  		 tooltip-mode
+  		 blink-cursor-mode))
+  	(funcall mode 0)))
     (dolist (mode
-  	     '(global-visual-line-mode
-  	       show-paren-mode))
+  	   '(global-visual-line-mode
+  	     show-paren-mode))
       (funcall mode 1)))
 
   (when (eq system-type 'darwin)
@@ -237,17 +237,17 @@ Historically, this module enclosed a bunch of other customizations for variables
   (use-package mg-emacs
     :ensure nil
     :bind (("C-c p s" . mg-take-screenshot)
-  	   ("C-c u f" . mg-add-current-file-name-to-killring)
-  	   ("C-c u s i" . mg-show-machine-info)
-  	   ("C-c u n" . mg-new-buffer-with-mode)
-  	   ("C-c u s s" . mg-shutdown-machine-with-confirmation)
-  	   ("C-c u t" . mg-insert-today-timestamp-formatted)))
+  	 ("C-c u f" . mg-add-current-file-name-to-killring)
+  	 ("C-c u s i" . mg-show-machine-info)
+  	 ("C-c u n" . mg-new-buffer-with-mode)
+  	 ("C-c u s s" . mg-shutdown-machine-with-confirmation)
+  	 ("C-c u t" . mg-insert-today-timestamp-formatted)))
 
   (use-package mg-defaults-extensions
     :ensure nil
     :config
     (add-hook 'prog-mode-hook
-  	      #'mg-line-numbers-highlight-line-mode))
+  	    #'mg-line-numbers-highlight-line-mode))
 
   (use-package mg-utils
     :ensure nil)
@@ -304,18 +304,18 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
 
       ;; Custom application started that leverages on `xstarter'
       (defun mg-starter ()
-	"Choose the application to run from a list generated with
+        "Choose the application to run from a list generated with
   `xstarter', which is, then, a prerequisite for this function to
   work."
-	(interactive)
-	(let* ((candidates (split-string
-			    (shell-command-to-string "xstarter -P")
-			    "\n"
-			    t))
-	       (application-path (completing-read
-				  "Application to launch: "
-				  candidates)))
-	  (start-process "" nil application-path)))
+        (interactive)
+        (let* ((candidates (split-string
+  			  (shell-command-to-string "xstarter -P")
+  			  "\n"
+  			  t))
+  	     (application-path (completing-read
+  				"Application to launch: "
+  				candidates)))
+  	(start-process "" nil application-path)))
 
 
       (setq exwm-workspace-number 6)
@@ -326,93 +326,93 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
       (require 'exwm-randr)
       (exwm-randr-enable)
       (setq exwm-input-prefix-keys
-	    '(?\C-x
-	      ?\C-u
-	      ?\C-n
-	      ?\C-t
-	      ?\C-h
-	      ?\C-p
-	      ?\C-g
-	      ?\M-x
-	      ?\M-`
-	      ?\M-&
-	      ?\M-:
-	      ?\C-\M-j
-	      ?\C-\ ))
+  	  '(?\C-x
+  	    ?\C-u
+  	    ?\C-n
+  	    ?\C-t
+  	    ?\C-h
+  	    ?\C-p
+  	    ?\C-g
+  	    ?\M-x
+  	    ?\M-`
+  	    ?\M-&
+  	    ?\M-:
+  	    ?\C-\M-j
+  	    ?\C-\ ))
       (setq exwm-input-simulation-keys
-	    '(([?\C-b] . [left])
-	      ([?\C-f] . [right])
-	      ([?\C-p] . [up])
-	      ([?\C-n] . [down])
-	      ([?\C-a] . [home])
-	      ([?\C-e] . [end])
-	      ([?\M-v] . [prior])
-	      ([?\C-v] . [next])
-	      ([?\C-d] . [delete])
-	      ([?\C-k] . [S-end delete])))
+  	  '(([?\C-b] . [left])
+  	    ([?\C-f] . [right])
+  	    ([?\C-p] . [up])
+  	    ([?\C-n] . [down])
+  	    ([?\C-a] . [home])
+  	    ([?\C-e] . [end])
+  	    ([?\M-v] . [prior])
+  	    ([?\C-v] . [next])
+  	    ([?\C-d] . [delete])
+  	    ([?\C-k] . [S-end delete])))
       (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
       (setq exwm-layout-show-all-buffers t)
       (setq exwm-workspace-show-all-buffers t)
       (exwm-input-set-key
        (kbd "<XF86MonBrightnessUp>")
        (lambda ()
-	 (interactive)
-	 (start-process-shell-command
-	  "light" nil "light -A 10")))
+         (interactive)
+         (start-process-shell-command
+  	"light" nil "light -A 10")))
       (exwm-input-set-key
        (kbd "<XF86MonBrightnessDown>")
        (lambda ()
-	 (interactive)
-	 (start-process-shell-command
-	  "light" nil "light -U 10")))
+         (interactive)
+         (start-process-shell-command
+  	"light" nil "light -U 10")))
       (setq exwm-input-global-keys
-	    `(
-	      ([?\s-r] . exwm-reset)
-	      ([?\s-k]
-	       . delete-window)
-	      ([s-left] . windmove-left)
-	      ([s-right] . windmove-right)
-	      ([s-up] . windmove-up)
-	      ([s-down] . windmove-down)
-	      ([?\s-m] . exwm-workspace-move-window)
-	      ([?\s-\ ] .
-	       (lambda ()
-	         (interactive)
-	         (mg-starter)))
-	      ([?\s-w] . exwm-workspace-switch)
-	      ([?\s-`] . (lambda () (interactive) (exwm-workspace-switch-create 0)))
-	      ([?\s-b] .
-	       (lambda ()
-	         (interactive)
-	         (start-process "" nil mg-browser)))
-	      ([?\s-i] .
-	       (lambda ()
-	         (interactive)
-	         (start-process "" nil mg-keyboard-layout-changer "it")))
-	      ([?\s-u] .
-	       (lambda ()
-	         (interactive)
-	         (start-process "" nil mg-keyboard-layout-changer "us")))
-	      ([?\s-f] .
-	       (lambda ()
-	         (interactive)
-	         (mg-check-and-toggle-deepwork-mode)))
-	      ,@(mapcar (lambda (i)
-			  `(,(kbd (format "s-%d" i)) .
-			    (lambda ()
-			      (interactive)
-			      (exwm-workspace-switch-create ,i))))
-		        (number-sequence 0 9))))
+  	  `(
+  	    ([?\s-r] . exwm-reset)
+  	    ([?\s-k]
+  	     . delete-window)
+  	    ([s-left] . windmove-left)
+  	    ([s-right] . windmove-right)
+  	    ([s-up] . windmove-up)
+  	    ([s-down] . windmove-down)
+  	    ([?\s-m] . exwm-workspace-move-window)
+  	    ([?\s-\ ] .
+  	     (lambda ()
+  	       (interactive)
+  	       (mg-starter)))
+  	    ([?\s-w] . exwm-workspace-switch)
+  	    ([?\s-`] . (lambda () (interactive) (exwm-workspace-switch-create 0)))
+  	    ([?\s-b] .
+  	     (lambda ()
+  	       (interactive)
+  	       (start-process "" nil mg-browser)))
+  	    ([?\s-i] .
+  	     (lambda ()
+  	       (interactive)
+  	       (start-process "" nil mg-keyboard-layout-changer "it")))
+  	    ([?\s-u] .
+  	     (lambda ()
+  	       (interactive)
+  	       (start-process "" nil mg-keyboard-layout-changer "us")))
+  	    ([?\s-f] .
+  	     (lambda ()
+  	       (interactive)
+  	       (mg-check-and-toggle-deepwork-mode)))
+  	    ,@(mapcar (lambda (i)
+  			`(,(kbd (format "s-%d" i)) .
+  			  (lambda ()
+  			    (interactive)
+  			    (exwm-workspace-switch-create ,i))))
+  		      (number-sequence 0 9))))
       (add-hook 'exwm-init-hook
-	        (lambda ()
-		  (progn
-		    (start-process mg-bluetooth-applet nil mg-bluetooth-applet)
-		    (start-process "xset" nil "xset" "s 300 5")
-		    (start-process mg-network-applet nil mg-network-applet)
-		    (start-process mg-redlight nil mg-redlight)
-		    (start-process "dbus-update-activation-environment" nil "dbus-update-activation-environment" "DISPLAY")
-		    (when (not (equal (system-name) mg-work-laptop-hostname))
-		      (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)))
+  	      (lambda ()
+  		(progn
+  		  (start-process mg-bluetooth-applet nil mg-bluetooth-applet)
+  		  (start-process "xset" nil "xset" "s 300 5")
+  		  (start-process mg-network-applet nil mg-network-applet)
+  		  (start-process mg-redlight nil mg-redlight)
+  		  (start-process "dbus-update-activation-environment" nil "dbus-update-activation-environment" "DISPLAY")
+  		  (when (not (equal (system-name) mg-work-laptop-hostname))
+  		    (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)))
 
     (use-package exwm-modeline
       :straight t
@@ -465,11 +465,11 @@ I typically prefer simple and highly legible themes. Back in the days, I used to
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (if (display-graphic-p)
       (progn
-	(if (equal system-type 'darwin)
-	    (set-frame-font "Iosevka Comfy 18" nil t)
-	  (set-frame-font "Iosevka Comfy 16" nil t))
-	(load-theme 'modus-vivendi t)
-	(set-fringe-mode 0))
+        (if (equal system-type 'darwin)
+  	  (set-frame-font "Iosevka Comfy 18" nil t)
+  	(set-frame-font "Iosevka Comfy 16" nil t))
+        (load-theme 'modus-vivendi t)
+        (set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 
 #+end_src
@@ -500,14 +500,14 @@ In this module I enable some other packages I use to visually customize buffers 
     (logos-outlines-are-pages t)
     :config
     (setq-default logos-hide-cursor nil
-		  logos-hide-mode-line t
-		  logos-hide-header-line t
-		  logos-hide-buffer-boundaries t
-		  logos-hide-fringe t
-		  logos-variable-pitch nil
-		  logos-buffer-read-only nil
-		  logos-scroll-lock nil
-		  logos-olivetti t)
+  		logos-hide-mode-line t
+  		logos-hide-header-line t
+  		logos-hide-buffer-boundaries t
+  		logos-hide-fringe t
+  		logos-variable-pitch nil
+  		logos-buffer-read-only nil
+  		logos-scroll-lock nil
+  		logos-olivetti t)
     (let ((map global-map))
       (define-key map [remap narrow-to-region] #'logos-narrow-dwim)
       (define-key map [remap forward-page] #'logos-forward-page-dwim)
@@ -528,25 +528,25 @@ Buffer management and buffer/minibuffer completion are unified in this configura
     :config
     (setq ibuffer-expert t)
     (setq ibuffer-saved-filter-groups
-	  (quote (("default"
-		   ("org" (mode . org-mode))
-		   ("dired" (mode . dired-mode))
-		   ("magit" (name . "^magit"))
-		   ("c-src" (mode . c-mode))
-		   ("python-src" (mode . python-mode))
-		   ("virt-manager" (name . "^Virt-manager"))
-		   ("brave" (name . "^Brave"))
-		   ("jabber" (name . "^*-jabber"))
-		   ("vterminal" (name . "^\\*vterminal"))
-		   ("emacs" (or
-			     (name . "^\\*scratch\\*$")
-			     (name . "^\\*Messages\\*$")))
-		   ))))
+  	(quote (("default"
+  		 ("org" (mode . org-mode))
+  		 ("dired" (mode . dired-mode))
+  		 ("magit" (name . "^magit"))
+  		 ("c-src" (mode . c-mode))
+  		 ("python-src" (mode . python-mode))
+  		 ("virt-manager" (name . "^Virt-manager"))
+  		 ("brave" (name . "^Brave"))
+  		 ("jabber" (name . "^*-jabber"))
+  		 ("vterminal" (name . "^\\*vterminal"))
+  		 ("emacs" (or
+  			   (name . "^\\*scratch\\*$")
+  			   (name . "^\\*Messages\\*$")))
+  		 ))))
     (setq ibuffer-default-sorting-mode 'alphabetic)
     (add-hook 'ibuffer-mode-hook
-	      (lambda ()
-	        (ibuffer-switch-to-saved-filter-groups "default")
-	        )))
+  	    (lambda ()
+  	      (ibuffer-switch-to-saved-filter-groups "default")
+  	      )))
 #+end_src
 
 For completion in both standard buffers and minibuffers, I employ a popular stack of packages: Vertico, Orderless, Marginalia, Consult, and Corfu. I particularly appreciate the modular nature of this setup. For instance, if a user doesn't favor Consult, they can easily retain the default completion system while still benefiting from the other packages. Personally, I find these packages highly effective in their default configurations, so I've rarely felt the need to customize them extensively.
@@ -579,60 +579,60 @@ For ~corfu~, I stick to a specific commit: I experienced a bug a while ago when 
   (use-package consult
     :straight t
     :bind (
-	   ("C-c M-x" . consult-mode-command)
-	   ("C-c h" . consult-history)
-	   ("C-c k" . consult-kmacro)
-	   ("C-c M-m" . consult-man)
-	   ("C-c i" . consult-info)
-	   ([remap Info-search] . consult-info)
+  	 ("C-c M-x" . consult-mode-command)
+  	 ("C-c h" . consult-history)
+  	 ("C-c k" . consult-kmacro)
+  	 ("C-c M-m" . consult-man)
+  	 ("C-c i" . consult-info)
+  	 ([remap Info-search] . consult-info)
 
-	   ("C-x b" . consult-buffer)
-	   ("C-x r b" . consult-bookmark)
-	   ("C-x p b" . consult-project-buffer)
+  	 ("C-x b" . consult-buffer)
+  	 ("C-x r b" . consult-bookmark)
+  	 ("C-x p b" . consult-project-buffer)
 
-	   ("M-#" . consult-register-load)
-	   ("M-'" . consult-register-store)
-	   ("C-M-#" . consult-register)
+  	 ("M-#" . consult-register-load)
+  	 ("M-'" . consult-register-store)
+  	 ("C-M-#" . consult-register)
 
-	   ("M-y" . consult-yank-pop)
+  	 ("M-y" . consult-yank-pop)
 
-	   ("M-g e" . consult-compile-error)
-	   ("M-g f" . consult-flymake)
-	   ("M-g g" . consult-goto-line)
-	   ("M-g M-g" . consult-goto-line)
-	   ("M-g o" . consult-outline)
-	   ("M-g m" . consult-mark)
-	   ("M-g k" . consult-global-mark)
-	   ("M-g i" . consult-imenu)
-	   ("M-g I" . consult-imenu-multi)
+  	 ("M-g e" . consult-compile-error)
+  	 ("M-g f" . consult-flymake)
+  	 ("M-g g" . consult-goto-line)
+  	 ("M-g M-g" . consult-goto-line)
+  	 ("M-g o" . consult-outline)
+  	 ("M-g m" . consult-mark)
+  	 ("M-g k" . consult-global-mark)
+  	 ("M-g i" . consult-imenu)
+  	 ("M-g I" . consult-imenu-multi)
 
-	   ("M-s d" . consult-find)
-	   ("M-s c" . consult-locate)
-	   ("M-s g" . consult-grep)
-	   ("M-s G" . consult-git-grep)
-	   ("M-s r" . consult-ripgrep)
-	   ("M-s l" . consult-line)
-	   ("M-s L" . consult-line-multi)
-	   ("M-s k" . consult-keep-lines)
-	   ("M-s u" . consult-focus-lines)
+  	 ("M-s d" . consult-find)
+  	 ("M-s c" . consult-locate)
+  	 ("M-s g" . consult-grep)
+  	 ("M-s G" . consult-git-grep)
+  	 ("M-s r" . consult-ripgrep)
+  	 ("M-s l" . consult-line)
+  	 ("M-s L" . consult-line-multi)
+  	 ("M-s k" . consult-keep-lines)
+  	 ("M-s u" . consult-focus-lines)
 
-	   ("M-s e" . consult-isearch-history)
-	   :map isearch-mode-map
-	   ("M-e" . consult-isearch-history)
-	   ("M-s e" . consult-isearch-history)
-	   ("M-s l" . consult-line)
-	   ("M-s L" . consult-line-multi)
+  	 ("M-s e" . consult-isearch-history)
+  	 :map isearch-mode-map
+  	 ("M-e" . consult-isearch-history)
+  	 ("M-s e" . consult-isearch-history)
+  	 ("M-s l" . consult-line)
+  	 ("M-s L" . consult-line-multi)
 
-	   :map minibuffer-local-map
-	   ("M-s" . consult-history)
-	   ("M-r" . consult-history))
+  	 :map minibuffer-local-map
+  	 ("M-s" . consult-history)
+  	 ("M-r" . consult-history))
     :hook (completion-list-mode . consult-preview-at-point-mode)
     :init
     (setq xref-show-xrefs-function #'consult-xref
-	  xref-show-definitions-function #'consult-xref)
+  	xref-show-definitions-function #'consult-xref)
     :config
     (consult-customize consult-buffer
-		       :preview-key "M-.")
+  		     :preview-key "M-.")
     (setq consult-narrow-key ">"))
 
   (use-package corfu
@@ -679,15 +679,15 @@ There are cases when I need to open a file with an external program (e.g., video
     :straight t
     :config
     (setq openwith-associations '(
-				  ("\\.mp4\\'" "mpv" (file))
-				  ("\\.webm\\'" "mpv" (file))
-				  ("\\.mkv\\'" "mpv" (file))
-				  ("\\.m4a\\'" "mpv --force-window" (file))
-				  ("\\.ppt\\'" "libreoffice" (file))
-				  ("\\.pptx\\'" "libreoffice" (file))
-				  ("\\.doc\\'" "libreoffice" (file))
-				  ("\\.docx\\'" "libreoffice" (file))
-				  ))
+  				("\\.mp4\\'" "mpv" (file))
+  				("\\.webm\\'" "mpv" (file))
+  				("\\.mkv\\'" "mpv" (file))
+  				("\\.m4a\\'" "mpv --force-window" (file))
+  				("\\.ppt\\'" "libreoffice" (file))
+  				("\\.pptx\\'" "libreoffice" (file))
+  				("\\.doc\\'" "libreoffice" (file))
+  				("\\.docx\\'" "libreoffice" (file))
+  				))
     (openwith-mode t))
 #+end_src
 
@@ -701,7 +701,7 @@ When dealing with PDFs, I leverage upon the ~pdf-tools~ suite, which does a pret
     (define-key pdf-view-mode-map (kbd "f") #'pdf-links-isearch-link)
     (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-tools-install))
     (add-hook 'pdf-view-mode-hook
-	      (lambda () (setq header-line-format nil))))
+  	    (lambda () (setq header-line-format nil))))
 
   (provide 'mg-emacs-files)
 #+end_src
@@ -731,8 +731,8 @@ I find convenient to use the ~C-c ;~ and ~C-c ,~ keybindings (they are easily ac
     :init
     (eval-after-load 'org
       (progn
-	(define-key org-mode-map (kbd "C-c ,") nil)
-	(define-key org-mode-map (kbd "C-c ;") nil)))
+        (define-key org-mode-map (kbd "C-c ,") nil)
+        (define-key org-mode-map (kbd "C-c ;") nil)))
     :bind
     (("C-c ;" . avy-goto-line)
      ("C-c ," . avy-goto-char)))
@@ -791,13 +791,13 @@ Those questions are all answered by just looking at the agenda, fired up with ju
     :straight t
     :after (denote)
     :bind (("C-c a" . org-agenda)
-  	   ("C-c C-;" . org-insert-structure-template)
-  	   ("C-c c" . org-capture)
-  	   ("C-c C-z" . org-add-note)
-  	   ("C-c o p" . org-do-promote)
-  	   ("C-c o d" . org-do-demote)
-  	   ("C-c p o r" . org-clock-report)
-  	   ("C-c l" . org-store-link))
+  	 ("C-c C-;" . org-insert-structure-template)
+  	 ("C-c c" . org-capture)
+  	 ("C-c C-z" . org-add-note)
+  	 ("C-c o p" . org-do-promote)
+  	 ("C-c o d" . org-do-demote)
+  	 ("C-c p o r" . org-clock-report)
+  	 ("C-c l" . org-store-link))
     :custom
     (org-src-tab-acts-natively t)
     (org-agenda-files (list mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))
@@ -833,32 +833,32 @@ Those questions are all answered by just looking at the agenda, fired up with ju
     (org-capture-templates
      '(("i" "Inbox")
        ("it" "Todo entry" entry (file mg-inbox-file)
-  	"* TODO %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+        "* TODO %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
        ("im" "Mail entry" entry (file mg-inbox-file)
-  	"* TODO Process \"%a\" %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+        "* TODO Process \"%a\" %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
        ("in" "Notes entry" entry (file mg-capture-notes-file)
-  	"* %U (%a) :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+        "* %U (%a) :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
        ("a" "Agenda")
        ("am" "Meeting entry" entry (file+headline mg-agenda-file "Future")
-  	"* Meeting with %? :meeting:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
+        "* Meeting with %? :meeting:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
        ("ae" "Event entry" entry (file+headline mg-agenda-file "Future")
-  	"* %? :event:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
+        "* %? :event:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
        ("ac" "Call entry" entry (file+headline mg-agenda-file "Future")
-  	"* Call with %? :call:\n:PROPERTIES:\n:CATEGORY:\n:NOTIFY_BEFORE:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
+        "* Call with %? :call:\n:PROPERTIES:\n:CATEGORY:\n:NOTIFY_BEFORE:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
        ("ap" "Coaching session with Prot entry" entry (file+headline mg-agenda-file "[[denote:20240510T212918][Protesilaos Stavrou]]")
-  	"* Coaching session :@home:@personal:\n:PROPERTIES:\n:LOCATION: @home\n:CATEGORY: PROT\n:LINK:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n** Topics to discuss\n** Questions from last time\n")
+        "* Coaching session :@home:@personal:\n:PROPERTIES:\n:LOCATION: @home\n:CATEGORY: PROT\n:LINK:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n** Topics to discuss\n** Questions from last time\n")
        ("r" "Resources")
        ("ra" "Conference attendance" entry (file mg-conferences-file)
-  	"* %^{Conference name}\n:PROPERTIES:\n:WHERE: %?\n:WEBSITE: %?\n:END:\n")
+        "* %^{Conference name}\n:PROPERTIES:\n:WHERE: %?\n:WEBSITE: %?\n:END:\n")
        ("rb" "Book archiving" entry (file+headline mg-books-file "Inbox")
-  	"* %^{Book title}\n:PROPERTIES:\n:TITLE: %^{Book title}\n:AUTHOR: %^{Author}\n:YEAR: %^{Year}\n:PAGES: %^{Pages}\n:RATING: %^{Rating (From * to *****)}\n:LINK: %^{Book link}\n:END:\n")
+        "* %^{Book title}\n:PROPERTIES:\n:TITLE: %^{Book title}\n:AUTHOR: %^{Author}\n:YEAR: %^{Year}\n:PAGES: %^{Pages}\n:RATING: %^{Rating (From * to *****)}\n:LINK: %^{Book link}\n:END:\n")
        ("P" "Planning")
        ("Py" "Year plan" plain (file mg-planning-file)
-  	"* %^{Year} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Milestones ::\n- Values and life philosophy ::\n- 5 years vision(s) ::\n- Financial goals ::\n- [ ] Review ::\n")
+        "* %^{Year} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Milestones ::\n- Values and life philosophy ::\n- 5 years vision(s) ::\n- Financial goals ::\n- [ ] Review ::\n")
        ("Pq" "Quarter plan" plain (file mg-planning-file)
-  	"** %^{Quarter} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Long-term projects ::\n- Financial/expenses planning ::\n- [ ] Review ::\n")
+        "** %^{Quarter} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Long-term projects ::\n- Financial/expenses planning ::\n- [ ] Review ::\n")
        ("Pm" "Month plan" plain (file mg-planning-file)
-  	"*** %^{Month} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Short-term projects ::\n- [ ] Review ::\n")
+        "*** %^{Month} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Short-term projects ::\n- [ ] Review ::\n")
        ("f" "Flashcards")
        ("fp" "Physics flaschard" entry (file+headline mg-flashcards-file "Physics") "* %(if (not (equal (plist-get org-capture-plist :original-file) 'nil))
        (mg-insert-denote-or-normal-link (plist-get org-capture-plist :original-file))
@@ -878,138 +878,138 @@ Those questions are all answered by just looking at the agenda, fired up with ju
      (buffer-name (plist-get org-capture-plist :original-buffer)))\n:PROPERTIES:\n:ANKI_DECK: English\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
        ("p" "Projects")
        ("pl" "Learning project" plain (file+headline mg-personal-projects-file "Learning")
-  	"** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+        "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("ph" "Home project" plain (file+headline mg-personal-projects-file "Home")
-  	"** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+        "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("pp" "Productivity and tooling project" plain (file+headline mg-personal-projects-file "Productivity and tooling")
-  	"** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+        "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("pw" "Work project" plain (file+headline mg-work-projects-file "Work")
-  	"** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+        "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("pb" "Blogging project" plain (file+headline mg-personal-projects-file "Blogging")
-  	"** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+        "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("ps" "Study project" plain (file+headline mg-work-projects-file "Study")
-  	"** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")))
+        "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")))
     (org-refile-targets '((mg-work-projects-file :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
-  			  (mg-personal-projects-file :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
-  			  (mg-books-file :regexp . "\\(?:\\(?:2023\\|2024\\)s\\)")
-  			  (mg-agenda-file :regexp . "\\(?:Past\\)")))
+  			(mg-personal-projects-file :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
+  			(mg-books-file :regexp . "\\(?:\\(?:2023\\|2024\\)s\\)")
+  			(mg-agenda-file :regexp . "\\(?:Past\\)")))
     (org-agenda-block-separator "==============================================================================")
     (org-agenda-custom-commands
      '(("a" "Agenda"
-  	((agenda ""
-  	         ((org-agenda-span 1)
-  		  (org-agenda-skip-function
-  		   (lambda ()
-  		     (org-agenda-skip-entry-if 'done)))
-  		  (org-deadline-warning-days 0)
-  		  (org-scheduled-past-days 14)
-  		  (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-  		  (org-agenda-format-date "%A %-e %B %Y")
-  		  (org-agenda-overriding-header "Today's schedule:\n")))
-  	 (todo "DOING"
-  	       ((org-agenda-skip-function
-  	         '(org-agenda-skip-entry-if 'deadline))
-  	        (org-agenda-prefix-format "  %i %-12:c [%e] ")
-  	        (org-agenda-overriding-header "\nDOING Tasks:\n")))
-  	 (todo "NEXT"
-  	       ((org-agenda-skip-function
-  	         '(org-agenda-skip-entry-if 'deadline))
-  	        (org-agenda-prefix-format "  %i %-12:c [%e] ")
-  	        (org-agenda-overriding-header "\nNEXT Tasks:\n")))
-  	 (agenda "" ((org-agenda-time-grid nil)
-  		     (org-agenda-start-day "+1d")
-  		     (org-agenda-start-on-weekday nil)
-  		     (org-agenda-span 30)
-  		     (org-agenda-show-all-dates nil)
-  		     (org-deadline-warning-days 0)
-  		     (org-agenda-entry-types '(:deadline))
-  		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
-  		     (org-agenda-overriding-header "\nUpcoming deadlines (+30d):\n")))
-  	 (tags-todo "inbox"
-  		    ((org-agenda-prefix-format "  %?-12t% s")
-  		     (org-agenda-overriding-header "\nInbox:\n")))
-  	 (tags "CLOSED>=\"<today>\""
-  	       ((org-agenda-overriding-header "\nCompleted today:\n")))
-  	 (agenda ""
-  	         ((org-agenda-start-on-weekday nil)
-  		  (org-agenda-skip-function
-  		   (lambda ()
-  		     (org-agenda-skip-entry-if 'done)))
-  		  (org-agenda-start-day "+1d")
-  		  (org-agenda-span 5)
-  		  (org-deadline-warning-days 0)
-  		  (org-scheduled-past-days 0)
-  		  (org-agenda-overriding-header "\nWeek at a glance:\n")))
-  	 ))))
+        ((agenda ""
+  	       ((org-agenda-span 1)
+  		(org-agenda-skip-function
+  		 (lambda ()
+  		   (org-agenda-skip-entry-if 'done)))
+  		(org-deadline-warning-days 0)
+  		(org-scheduled-past-days 14)
+  		(org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+  		(org-agenda-format-date "%A %-e %B %Y")
+  		(org-agenda-overriding-header "Today's schedule:\n")))
+         (todo "DOING"
+  	     ((org-agenda-skip-function
+  	       '(org-agenda-skip-entry-if 'deadline))
+  	      (org-agenda-prefix-format "  %i %-12:c [%e] ")
+  	      (org-agenda-overriding-header "\nDOING Tasks:\n")))
+         (todo "NEXT"
+  	     ((org-agenda-skip-function
+  	       '(org-agenda-skip-entry-if 'deadline))
+  	      (org-agenda-prefix-format "  %i %-12:c [%e] ")
+  	      (org-agenda-overriding-header "\nNEXT Tasks:\n")))
+         (agenda "" ((org-agenda-time-grid nil)
+  		   (org-agenda-start-day "+1d")
+  		   (org-agenda-start-on-weekday nil)
+  		   (org-agenda-span 30)
+  		   (org-agenda-show-all-dates nil)
+  		   (org-deadline-warning-days 0)
+  		   (org-agenda-entry-types '(:deadline))
+  		   (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
+  		   (org-agenda-overriding-header "\nUpcoming deadlines (+30d):\n")))
+         (tags-todo "inbox"
+  		  ((org-agenda-prefix-format "  %?-12t% s")
+  		   (org-agenda-overriding-header "\nInbox:\n")))
+         (tags "CLOSED>=\"<today>\""
+  	     ((org-agenda-overriding-header "\nCompleted today:\n")))
+         (agenda ""
+  	       ((org-agenda-start-on-weekday nil)
+  		(org-agenda-skip-function
+  		 (lambda ()
+  		   (org-agenda-skip-entry-if 'done)))
+  		(org-agenda-start-day "+1d")
+  		(org-agenda-span 5)
+  		(org-deadline-warning-days 0)
+  		(org-scheduled-past-days 0)
+  		(org-agenda-overriding-header "\nWeek at a glance:\n")))
+         ))))
     :config
     (when (display-graphic-p)
       (progn
-  	(require 'oc-biblatex)
-  	(setq org-cite-export-processors
-  	      '((latex biblatex))
-  	      org-latex-pdf-process (list mg-latex-cmd))))
+        (require 'oc-biblatex)
+        (setq org-cite-export-processors
+  	    '((latex biblatex))
+  	    org-latex-pdf-process (list mg-latex-cmd))))
     (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5)
-  	  org-format-latex-options (plist-put org-format-latex-options :background "Transparent")
-  	  org-latex-create-formula-image-program 'dvisvgm)
+  	org-format-latex-options (plist-put org-format-latex-options :background "Transparent")
+  	org-latex-create-formula-image-program 'dvisvgm)
     (require 'ox-latex)
     (add-to-list 'org-latex-classes
-  	         '("res"
-  		   "\\documentclass[margin]{res}\n
+  	       '("res"
+  		 "\\documentclass[margin]{res}\n
     \\setlength{\textwidth}{5.1in}"
-  		   ("\\section{%s}" . "\\section*{%s}")
-  		   ("\\subsection{%s}" . "\\subsection*{%s}")
-  		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-  		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-  		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+  		 ("\\section{%s}" . "\\section*{%s}")
+  		 ("\\subsection{%s}" . "\\subsection*{%s}")
+  		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+  		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+  		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
     (add-to-list 'org-latex-classes
-  	         '("memoir"
-  		   "\\documentclass[article]{memoir}\n
+  	       '("memoir"
+  		 "\\documentclass[article]{memoir}\n
     \\usepackage{color}
     \\usepackage{amssymb}
     \\usepackage{gensymb}
     \\usepackage{nicefrac}
     \\usepackage{units}"
-  		   ("\\section{%s}" . "\\section*{%s}")
-  		   ("\\subsection{%s}" . "\\subsection*{%s}")
-  		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-  		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-  		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+  		 ("\\section{%s}" . "\\section*{%s}")
+  		 ("\\subsection{%s}" . "\\subsection*{%s}")
+  		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+  		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+  		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
     (add-to-list 'org-latex-classes
-  	         '("letter"
-  		   "\\documentclass{letter}\n"
-  		   ("\\section{%s}" . "\\section*{%s}")
-  		   ("\\subsection{%s}" . "\\subsection*{%s}")
-  		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-  		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-  		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+  	       '("letter"
+  		 "\\documentclass{letter}\n"
+  		 ("\\section{%s}" . "\\section*{%s}")
+  		 ("\\subsection{%s}" . "\\subsection*{%s}")
+  		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+  		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+  		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
     (add-to-list 'org-latex-classes
-  	         '("tuftebook"
-  		   "\\documentclass{tufte-book}\n
+  	       '("tuftebook"
+  		 "\\documentclass{tufte-book}\n
     \\usepackage{color}
     \\usepackage{amssymb}
     \\usepackage{gensymb}
     \\usepackage{nicefrac}
     \\usepackage{units}"
-  		   ("\\section{%s}" . "\\section*{%s}")
-  		   ("\\subsection{%s}" . "\\subsection*{%s}")
-  		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-  		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+  		 ("\\section{%s}" . "\\section*{%s}")
+  		 ("\\subsection{%s}" . "\\subsection*{%s}")
+  		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+  		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
     (add-to-list 'org-latex-classes
-  	         '("tuftehandout"
-  		   "\\documentclass{tufte-handout}
+  	       '("tuftehandout"
+  		 "\\documentclass{tufte-handout}
     \\usepackage{color}
     \\usepackage{amssymb}
     \\usepackage{amsmath}
     \\usepackage{gensymb}
     \\usepackage{nicefrac}
     \\usepackage{units}"
-  		   ("\\section{%s}" . "\\section*{%s}")
-  		   ("\\subsection{%s}" . "\\subsection*{%s}")
-  		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-  		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+  		 ("\\section{%s}" . "\\section*{%s}")
+  		 ("\\subsection{%s}" . "\\subsection*{%s}")
+  		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+  		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
     (add-to-list 'org-latex-classes
-  	         '("tufnotes"
-  		   "\\documentclass{tufte-handout}
+  	       '("tufnotes"
+  		 "\\documentclass{tufte-handout}
   				         \\usepackage{xcolor}
   					       \\usepackage{graphicx} %% allow embedded images
   					       \\setkeys{Gin}{width=\\linewidth,totalheight=\\textheight,keepaspectratio}
@@ -1054,23 +1054,23 @@ Those questions are all answered by just looking at the agenda, fired up with ju
   							       breakable,
   						        }"
 
-  		   ("\\section{%s}" . "\\section*{%s}")
-  		   ("\\subsection{%s}" . "\\subsection*{%s}")
-  		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-  		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-  		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+  		 ("\\section{%s}" . "\\section*{%s}")
+  		 ("\\subsection{%s}" . "\\subsection*{%s}")
+  		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+  		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+  		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
     (org-babel-do-load-languages
      'org-babel-load-languages '((C . t)
-  			         (shell . t)
-  			         (python .t)
-  			         (emacs-lisp . t)
-  			         (org . t)
-  			         (gnuplot . t)
-  			         (latex . t)
-  			         (scheme . t)
-  			         (lisp . t)
-  			         (haskell . t)
-  			         (R . t)))
+  			       (shell . t)
+  			       (python .t)
+  			       (emacs-lisp . t)
+  			       (org . t)
+  			       (gnuplot . t)
+  			       (latex . t)
+  			       (scheme . t)
+  			       (lisp . t)
+  			       (haskell . t)
+  			       (R . t)))
     ;; Enable and set org-crypt
     (require 'org-crypt)
     (org-crypt-use-before-save-magic)
@@ -1099,25 +1099,28 @@ The second fundamental package that I use for (networked) note-taking is ~denote
   (use-package denote
     :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main")
     :bind (("C-c n n" . denote)
-	   ("C-c n x" . denote-region)
-	   ("C-c n N" . denote-type)
-	   ("C-c n d" . denote-date)
-	   ("C-c n y f" . denote-org-extras-dblock-insert-files)
-	   ("C-c n y l" . denote-org-extras-dblock-insert-links)
-	   ("C-c n y b" . denote-org-extras-dblock-insert-backlinks)
-	   ("C-c n y h" . denote-org-extras-link-to-heading)
-	   ("C-c n s" . denote-sort-dired)
-	   ("C-c n e n" . denote-silo-extras-create-note)
-	   ("C-c n e f" . denote-silo-extras-open-or-create)
-	   ("C-c n t" . denote-template)
-	   ("C-c n i" . denote-link)
-	   ("C-c n I" . denote-add-links)
-	   ("C-c n b" . denote-backlinks)
-	   ("C-c n h" . denote-org-extras-backlinks-for-heading)
-	   ("C-c n g f" . denote-find-link)
-	   ("C-c n g b" . denote-find-backlink)
-	   ("C-c n r" . denote-rename-file)
-	   ("C-c n R" . denote-rename-file-using-front-matter))
+  	 ("C-c n x" . denote-region)
+  	 ("C-c n N" . denote-type)
+  	 ("C-c n d" . denote-date)
+  	 ("C-c n y f" . denote-org-extras-dblock-insert-files)
+  	 ("C-c n y l" . denote-org-extras-dblock-insert-links)
+  	 ("C-c n y b" . denote-org-extras-dblock-insert-backlinks)
+  	 ("C-c n y h" . denote-org-extras-link-to-heading)
+  	 ("C-c n s" . denote-sort-dired)
+  	 ("C-c n e n" . denote-silo-extras-create-note)
+  	 ("C-c n e f" . denote-silo-extras-open-or-create)
+  	 ("C-c n t" . denote-template)
+  	 ("C-c n i" . denote-link)
+  	 ("C-c n I" . denote-add-links)
+  	 ("C-c n b" . denote-backlinks)
+  	 ("C-c n j n" . denote-journal-extras-new-entry)
+  	 ("C-c n j l" . denote-journal-extras-link-or-create-entry)
+  	 ("C-c n j j" . denote-journal-extras-new-or-existing-entry)
+  	 ("C-c n h" . denote-org-extras-backlinks-for-heading)
+  	 ("C-c n g f" . denote-find-link)
+  	 ("C-c n g b" . denote-find-backlink)
+  	 ("C-c n r" . denote-rename-file)
+  	 ("C-c n R" . denote-rename-file-using-front-matter))
     :init
     (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
     :custom
@@ -1135,7 +1138,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
     (denote-backlinks-show-context t)
     (denote-dired-directories
      (list denote-directory
-	   (thread-last denote-directory (expand-file-name "assets"))))
+  	 (thread-last denote-directory (expand-file-name "assets"))))
     (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
     (denote-templates
      '((plain . "")
@@ -1174,12 +1177,12 @@ The second fundamental package that I use for (networked) note-taking is ~denote
     :straight t
     :config
     :bind (("C-c n m l" . list-denotes)
-	   ("C-c n m f" . denote-menu-filter-by-keyword)))
+  	 ("C-c n m f" . denote-menu-filter-by-keyword)))
 
   (use-package consult-denote
     :straight (consult-denote :type git :host github :repo "protesilaos/consult-denote" :branch "main")
     :bind (("C-c n f g" . consult-denote-grep)
-	   ("C-c n f c" . consult-denote-find)))
+  	 ("C-c n f c" . consult-denote-find)))
 
   (provide 'mg-emacs-denote)
 #+end_src
@@ -1198,13 +1201,14 @@ This module introduces several packages that I use to manage bibliographic entri
     (org-cite-follow-processor 'citar)
     (org-cite-activate-processor 'citar)
     (citar-templates
-	      '((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
-	        (suffix . "          ${=key= id:15}    ${=type=:12}")
-	        (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher}.\n")
-	        (note . "@${author editor}, ${title}")))
+     '((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
+       (suffix . "          ${=key= id:15}    ${=type=:12}")
+       (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher}.\n")
+       (note . "@${author editor}, ${title}")))
     (citar-symbol-separator "  ")
     :bind
     (("C-c n c o" . citar-open)
+     ("C-c n c b" . citar-open-entry)
      (:map org-mode-map :package org ("C-c b" . #'org-cite-insert)))
     :config
     (setq citar-bibliography (list mg-bibliography-path)))
@@ -1224,14 +1228,14 @@ This module introduces several packages that I use to manage bibliographic entri
     :init
     (citar-denote-mode)
     :bind (("C-c n c c" . citar-create-note)
-	     ("C-c n c n" . citar-denote-open-note)
-	     ("C-c n c d" . citar-denote-dwim)
-	     ("C-c n c e" . citar-denote-open-reference-entry)
-	     ("C-c n c a" . citar-denote-add-citekey)
-	     ("C-c n c k" . citar-denote-remove-citekey)
-	     ("C-c n c r" . citar-denote-find-reference)
-	     ("C-c n c f" . citar-denote-find-citation)
-	     ("C-c n c l" . citar-denote-link-reference)))
+  	 ("C-c n c n" . citar-denote-open-note)
+  	 ("C-c n c d" . citar-denote-dwim)
+  	 ("C-c n c e" . citar-denote-open-reference-entry)
+  	 ("C-c n c a" . citar-denote-add-citekey)
+  	 ("C-c n c k" . citar-denote-remove-citekey)
+  	 ("C-c n c r" . citar-denote-find-reference)
+  	 ("C-c n c f" . citar-denote-find-citation)
+  	 ("C-c n c l" . citar-denote-link-reference)))
 
   (use-package citar-embark
     :after citar embark
@@ -1248,19 +1252,19 @@ I mainly do contact management in ~org-mode~ and ~denote~, but I keep track of c
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-contacts.el"
   (if (not (equal (system-name) mg-work-laptop-hostname))
       (use-package bbdb
-	:straight t
-	:commands bbdb
-	:bind (("C-x c b" . bbdb)
-	       ("C-x c c" . bbdb-create))
-	:init
-	(defconst mg-bbdb-data-file (format "%s/%s" mg-dot-private-file "bbdb/.bbdb"))
-	:custom
-	(bbdb-mua-pop-up-window-size 1)
-	(bbdb-file mg-bbdb-data-file)
-	(bbdb-mua-pop-up t)
-	(bbdb-mua-pop-up-window-size 5)
-	:config
-	(autoload 'bbdb-insinuate-mu4e "bbdb-mu4e")))
+        :straight t
+        :commands bbdb
+        :bind (("C-x c b" . bbdb)
+  	     ("C-x c c" . bbdb-create))
+        :init
+        (defconst mg-bbdb-data-file (format "%s/%s" mg-dot-private-file "bbdb/.bbdb"))
+        :custom
+        (bbdb-mua-pop-up-window-size 1)
+        (bbdb-file mg-bbdb-data-file)
+        (bbdb-mua-pop-up t)
+        (bbdb-mua-pop-up-window-size 5)
+        :config
+        (autoload 'bbdb-insinuate-mu4e "bbdb-mu4e")))
 
   (provide 'mg-emacs-contacts)
 #+end_src
@@ -1312,28 +1316,28 @@ I started using ~notmuch~ not so long ago. During a conversation with [[https://
   (use-package notmuch
     :straight t
     :bind (
-  	   :map global-map
-  	   ("C-x m" . notmuch)
-  	   :map notmuch-search-mode-map
-  	   ("a" . nil)
-  	   ("A" . nil)
-  	   ("/" . notmuch-search-filter)
-  	   ("r" . notmuch-search-reply-to-thread)
-  	   ("R" . notmuch-search-reply-to-thread-sender)
-  	   :map notmuch-show-mode-map
-  	   ("a" . nil)
-  	   ("A" . nil)
-  	   ("r" . notmuch-show-reply)
-  	   ("R" . notmuch-show-reply-sender))
+  	 :map global-map
+  	 ("C-x m" . notmuch)
+  	 :map notmuch-search-mode-map
+  	 ("a" . nil)
+  	 ("A" . nil)
+  	 ("/" . notmuch-search-filter)
+  	 ("r" . notmuch-search-reply-to-thread)
+  	 ("R" . notmuch-search-reply-to-thread-sender)
+  	 :map notmuch-show-mode-map
+  	 ("a" . nil)
+  	 ("A" . nil)
+  	 ("r" . notmuch-show-reply)
+  	 ("R" . notmuch-show-reply-sender))
     :custom
     (notmuch-show-logo nil)
     (notmuch-archive-tags nil
-  			  notmuch-message-replied-tags '("+replied")
-  			  notmuch-message-forwarded-tags '("+forwarded")
-  			  notmuch-show-mark-read-tags '("-unread")
-  			  notmuch-draft-tags '("+draft")
-  			  notmuch-draft-folder "drafts"
-  			  notmuch-draft-save-plaintext 'ask)
+  			notmuch-message-replied-tags '("+replied")
+  			notmuch-message-forwarded-tags '("+forwarded")
+  			notmuch-show-mark-read-tags '("-unread")
+  			notmuch-draft-tags '("+draft")
+  			notmuch-draft-folder "drafts"
+  			notmuch-draft-save-plaintext 'ask)
     (notmuch-show-relative-dates t)
     (notmuch-show-all-multipart/alternative-parts nil)
     (notmuch-show-indent-messages-width 0)
@@ -1343,7 +1347,11 @@ I started using ~notmuch~ not so long ago. During a conversation with [[https://
     (notmuch-wash-wrap-lines-length 120)
     (notmuch-unthreaded-show-out nil)
     (notmuch-message-headers '("To" "Cc" "Subject" "Date"))
-    (notmuch-message-headers-visible t))
+    (notmuch-message-headers-visible t)
+    :config
+    (let ((count most-positive-fixnum)) ; I don't like the buttonisation of long quotes
+      (setq notmuch-wash-citation-lines-prefix count
+  	  notmuch-wash-citation-lines-suffix count)))
 
   (use-package ol-notmuch
     :straight (ol-notmuch :type git :host github :repo "tarsius/ol-notmuch")
@@ -1422,15 +1430,15 @@ The following is a series of packages to enable LSP and major-modes for some pro
     :ensure nil
     :config
     (add-to-list 'eglot-server-programs
-	         '((c-mode)
-		   . ("clangd")))
+  	       '((c-mode)
+  		 . ("clangd")))
     (if (eq system-type 'darwin)
-	(add-to-list 'eglot-server-programs
-		     '((python-mode)
-		       . ("/usr/bin/pylsp")))
+        (add-to-list 'eglot-server-programs
+  		   '((python-mode)
+  		     . ("/usr/bin/pylsp")))
       (add-to-list 'eglot-server-programs
-		   '((python-mode)
-		     . ("~/.local/bin/pylsp"))))
+  		 '((python-mode)
+  		   . ("~/.local/bin/pylsp"))))
     (add-hook 'c-mode-hook 'eglot-ensure)
     (add-hook 'haskell-mode-hook 'eglot-ensure)
     (add-hook 'erlang-mode-hook 'eglot-ensure)
@@ -1450,8 +1458,8 @@ In this module, I enable some of the packages I use for browsing the web. The pr
     (engine/set-keymap-prefix (kbd "C-c u e"))
     (defun mg-engine-mode-exact-phrase-transform (search-term)
       (if current-prefix-arg
-	  (concat "\"" search-term "\"")
-	search-term))
+  	(concat "\"" search-term "\"")
+        search-term))
     (defengine archwiki
       "https://wiki.archlinux.org/index.php?search=%s"
       :keybinding "a")
@@ -1522,14 +1530,14 @@ Having multiple cursors is a neat feature that changed the way I look and modify
     :after (org)
     :straight t
     :bind (("C-c m >" . #'mc/mark-next-like-this)
-	   ("C-c m <" . #'mc/mark-previous-like-this)
-	   ("C-c m -" . #'mc/mark-next-like-this-word)
-	   ("C-c m e" . 'mc/mark-more-like-this-extended)
-	   ("C-c m s" . 'mc/mark-all-dwim)
-	   ("C-c m a" . mc/mark-all-like-this)
-	   ("C-c m r" . mc/mark-all-in-region)
-	   ("C-c m d" . mc/mark-all-like-this-dwim)
-	   ("C-c m w" . mc/mark-all-words-like-this))
+  	 ("C-c m <" . #'mc/mark-previous-like-this)
+  	 ("C-c m -" . #'mc/mark-next-like-this-word)
+  	 ("C-c m e" . 'mc/mark-more-like-this-extended)
+  	 ("C-c m s" . 'mc/mark-all-dwim)
+  	 ("C-c m a" . mc/mark-all-like-this)
+  	 ("C-c m r" . mc/mark-all-in-region)
+  	 ("C-c m d" . mc/mark-all-like-this-dwim)
+  	 ("C-c m w" . mc/mark-all-words-like-this))
     :custom
     (mc/always-run-for-all t)
     :init
@@ -1645,6 +1653,14 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   (defconst mg-pkm-base-directory "~/Vault/pkm"
     "This constant keeps track of the base directory for my entire knowledge base.")
 
+  (defun mg--get-major-modes ()
+    "Utility function to get loaded major modes.
+
+    This function gets the major modes by leveraging on `auto-mode-alist', which is a list of cons nodes of the form \"(<name-pattern> . <major-mode-string>)\". However, there are multiple entries per each major mode, thus we shoud filter duplicates afterwards."
+    (let ((modes
+  	 (mapcar (lambda (alist-cons) (cdr alist-cons)) auto-mode-alist)))
+      (delete-dups modes)))
+
   (defun mg-get-today-timestamp ()
     "Helper function to get today's timestamp with the abbreviated day name."
     (format-time-string "%Y-%m-%d %a"))
@@ -1726,8 +1742,8 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   		      default-directory
   		    (buffer-file-name))))
       (when filename
-  	(kill-new filename)
-  	(message "Added file name '%s' to the killring." filename))))
+        (kill-new filename)
+        (message "Added file name '%s' to the killring." filename))))
 
   (defconst mg-get-battery-percentage-cmd "acpi -b | grep -E -o '[0-9][0-9][0-9]?%'"
     "This is a string representing a shell command to get the current battery percentage.")
@@ -1771,9 +1787,9 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   (defun mg--get-formatted-battery-infos ()
     "Get all the battery-related information and format them."
     (format "%s (%s) : %s"
-  	    (string-trim (shell-command-to-string mg-get-battery-percentage-cmd))
-  	    (string-trim (shell-command-to-string mg-get-battery-status-cmd))
-  	    (string-trim (shell-command-to-string mg-get-battery-remaining-time-cmd))))
+  	  (string-trim (shell-command-to-string mg-get-battery-percentage-cmd))
+  	  (string-trim (shell-command-to-string mg-get-battery-status-cmd))
+  	  (string-trim (shell-command-to-string mg-get-battery-remaining-time-cmd))))
 
   (defun mg--get-formatted-ram-infos ()
     "Get all the battery-related information and format them."
@@ -1802,11 +1818,11 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
     This function basically substitutes a full-fledged system-tray with additional information such as remaning battery time, memory and disk usage, etc. It better works in conjuction with a simple modeline and EXWM, and makes no sense when Emacs runs in a complete DE."
     (interactive)
     (let* ((battery-info (mg--get-formatted-battery-infos))
-  	   (cpu-info (mg--get-formatted-cpu-infos))
-  	   (ram-info (mg--get-formatted-ram-infos))
-  	   (disk-info (mg--get-formatted-disk-infos))
-  	   (volume-info (mg--get-formatted-volume-infos))
-  	   (keyboard-layout-info (mg--get-formatted-keyboard-infos)))
+  	 (cpu-info (mg--get-formatted-cpu-infos))
+  	 (ram-info (mg--get-formatted-ram-infos))
+  	 (disk-info (mg--get-formatted-disk-infos))
+  	 (volume-info (mg--get-formatted-volume-infos))
+  	 (keyboard-layout-info (mg--get-formatted-keyboard-infos)))
       (message "System-level info => BAT: %s - CPU: %s - MEM: %s - DSK: %s - VOL: %s - KBD: %s"
   	     battery-info cpu-info ram-info disk-info volume-info keyboard-layout-info)))
 
@@ -1855,13 +1871,13 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   highlights the current line. I use it extensively when in coding."
     :initial nil
     (if mg-line-numbers-highlight-line-mode
-	(progn
-	  (display-line-numbers-mode 1)
-	  (hl-line-mode 1)
-	  (setq display-line-numbers-type 'relative))
+        (progn
+  	(display-line-numbers-mode 1)
+  	(hl-line-mode 1)
+  	(setq display-line-numbers-type 'relative))
       (progn
-	(display-line-numbers-mode 0)
-	(hl-line-mode 0))))
+        (display-line-numbers-mode 0)
+        (hl-line-mode 0))))
 
   (provide 'mg-defaults-extensions)
   ;;; mg-defaults-extensions.el ends here
@@ -1905,10 +1921,10 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   (defvar mg-modeline-buffer-status
     '(:eval
       (if (file-remote-p default-directory)
-	  (propertize " @ "
-		      'mouse-face 'mode-line-highlight)
-	(propertize " ^ "
-		    'mouse-face 'mode-line-highlight)))
+  	(propertize " @ "
+  		    'mouse-face 'mode-line-highlight)
+        (propertize " ^ "
+  		  'mouse-face 'mode-line-highlight)))
     "This is the propertized variable containing the status of the
   current buffer. The status specifies whether this buffer is
   remote or local.")
@@ -1926,19 +1942,19 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   haas also a `exwm--input-mode' further specification (i.e., Char
   or Line) that is also useful to specify in the modeline."
     (let* ((mode
-	    (mapconcat 'capitalize
-		       (butlast (split-string (symbol-name major-mode) "-")) " "))
-	   (mode-final
-	    (if (string-equal mode "Exwm")
-	        (concat "Exwm: "
-		        (mapconcat 'capitalize
-				   (butlast (split-string (symbol-name exwm--input-mode) "-"))))
-	      mode))
-	   (indicator (cond
-		       ((derived-mode-p 'text-mode) "§")
-		       ((derived-mode-p 'prog-mode) "λ")
-		       ((derived-mode-p 'comint-mode) ">_")
-		       (t "o"))))
+  	  (mapconcat 'capitalize
+  		     (butlast (split-string (symbol-name major-mode) "-")) " "))
+  	 (mode-final
+  	  (if (string-equal mode "Exwm")
+  	      (concat "Exwm: "
+  		      (mapconcat 'capitalize
+  				 (butlast (split-string (symbol-name exwm--input-mode) "-"))))
+  	    mode))
+  	 (indicator (cond
+  		     ((derived-mode-p 'text-mode) "§")
+  		     ((derived-mode-p 'prog-mode) "λ")
+  		     ((derived-mode-p 'comint-mode) ">_")
+  		     (t "o"))))
       (format "%s (%s)" indicator mode-final)))
 
   (defvar mg-modeline-major-mode
@@ -1950,37 +1966,37 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   (defvar mg-modeline-buffer-mode
     '(:eval
       (if buffer-read-only
-	  "*L*"
-	"*U*"))
+  	"*L*"
+        "*U*"))
     "This is the variable indicating whether the buffer is in
    read-only mode or not." )
 
   (setq mode-line-end-spaces
-	'(""
-	  mode-line-misc-info))
+        '(""
+  	mode-line-misc-info))
 
   (setq-default mode-line-format
-	        '("%e"
-		  mg-modeline-buffer-status
-		  mg-modeline-buffer-mode
-		  " "
-		  mg-modeline-buffer-name
-		  " "
-		  mode-line-position
-		  "  "
-		  (vc-mode vc-mode)
-		  "  "
-		  mg-modeline-major-mode
-		  "  "
-		  (:eval
-		   (when (mode-line-window-selected-p)
-		     mode-line-end-spaces))))
+  	      '("%e"
+  		mg-modeline-buffer-status
+  		mg-modeline-buffer-mode
+  		" "
+  		mg-modeline-buffer-name
+  		" "
+  		mode-line-position
+  		"  "
+  		(vc-mode vc-mode)
+  		"  "
+  		mg-modeline-major-mode
+  		"  "
+  		(:eval
+  		 (when (mode-line-window-selected-p)
+  		   mode-line-end-spaces))))
 
   (dolist (construct
-	   '(mg-modeline-major-mode
-	     mg-modeline-buffer-mode
-	     mg-modeline-buffer-status
-	     mg-modeline-buffer-name))
+  	 '(mg-modeline-major-mode
+  	   mg-modeline-buffer-mode
+  	   mg-modeline-buffer-status
+  	   mg-modeline-buffer-name))
     (put construct 'risky-local-variable t))
 
   (provide 'mg-modeline)
@@ -2031,9 +2047,9 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
       (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
       (add-to-list 'default-frame-alist '(ns-appearance . dark))
       (setq ns-use-proxy-icon nil
-	    mac-option-modifier 'meta
-	    frame-title-format nil
-	    mac-frame-tabbing nil)))
+  	  mac-option-modifier 'meta
+  	  frame-title-format nil
+  	  mac-frame-tabbing nil)))
 
   (provide 'mg-macos)
   ;;; mg-macos.el ends here
@@ -2214,12 +2230,12 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
       (format "<%s>" (org-read-date))
       (format "<%s>" (org-read-date))))
     (let* ((default-directory (denote-directory))
-    	 (target-files
-    	  `(,mg-work-projects-file
-    	    ,mg-archive-file)))
+  	 (target-files
+  	  '(mg-work-projects-file
+  	    mg-archive-file)))
       (insert (format "%s"
-    		    (apply '+ (mapcar (lambda (file)
-    					(mg-org-get-clock-minutes file start-date end-date)) target-files))))))
+  		    (apply '+ (mapcar (lambda (file)
+  					(mg-org-get-clock-minutes file start-date end-date)) target-files))))))
 
   (defun mg-toggle-pdf-presentation-mode ()
     "Toggle a presentation mode to show PDFs in a clean layout.
@@ -2384,11 +2400,11 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
      (list
       (read-file-name "Kernel SOURCE: ")))
     (let* ((command (format "cd %s && make kernelversion" source))
-	   (kernel-version
-	    (shell-command-to-string command)))
+  	 (kernel-version
+  	  (shell-command-to-string command)))
       (if (string-match-p "\\<[0-9]+\\." kernel-version)
-	  (message "Kernel version for specificed SOURCE is %s" kernel-version)
-	(user-error "Can't identify a kernel version for the specified SOURCE %s" source))))
+  	(message "Kernel version for specificed SOURCE is %s" kernel-version)
+        (user-error "Can't identify a kernel version for the specified SOURCE %s" source))))
 
   ;;; mg-kernel.el ends here
 #+end_src

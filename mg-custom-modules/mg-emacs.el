@@ -68,8 +68,8 @@
 		      default-directory
 		    (buffer-file-name))))
     (when filename
-	(kill-new filename)
-	(message "Added file name '%s' to the killring." filename))))
+      (kill-new filename)
+      (message "Added file name '%s' to the killring." filename))))
 
 (defconst mg-get-battery-percentage-cmd "acpi -b | grep -E -o '[0-9][0-9][0-9]?%'"
   "This is a string representing a shell command to get the current battery percentage.")
@@ -113,9 +113,9 @@
 (defun mg--get-formatted-battery-infos ()
   "Get all the battery-related information and format them."
   (format "%s (%s) : %s"
-	    (string-trim (shell-command-to-string mg-get-battery-percentage-cmd))
-	    (string-trim (shell-command-to-string mg-get-battery-status-cmd))
-	    (string-trim (shell-command-to-string mg-get-battery-remaining-time-cmd))))
+	  (string-trim (shell-command-to-string mg-get-battery-percentage-cmd))
+	  (string-trim (shell-command-to-string mg-get-battery-status-cmd))
+	  (string-trim (shell-command-to-string mg-get-battery-remaining-time-cmd))))
 
 (defun mg--get-formatted-ram-infos ()
   "Get all the battery-related information and format them."
@@ -144,11 +144,11 @@
   This function basically substitutes a full-fledged system-tray with additional information such as remaning battery time, memory and disk usage, etc. It better works in conjuction with a simple modeline and EXWM, and makes no sense when Emacs runs in a complete DE."
   (interactive)
   (let* ((battery-info (mg--get-formatted-battery-infos))
-	   (cpu-info (mg--get-formatted-cpu-infos))
-	   (ram-info (mg--get-formatted-ram-infos))
-	   (disk-info (mg--get-formatted-disk-infos))
-	   (volume-info (mg--get-formatted-volume-infos))
-	   (keyboard-layout-info (mg--get-formatted-keyboard-infos)))
+	 (cpu-info (mg--get-formatted-cpu-infos))
+	 (ram-info (mg--get-formatted-ram-infos))
+	 (disk-info (mg--get-formatted-disk-infos))
+	 (volume-info (mg--get-formatted-volume-infos))
+	 (keyboard-layout-info (mg--get-formatted-keyboard-infos)))
     (message "System-level info => BAT: %s - CPU: %s - MEM: %s - DSK: %s - VOL: %s - KBD: %s"
 	     battery-info cpu-info ram-info disk-info volume-info keyboard-layout-info)))
 
@@ -156,29 +156,5 @@
     "Ask for confirmation and shut down the system if confirmed."
   (when (yes-or-no-p "Are you sure you want to shut down the system? ")
     (shell-command mg-shutdown-system-cmd)))
-
-(defun mg-new-buffer-with-mode ()
-  "Create a new buffer and prompt the user for the major-mode to enable.
-
-NOTE: as returned by auto-mode-alist cdr's, major modes are
-strings. The `funcall' function takes a function canonical name
-as input, then we should switch from string to canonical symbol
-through `intern'."
-  (interactive)
-  (let* ((input-buff-name (read-string "Insert the buffer NAME: "))
-	   (new-buff (generate-new-buffer
-		      (if (string= "" input-buff-name)
-			  "untitled"
-		        input-buff-name)))
-	   (major-modes-list (mg--get-major-modes))
-	   (mode
-	    (completing-read "Select the MAJOR MODE to enable: " major-modes-list))
-	   (mode-symbol (intern mode)))
-    (switch-to-buffer new-buff)
-    (if (fboundp mode-symbol)
-	  (funcall mode-symbol)
-	(user-error "The selected mode doesn't exist or it is not lazily loaded"))
-    (funcall (intern mode))
-    new-buff))
 
 ;;; mg-emacs.el ends here

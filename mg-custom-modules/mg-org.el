@@ -115,7 +115,7 @@ file with the time-blocking and then it adds it to the
   	  (let ((time (org-read-date)))
   	    (unless (string-match-p "[0-9-]\\{10\\} .*" time)
   	      (throw 'no-time time))
-  	    (insert (format "* %s\n" (string-trim (my-org-task-prompt))))
+  	    (insert (format "* %s\n" (string-trim (mg-org--task-prompt))))
   	    (insert (format "SCHEDULED: <%s>\n\n" time))))))))
 
 (provide 'mg-org)
