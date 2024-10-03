@@ -36,14 +36,6 @@
 (defconst mg-pkm-base-directory "~/Vault/pkm"
   "This constant keeps track of the base directory for my entire knowledge base.")
 
-(defun mg--get-major-modes ()
-  "Utility function to get loaded major modes.
-
-  This function gets the major modes by leveraging on `auto-mode-alist', which is a list of cons nodes of the form \"(<name-pattern> . <major-mode-string>)\". However, there are multiple entries per each major mode, thus we shoud filter duplicates afterwards."
-  (let ((modes
-	 (mapcar (lambda (alist-cons) (cdr alist-cons)) auto-mode-alist)))
-    (delete-dups modes)))
-
 (defun mg-get-today-timestamp ()
   "Helper function to get today's timestamp with the abbreviated day name."
   (format-time-string "%Y-%m-%d %a"))
