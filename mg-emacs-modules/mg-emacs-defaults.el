@@ -74,14 +74,15 @@
 
 (when (eq system-type 'darwin)
   (use-package mg-macos
-    :ensure nil))
+    :ensure nil
+    :config
+    (mg-macos-support-enable)))
 
 (use-package mg-emacs
   :ensure nil
   :bind (("C-c p s" . mg-take-screenshot)
 	 ("C-c u f" . mg-add-current-file-name-to-killring)
 	 ("C-c u s i" . mg-show-machine-info)
-	 ("C-c u n" . mg-new-buffer-with-mode)
 	 ("C-c u s s" . mg-shutdown-machine-with-confirmation)
 	 ("C-c u t" . mg-insert-today-timestamp-formatted)))
 
