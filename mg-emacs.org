@@ -105,6 +105,8 @@ Just to mention it, I want a single instance of Emacs running in the background.
   (require 'mg-emacs-browsing)
   (require 'mg-emacs-git)
   (require 'mg-emacs-coding)
+  (when (eq system-type 'darwin)
+    (require 'mg-emacs-ai))
 #+end_src
 
 * The ~mg-emacs-modules~
@@ -464,32 +466,22 @@ I typically prefer simple and highly legible themes. Back in the days, I used to
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (defun mg-init-macos-theme ()
     "Enable the theme environment of choice for darwin."
-    (progn
-      (set-frame-font "Iosevka Comfy 19" nil t)
-      (use-package ef-themes :straight t
-        :if (display-graphic-p) :config (load-theme 'ef-autumn t))
-      (use-package spacious-padding :straight t
-        :if (display-graphic-p) :config
-        (setq spacious-padding-widths
-  	    '( :internal-border-width 5
-                 :header-line-width 0
-                 :mode-line-width 5
-                 :tab-width 5
-                 :right-divider-width 5
-                 :scroll-bar-width 1
-                 :fringe-width 1))
-        (spacious-padding-mode 1))
-      (use-package all-the-icons :straight t
-        :if (display-graphic-p))
-      (use-package all-the-icons-dired :straight t
-        :config
-        (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))))
+    (set-frame-font "Iosevka 19" nil t)
+    (use-package gruvbox-theme
+      :straight t
+      :config (load-theme 'gruvbox t))
+    (set-face-attribute 'mode-line nil
+                        :box '(:line-width 0.5))
+    (use-package all-the-icons :straight t
+      :if (display-graphic-p))
+    (use-package all-the-icons-dired :straight t
+      :config
+      (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)))
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (progn
       (set-frame-font "Iosevka Comfy 16" nil t)
-      (load-theme 'modus-vivendi t)))
+      (load-theme 'modus-vivendi t))
 
   (if (display-graphic-p)
       (progn
@@ -1634,6 +1626,25 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
     :bind (("C-c v" . multi-vterm)))
 
   (provide 'mg-emacs-coding)
+#+end_src
+
+** The ~mg-emacs-ai.el~ module
+
+Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my research work. This includes summarizing text, spell-checking and rephrasing. Although some skepticism, I found that these tools can substantially help us with some tasks related to the writing process, either it is for research or note-taking. As far as Emacs is concerned, these tools can be deeply integrated in one's workflow and generally provide a smooth experience without the pain of using webapps or other bloated nonsense.
+
+#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-ai.el"
+  (use-package ellama
+    :straight t
+    :custom
+    (ellama-keymap-prefix "C-c u a")
+    (ellama-language "English")
+    :config
+    (require 'llm-ollama)
+    (setq ellama-provider
+  	(make-llm-ollama
+  	 :chat-model "llama3.2:latest")))
+
+  (provide 'mg-emacs-ai)
 #+end_src
 
 * The ~mg-custom-modules~ libraries
