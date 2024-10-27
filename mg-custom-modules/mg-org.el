@@ -35,7 +35,7 @@
 (defconst mg-capture-notes-file "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org")
 (defconst mg-conferences-file "~/Vault/pkm/20231210T222135--conferences__personal_research.org")
 (defconst mg-personal-projects-file "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org")
-(defconst mg-books-file "/home/claudio/Vault/pkm/20240102T104309--books__personal_reading.org")
+(defconst mg-books-file "~/Vault/pkm/20240102T104309--books__personal_reading.org")
 (defconst mg-planning-file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
 (defconst mg-flashcards-file "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org")
 (defconst mg-latex-cmd "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f")

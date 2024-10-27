@@ -11,6 +11,7 @@
 	 ("C-c u r a e" . align-entire)
 	 ("C-c u c w" . whitespace-mode)
 	 ("C-c u m" . compile)
+	 ("C-c u x" . async-shell-command)
 	 ("C-c u w f" . toggle-frame-fullscreen)
 	 ("C-c u w m" . toggle-frame-maximized)
 	 ("C-x C-n" . next-buffer)
@@ -72,27 +73,28 @@
 	     show-paren-mode))
     (funcall mode 1)))
 
-(when (eq system-type 'darwin)
-  (use-package mg-macos
-    :ensure nil))
+  (when (eq system-type 'darwin)
+    (use-package mg-macos
+      :ensure nil
+      :config
+      (mg-macos-support-enable)))
 
-(use-package mg-emacs
-  :ensure nil
-  :bind (("C-c p s" . mg-take-screenshot)
-	 ("C-c u f" . mg-add-current-file-name-to-killring)
-	 ("C-c u s i" . mg-show-machine-info)
-	 ("C-c u n" . mg-new-buffer-with-mode)
-	 ("C-c u s s" . mg-shutdown-machine-with-confirmation)
-	 ("C-c u t" . mg-insert-today-timestamp-formatted)))
+  (use-package mg-emacs
+    :ensure nil
+    :bind (("C-c p s" . mg-take-screenshot)
+  	 ("C-c u f" . mg-add-current-file-name-to-killring)
+  	 ("C-c u s i" . mg-show-machine-info)
+  	 ("C-c u s s" . mg-shutdown-machine-with-confirmation)
+  	 ("C-c u t" . mg-insert-today-timestamp-formatted)))
 
-(use-package mg-defaults-extensions
-  :ensure nil
-  :config
-  (add-hook 'prog-mode-hook
-	    #'mg-line-numbers-highlight-line-mode))
+  (use-package mg-defaults-extensions
+    :ensure nil
+    :config
+    (add-hook 'prog-mode-hook
+  	    #'mg-line-numbers-highlight-line-mode))
 
-(use-package mg-utils
-  :ensure nil)
+  (use-package mg-utils
+    :ensure nil)
 
 (use-package which-key
   :straight t

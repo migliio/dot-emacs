@@ -28,19 +28,22 @@
 
 ;;; Code:
 
-(defconst mg-notmuch-update-shell-commands
-  (list "mbsync -a"
-	"notmuch new")
-  "Shell commands used to update the mail directory.")
+(defconst mg-notmuch--get-emails "mbsync -a"
+  "Shell command used to get new emails.")
 
-(defconst mg-notmuch-update-buffer-name "*notmuch-mbsync*"
-  "Name of the `notmuch' update buffer.")
+(defconst mg-notmuch--reindex "notmuch new"
+  "Shell command used to reindex notmuch.")
+
+(defconst mg-notmuch--update-shell-commands
+  (list mg-notmuch--get-emails mg-notmuch--reindex
+	"Shell commands used to update the mail directory.
+NOTE: The order of these commands *matter*. Do not change it."))
 
 (defun mg-notmuch-update-mail ()
   "Update the mail directory."
   (interactive)
-  (dolist (cmd mg-notmuch-update-shell-commands)
-    (async-shell-command cmd mg-notmuch-update-buffer-name)))
+  (dolist (cmd mg-notmuch--update-shell-commands)
+    (call-process-shell-command cmd nil 0)))
 
 (provide 'mg-notmuch)
 

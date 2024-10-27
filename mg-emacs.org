@@ -23,6 +23,7 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | ├──                | mg-defaults-extensions.el      |       |
 | │   | ├──                | mg-denote.el                   |       |
 | │   | ├──                | mg-emacs.el                    |       |
+| │   | ├──                | mg-exwm.el                     |       |
 | │   | ├──                | mg-kernel.el                   |       |
 | │   | ├──                | mg-macos.el                    |       |
 | │   | ├──                | mg-modeline.el                 |       |
@@ -32,6 +33,7 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | ├──                | mg-pkm-utils.el                |       |
 | │   | └──                | mg-utils.el                    |       |
 | ├── | mg-emacs-modules/  |                                |       |
+| │   | ├──                | mg-emacs-ai.el                 |       |
 | │   | ├──                | mg-emacs-bib.el                |       |
 | │   | ├──                | mg-emacs-browsing.el           |       |
 | │   | ├──                | mg-emacs-buffers-completion.el |       |
@@ -54,7 +56,7 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | └──                | mg-emacs-themes.el             |       |
 | └── | mg-emacs.org       |                                |       |
 |     |                    |                                |       |
-| 3   | directories,       | 35                             | files |
+| 3   | directories,       | 37                             | files |
 #+end_example
 
 In general, this configuration is organized using modules, each designed to introduce a set of packages for a specific purpose. The objective is to minimize the number of packages introduced within a single module to ensure a clear separation of concerns. Introducing too many packages at once reduces clarity.
@@ -87,8 +89,6 @@ Just to mention it, I want a single instance of Emacs running in the background.
 
   (require 'mg-emacs-package-managers)
   (require 'mg-emacs-defaults)
-  (when (eq system-type 'darwin)
-    (require 'mg-macos))
   (when (eq system-type 'gnu/linux)
     (require 'mg-emacs-exwm))
   (require 'mg-emacs-themes)
@@ -100,7 +100,6 @@ Just to mention it, I want a single instance of Emacs running in the background.
   (require 'mg-emacs-org)
   (require 'mg-emacs-denote)
   (require 'mg-emacs-bib)
-  (require 'mg-emacs-contacts)
   (require 'mg-emacs-ledger)
   (require 'mg-emacs-flashcards)
   (require 'mg-emacs-notmuch)
@@ -108,6 +107,8 @@ Just to mention it, I want a single instance of Emacs running in the background.
   (require 'mg-emacs-browsing)
   (require 'mg-emacs-git)
   (require 'mg-emacs-coding)
+  (when (eq system-type 'darwin)
+    (require 'mg-emacs-ai))
 #+end_src
 
 * The ~mg-emacs-modules~
@@ -170,7 +171,7 @@ Historically, this module enclosed a bunch of other customizations for variables
   	 ("C-c u r a e" . align-entire)
   	 ("C-c u c w" . whitespace-mode)
   	 ("C-c u m" . compile)
-  	 ("C-c u a" . async-shell-command)
+  	 ("C-c u x" . async-shell-command)
   	 ("C-c u w f" . toggle-frame-fullscreen)
   	 ("C-c u w m" . toggle-frame-maximized)
   	 ("C-x C-n" . next-buffer)
@@ -232,27 +233,28 @@ Historically, this module enclosed a bunch of other customizations for variables
   	     show-paren-mode))
       (funcall mode 1)))
 
-  (when (eq system-type 'darwin)
-    (use-package mg-macos
-      :ensure nil))
+    (when (eq system-type 'darwin)
+      (use-package mg-macos
+        :ensure nil
+        :config
+        (mg-macos-support-enable)))
 
-  (use-package mg-emacs
-    :ensure nil
-    :bind (("C-c p s" . mg-take-screenshot)
-  	 ("C-c u f" . mg-add-current-file-name-to-killring)
-  	 ("C-c u s i" . mg-show-machine-info)
-  	 ("C-c u n" . mg-new-buffer-with-mode)
-  	 ("C-c u s s" . mg-shutdown-machine-with-confirmation)
-  	 ("C-c u t" . mg-insert-today-timestamp-formatted)))
+    (use-package mg-emacs
+      :ensure nil
+      :bind (("C-c p s" . mg-take-screenshot)
+    	 ("C-c u f" . mg-add-current-file-name-to-killring)
+    	 ("C-c u s i" . mg-show-machine-info)
+    	 ("C-c u s s" . mg-shutdown-machine-with-confirmation)
+    	 ("C-c u t" . mg-insert-today-timestamp-formatted)))
 
-  (use-package mg-defaults-extensions
-    :ensure nil
-    :config
-    (add-hook 'prog-mode-hook
-  	    #'mg-line-numbers-highlight-line-mode))
+    (use-package mg-defaults-extensions
+      :ensure nil
+      :config
+      (add-hook 'prog-mode-hook
+    	    #'mg-line-numbers-highlight-line-mode))
 
-  (use-package mg-utils
-    :ensure nil)
+    (use-package mg-utils
+      :ensure nil)
 #+end_src
 
 The ~mg-line-numbers-highlight-line-mode~ minor mode is only used when the ~prog-mode~ major mode is enabled. There is no reason for my specific use cases to have line numbers outside of coding. However, I use this feature quite extensively when programming. In text editors like Emacs, relative line numbers add a 10x speed in the way you insert/remove/modify text.
@@ -468,19 +470,26 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
 
 ** The ~mg-emacs-themes.el~ module
 
-I typically prefer simple and highly legible themes. Back in the days, I used to change theme quite often. The theme I've been enjoying the most is likely [[https://github.com/bbatsov/zenburn-emacs][Zenburn]], because it is also the one I used for the longest period of time without switching to any other theme. After some time though, I switched to ~modus-vivendi~, because of its simplicity and legibility. I'm finding it better than the one I was using before, and I think I'll stick with it for years to come.
+I typically prefer simple and highly legible themes. Back in the days, I used to change theme quite often. The theme I've been enjoying the most is likely [[https://github.com/bbatsov/zenburn-emacs][Zenburn]], because it is also the one I used for the longest period of time without switching to any other theme. After some time though, I switched to ~modus-vivendi~, because of its simplicity and legibility. I'm finding it better than the one I was using before, and I think I'll stick with it for years to come. However, the Emacs standard theme is even more legible and plain, so it should be worth trying it.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
+  (defun mg-init-macos-theme ()
+    "Enable the theme environment of choice for darwin."
+    (set-frame-font "Liberation Mono 17" nil t)
+    (use-package standard-themes :straight t :config
+      (load-theme 'standard-dark t)))
+
+  (defun mg-init-linux-theme ()
+    "Enable the theme enviroment of choice for linux."
+    (set-frame-font "Liberation Mono 14" nil t)
+    (use-package standard-themes :straight t :config
+      (load-theme 'standard-dark t)))
+
   (if (display-graphic-p)
       (progn
         (if (equal system-type 'darwin)
-  	  (set-frame-font "Iosevka Comfy 18" nil t)
-  	(set-frame-font "Liberation Mono 14" nil t))
-        (use-package standard-themes
-  	:straight t
-  	:config
-  	(load-theme 'standard-dark t))
-        (load-theme 'modus-vivendi t)
+  	  (mg-init-macos-theme)
+  	(mg-init-linux-theme))
         (set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
@@ -1256,33 +1265,6 @@ This module introduces several packages that I use to manage bibliographic entri
   (provide 'mg-emacs-bib)
 #+end_src
 
-** The ~mg-emacs-contacts.el~ module
-:PROPERTIES:
-:ID:       c048feb0-a295-47aa-b5f4-e4527e60369b
-:END:
-
-I mainly do contact management in ~org-mode~ and ~denote~, but I keep track of contacts data by using ~bbdb~ in parallel. It is a sort of backup that, which is not particularly useful but has a very low overhead. Generally speaking, I avoid complexity, and having different pieces of software doing the same thing is something I find reluctant. For this reason, I consider this package *temporary* and I'll probably deprecate its adoption in some months from now ([2024-09-24 Tue]).
-
-#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-contacts.el"
-  (if (not (equal (system-name) mg-work-laptop-hostname))
-      (use-package bbdb
-        :straight t
-        :commands bbdb
-        :bind (("C-x c b" . bbdb)
-  	     ("C-x c c" . bbdb-create))
-        :init
-        (defconst mg-bbdb-data-file (format "%s/%s" mg-dot-private-file "bbdb/.bbdb"))
-        :custom
-        (bbdb-mua-pop-up-window-size 1)
-        (bbdb-file mg-bbdb-data-file)
-        (bbdb-mua-pop-up t)
-        (bbdb-mua-pop-up-window-size 5)
-        :config
-        (autoload 'bbdb-insinuate-mu4e "bbdb-mu4e")))
-
-  (provide 'mg-emacs-contacts)
-#+end_src
-
 ** The ~mg-emacs-ledger.el~ module
 :PROPERTIES:
 :ID:       5fb29d20-1803-4301-80ff-d05d53397166
@@ -1630,6 +1612,25 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
     :bind (("C-c v" . multi-vterm)))
 
   (provide 'mg-emacs-coding)
+#+end_src
+
+** The ~mg-emacs-ai.el~ module
+
+Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my research work. This includes summarizing text, spell-checking and rephrasing. Although some skepticism, I found that these tools can substantially help us with some tasks related to the writing process, either it is for research or note-taking. As far as Emacs is concerned, these tools can be deeply integrated in one's workflow and generally provide a smooth experience without the pain of using webapps or other bloated nonsense.
+
+#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-ai.el"
+  (use-package ellama
+    :straight t
+    :custom
+    (ellama-keymap-prefix "C-c u a")
+    (ellama-language "English")
+    :config
+    (require 'llm-ollama)
+    (setq ellama-provider
+  	(make-llm-ollama
+  	 :chat-model "llama3.2:latest")))
+
+  (provide 'mg-emacs-ai)
 #+end_src
 
 * The ~mg-custom-modules~ libraries
@@ -2177,7 +2178,7 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   (defconst mg-capture-notes-file "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org")
   (defconst mg-conferences-file "~/Vault/pkm/20231210T222135--conferences__personal_research.org")
   (defconst mg-personal-projects-file "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org")
-  (defconst mg-books-file "/home/claudio/Vault/pkm/20240102T104309--books__personal_reading.org")
+  (defconst mg-books-file "~/Vault/pkm/20240102T104309--books__personal_reading.org")
   (defconst mg-planning-file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
   (defconst mg-flashcards-file "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org")
   (defconst mg-latex-cmd "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f")
