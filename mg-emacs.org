@@ -26,6 +26,7 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | ├──                | mg-kernel.el                   |       |
 | │   | ├──                | mg-macos.el                    |       |
 | │   | ├──                | mg-modeline.el                 |       |
+| │   | ├──                | mg-notmuch.el                  |       |
 | │   | ├──                | mg-org.el                      |       |
 | │   | ├──                | mg-org-gtd.el                  |       |
 | │   | ├──                | mg-pkm-utils.el                |       |
@@ -53,7 +54,7 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | └──                | mg-emacs-themes.el             |       |
 | └── | mg-emacs.org       |                                |       |
 |     |                    |                                |       |
-| 3   | directories,       | 34                             | files |
+| 3   | directories,       | 35                             | files |
 #+end_example
 
 In general, this configuration is organized using modules, each designed to introduce a set of packages for a specific purpose. The objective is to minimize the number of packages introduced within a single module to ensure a clear separation of concerns. Introducing too many packages at once reduces clarity.
@@ -169,6 +170,7 @@ Historically, this module enclosed a bunch of other customizations for variables
   	 ("C-c u r a e" . align-entire)
   	 ("C-c u c w" . whitespace-mode)
   	 ("C-c u m" . compile)
+  	 ("C-c u a" . async-shell-command)
   	 ("C-c u w f" . toggle-frame-fullscreen)
   	 ("C-c u w m" . toggle-frame-maximized)
   	 ("C-x C-n" . next-buffer)
@@ -322,7 +324,8 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
       (add-hook 'exwm-update-class-hook #'mg-exwm-update-class)
       (require 'exwm-systemtray)
       (exwm-systemtray-enable)
-      (setq exwm-systemtray-height 25)
+      (setq exwm-systemtray-height 22)
+      (setq exwm-systemtray-gap 3)
       (require 'exwm-randr)
       (exwm-randr-enable)
       (setq exwm-input-prefix-keys
@@ -453,7 +456,12 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
       (display-time-format "[%d/%b %H:%M]")
       :config
       (display-time-mode)
-      (display-battery-mode)))
+      (display-battery-mode))
+
+    (use-package mg-exwm
+      :ensure nil
+      :bind (("C-c u w l z" . mg-exwm-trigger-zurich-layout)
+  	   ("C-c u w l d" . mg-exwm-trigger-default-layout)))
 
   (provide 'mg-emacs-exwm)
 #+end_src
@@ -467,11 +475,14 @@ I typically prefer simple and highly legible themes. Back in the days, I used to
       (progn
         (if (equal system-type 'darwin)
   	  (set-frame-font "Iosevka Comfy 18" nil t)
-  	(set-frame-font "Iosevka Comfy 16" nil t))
+  	(set-frame-font "Liberation Mono 14" nil t))
+        (use-package standard-themes
+  	:straight t
+  	:config
+  	(load-theme 'standard-dark t))
         (load-theme 'modus-vivendi t)
         (set-fringe-mode 0))
     (set-face-background 'default "undefined"))
-
 #+end_src
 
 The following piece of code introduces ~hide-mode-line~ mode, which is used in a custom function of mine to enable PDF presentation mode (not technically an Emacs mode, rather a custom layout).
@@ -1246,6 +1257,9 @@ This module introduces several packages that I use to manage bibliographic entri
 #+end_src
 
 ** The ~mg-emacs-contacts.el~ module
+:PROPERTIES:
+:ID:       c048feb0-a295-47aa-b5f4-e4527e60369b
+:END:
 
 I mainly do contact management in ~org-mode~ and ~denote~, but I keep track of contacts data by using ~bbdb~ in parallel. It is a sort of backup that, which is not particularly useful but has a very low overhead. Generally speaking, I avoid complexity, and having different pieces of software doing the same thing is something I find reluctant. For this reason, I consider this package *temporary* and I'll probably deprecate its adoption in some months from now ([2024-09-24 Tue]).
 
@@ -1317,7 +1331,8 @@ I started using ~notmuch~ not so long ago. During a conversation with [[https://
     :straight t
     :bind (
   	 :map global-map
-  	 ("C-x m" . notmuch)
+  	 ("C-x m" . nil)
+  	 ("C-x m o" . notmuch)
   	 :map notmuch-search-mode-map
   	 ("a" . nil)
   	 ("A" . nil)
@@ -1356,6 +1371,13 @@ I started using ~notmuch~ not so long ago. During a conversation with [[https://
   (use-package ol-notmuch
     :straight (ol-notmuch :type git :host github :repo "tarsius/ol-notmuch")
     :after notmuch)
+
+  (use-package mg-notmuch
+    :ensure nil
+    :after notmuch
+    :bind (("C-x m u" . mg-notmuch-update-mail))
+    :config
+    (setq notmuch-hello-refresh-hook #'mg-notmuch-update-mail))
 
   (provide 'mg-emacs-notmuch)
 #+end_src
@@ -1826,6 +1848,74 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   ;;; mg-emacs.el ends here
 #+end_src
 
+** The ~mg-exwm.el~ library
+
+#+begin_src emacs-lisp :tangle "mg-custom-modules/mg-exwm.el"
+  ;;; mg-exwm.el --- Utility functions for EXWM -*- lexical-binding: t -*-
+
+  ;; Copyright (C) 2024  Claudio Migliorelli
+
+  ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
+  ;; URL: https://crawlingaway.com/emacs/dot-emacs
+  ;; Version: 0.0.1
+  ;; Package-Requires: ((emacs "29.4"))
+
+  ;; This file is NOT part of GNU Emacs.
+
+  ;; This program is free software; you can redistribute it and/or modify
+  ;; it under the terms of the GNU General Public License as published by
+  ;; the Free Software Foundation, either version 3 of the License, or
+  ;; (at your option) any later version.
+  ;;
+  ;; This program is distributed in the hope that it will be useful,
+  ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ;; GNU General Public License for more details.
+  ;;
+  ;; You should have received a copy of the GNU General Public License
+  ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+  ;;; Commentary:
+  ;; This library includes some utility functions that I use when EXWM
+  ;; is enabled.
+
+  ;;; Code:
+
+  (defconst mg-exwm--screenlayout-dir "~/.screenlayout"
+    "Directory for screenlayouts to be used with randr.")
+
+  (defconst mg-exwm--zurich-layout-script-name "zurich.sh"
+    "Script to enable the layout for the workstation in Zurich.")
+
+  (defconst mg-exwm--default-layout-script-name "default.sh"
+    "Script to enable the default layout.")
+
+  (defconst mg-exwm--xrandr-think-name "eDP1"
+    "Name assigned by xrandr to the screen of \"think\".")
+
+  (defun mg-exwm--change-layout (script)
+    "Change the current xrandr layout by executing SCRIPT."
+    (start-process-shell-command "screenlayout" nil
+  			       (format "%s/%s" mg-exwm--screenlayout-dir script)))
+
+  (defun mg-exwm-trigger-default-layout ()
+    "Trigger the default layout."
+    (interactive)
+    (mg-exwm--change-layout mg-exwm--default-layout-script-name))
+
+  (defun mg-exwm-trigger-zurich-layout ()
+    "Trigger layout for the workstation in Zurich."
+    (interactive)
+    (mg-exwm--change-layout mg-exwm--zurich-layout-script-name)
+    ;; NOTE: The Zurich layout has two screens, therefore move
+    ;; workspaces 2 and 5 to second screen
+    (setq exwm-randr-workspace-monitor-plist `(2 ,mg-exwm--xrandr-think-name 5 ,mg-exwm--xrandr-think-name))
+    (exwm-randr-refresh))
+
+  (provide 'mg-exwm)
+  ;;; mg-exwm.el ends here
+#+end_src
+
 ** The ~mg-defaults-extensions.el~ library
 
 #+begin_src emacs-lisp :tangle "mg-custom-modules/mg-defaults-extensions.el"
@@ -2177,9 +2267,56 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
 ** The ~mg-notmuch.el~ library
 
 #+begin_src emacs-lisp :tangle "mg-custom-modules/mg-notmuch.el"
+  ;;; mg-notmuch.el --- Custom functions for `notmuch' -*- lexical-binding: t -*-
+
+  ;; Copyright (C) 2024  Claudio Migliorelli
+
+  ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
+  ;; URL: https://crawlingaway.com/emacs/dot-emacs
+  ;; Version: 0.0.1
+  ;; Package-Requires: ((emacs "29.4"))
+
+  ;; This file is NOT part of GNU Emacs.
+
+  ;; This program is free software; you can redistribute it and/or modify
+  ;; it under the terms of the GNU General Public License as published by
+  ;; the Free Software Foundation, either version 3 of the License, or
+  ;; (at your option) any later version.
+  ;;
+  ;; This program is distributed in the hope that it will be useful,
+  ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ;; GNU General Public License for more details.
+  ;;
+  ;; You should have received a copy of the GNU General Public License
+  ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+  ;;; Commentary:
+  ;; This library introduces a series of custom function I use for the
+  ;; `notmuch' e-mail client for Emacs.
+
+  ;;; Code:
+
+  (defconst mg-notmuch--get-emails "mbsync -a"
+    "Shell command used to get new emails.")
+
+  (defconst mg-notmuch--reindex "notmuch new"
+    "Shell command used to reindex notmuch.")
+
+  (defconst mg-notmuch--update-shell-commands
+    (list mg-notmuch--get-emails mg-notmuch--reindex
+  	"Shell commands used to update the mail directory.
+  NOTE: The order of these commands *matter*. Do not change it."))
+
   (defun mg-notmuch-update-mail ()
+    "Update the mail directory."
     (interactive)
-    (async-shell-command "mbsync -a && notmuch new" "*notmuch-mbsync*"))
+    (dolist (cmd mg-notmuch--update-shell-commands)
+      (call-process-shell-command cmd nil 0)))
+
+  (provide 'mg-notmuch)
+
+  ;;; mg-notmuch.el ends here
 #+end_src
 
 ** The ~mg-pkm-utils.el~ library

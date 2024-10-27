@@ -2,7 +2,8 @@
   :straight t
   :bind (
 	 :map global-map
-	 ("C-x m" . notmuch)
+	 ("C-x m" . nil)
+	 ("C-x m o" . notmuch)
 	 :map notmuch-search-mode-map
 	 ("a" . nil)
 	 ("A" . nil)
@@ -41,5 +42,12 @@
 (use-package ol-notmuch
   :straight (ol-notmuch :type git :host github :repo "tarsius/ol-notmuch")
   :after notmuch)
+
+(use-package mg-notmuch
+  :ensure nil
+  :after notmuch
+  :bind (("C-x m u" . mg-notmuch-update-mail))
+  :config
+  (setq notmuch-hello-refresh-hook #'mg-notmuch-update-mail))
 
 (provide 'mg-emacs-notmuch)

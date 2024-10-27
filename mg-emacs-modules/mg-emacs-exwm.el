@@ -32,7 +32,8 @@ work."
     (add-hook 'exwm-update-class-hook #'mg-exwm-update-class)
     (require 'exwm-systemtray)
     (exwm-systemtray-enable)
-    (setq exwm-systemtray-height 25)
+    (setq exwm-systemtray-height 22)
+    (setq exwm-systemtray-gap 3)
     (require 'exwm-randr)
     (exwm-randr-enable)
     (setq exwm-input-prefix-keys
@@ -163,6 +164,11 @@ work."
     (display-time-format "[%d/%b %H:%M]")
     :config
     (display-time-mode)
-    (display-battery-mode)))
+    (display-battery-mode))
+
+  (use-package mg-exwm
+    :ensure nil
+    :bind (("C-c u w l z" . mg-exwm-trigger-zurich-layout)
+	   ("C-c u w l d" . mg-exwm-trigger-default-layout)))
 
 (provide 'mg-emacs-exwm)
