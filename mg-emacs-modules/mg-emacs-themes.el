@@ -1,16 +1,10 @@
 (defun mg-init-macos-theme ()
   "Enable the theme environment of choice for darwin."
-  (set-frame-font "Iosevka 19" nil t)
-  (use-package gruvbox-theme
+  (set-frame-font "Iosevka Comfy 19" nil t)
+  (use-package zenburn-theme
     :straight t
-    :config (load-theme 'gruvbox t))
-  (set-face-attribute 'mode-line nil
-                      :box '(:line-width 0.5))
-  (use-package all-the-icons :straight t
-    :if (display-graphic-p))
-  (use-package all-the-icons-dired :straight t
     :config
-    (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)))
+    (load-theme 'zenburn t)))
 
 (defun mg-init-linux-theme ()
   "Enable the theme enviroment of choice for linux."
