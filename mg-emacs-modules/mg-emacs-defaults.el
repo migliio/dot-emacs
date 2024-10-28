@@ -48,6 +48,7 @@
 		frame-resize-pixelwise t
 		linum-format "%4d "
 		use-short-answers t
+		electric-indent-mode nil
 		make-backup-files nil
 		global-auto-revert-mode t
 		confirm-kill-processes nil
@@ -73,28 +74,28 @@
 	     show-paren-mode))
     (funcall mode 1)))
 
-  (when (eq system-type 'darwin)
-    (use-package mg-macos
-      :ensure nil
-      :config
-      (mg-macos-support-enable)))
-
-  (use-package mg-emacs
-    :ensure nil
-    :bind (("C-c p s" . mg-take-screenshot)
-  	 ("C-c u f" . mg-add-current-file-name-to-killring)
-  	 ("C-c u s i" . mg-show-machine-info)
-  	 ("C-c u s s" . mg-shutdown-machine-with-confirmation)
-  	 ("C-c u t" . mg-insert-today-timestamp-formatted)))
-
-  (use-package mg-defaults-extensions
+(when (eq system-type 'darwin)
+  (use-package mg-macos
     :ensure nil
     :config
-    (add-hook 'prog-mode-hook
-  	    #'mg-line-numbers-highlight-line-mode))
+    (mg-macos-support-enable)))
 
-  (use-package mg-utils
-    :ensure nil)
+(use-package mg-emacs
+  :ensure nil
+  :bind (("C-c p s" . mg-take-screenshot)
+	 ("C-c u f" . mg-add-current-file-name-to-killring)
+	 ("C-c u s i" . mg-show-machine-info)
+	 ("C-c u s s" . mg-shutdown-machine-with-confirmation)
+	 ("C-c u t" . mg-insert-today-timestamp-formatted)))
+
+(use-package mg-defaults-extensions
+  :ensure nil
+  :config
+  (add-hook 'prog-mode-hook
+	    #'mg-line-numbers-highlight-line-mode))
+
+(use-package mg-utils
+  :ensure nil)
 
 (use-package which-key
   :straight t
