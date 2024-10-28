@@ -100,7 +100,6 @@ Just to mention it, I want a single instance of Emacs running in the background.
   (require 'mg-emacs-org)
   (require 'mg-emacs-denote)
   (require 'mg-emacs-bib)
-  (require 'mg-emacs-contacts)
   (require 'mg-emacs-ledger)
   (require 'mg-emacs-flashcards)
   (require 'mg-emacs-notmuch)
