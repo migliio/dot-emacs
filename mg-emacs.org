@@ -464,7 +464,7 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
     (use-package mg-exwm
       :ensure nil
       :bind (("C-c u w l z" . mg-exwm-trigger-zurich-layout)
-  	   ("C-c u w l d" . mg-exwm-trigger-default-layout)))
+	   ("C-c u w l d" . mg-exwm-trigger-default-layout))))
 
   (provide 'mg-emacs-exwm)
 #+end_src
@@ -502,13 +502,13 @@ The following piece of code introduces ~hide-mode-line~ mode, which is used in a
     :straight t)
 
   (set-face-attribute 'mode-line-inactive nil
-  		    :height 180
+  		    :height 150
   		    :background "#665c54"
   		    :foreground "#000000"
                       :box '(:width 0))
 
   (set-face-attribute 'mode-line-active nil
-  		    :height 180
+  		    :height 150
   		    :background "#bdae93"
   		    :foreground "#000000"
                       :box '(:width 0))

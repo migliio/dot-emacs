@@ -22,13 +22,13 @@
   :straight t)
 
 (set-face-attribute 'mode-line-inactive nil
-		    :height 180
+		    :height 150
 		    :background "#665c54"
 		    :foreground "#000000"
                     :box '(:width 0))
 
 (set-face-attribute 'mode-line-active nil
-		    :height 180
+		    :height 150
 		    :background "#bdae93"
 		    :foreground "#000000"
                     :box '(:width 0))
