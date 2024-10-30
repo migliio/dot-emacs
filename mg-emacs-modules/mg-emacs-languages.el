@@ -50,7 +50,16 @@
   :config
   (add-to-list 'eglot-server-programs
 	       '((c-mode)
-		 . ("clangd")))
+		 . ("clangd"
+                    "-j=8"
+                    "--log=error"
+                    "--malloc-trim"
+                    "--background-index"
+                    "--clang-tidy"
+                    "--completion-style=detailed"
+                    "--pch-storage=memory"
+                    "--header-insertion=never"
+                    "--header-insertion-decorators=0")))
   (if (eq system-type 'darwin)
       (add-to-list 'eglot-server-programs
 		   '((python-mode)

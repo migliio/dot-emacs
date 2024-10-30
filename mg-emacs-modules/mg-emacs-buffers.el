@@ -1,9 +1,7 @@
-(use-package vundo
+(use-package undo-tree
   :straight t
-  :bind (("C-x u" . vundo))
-  :config
-  (setq vundo-glyph-alist vundo-unicode-symbols)
-  (set-face-attribute 'vundo-default nil :height 1.0))
+  :init
+  (global-undo-tree-mode))
 
 (use-package avy
   :straight t

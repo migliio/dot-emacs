@@ -495,11 +495,23 @@ I typically prefer simple and highly legible themes. Back in the days, I used to
     (set-face-background 'default "undefined"))
 #+end_src
 
-The following piece of code introduces ~hide-mode-line~ mode, which is used in a custom function of mine to enable PDF presentation mode (not technically an Emacs mode, rather a custom layout).
+The following piece of code introduces ~hide-mode-line~ mode, which is used in a custom function of mine to enable PDF presentation mode (not technically an Emacs mode, rather a custom layout). Moreover, I have some customization on the mode-line colors, which is perfect in conjunction with the default Emacs dark theme.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (use-package hide-mode-line
     :straight t)
+
+  (set-face-attribute 'mode-line-inactive nil
+  		    :height 180
+  		    :background "#665c54"
+  		    :foreground "#000000"
+                      :box '(:width 0))
+
+  (set-face-attribute 'mode-line-active nil
+  		    :height 180
+  		    :background "#bdae93"
+  		    :foreground "#000000"
+                      :box '(:width 0))
 
   (provide 'mg-emacs-themes)
 #+end_src
@@ -731,15 +743,13 @@ When dealing with PDFs, I leverage upon the ~pdf-tools~ suite, which does a pret
 
 This module handles various buffer editing packages. The concept of buffer is key in Emacs, it is like a sheet of paper in a notebook. Therefore, having packages that, for instance, allow us to move faster in a buffer, or efficiently undo a recent change, I think is of a great value.
 
-The ~vundo~ package is my way to go when it comes to undo changes. I was using ~undo-tree~ before, and I still think it is a valid alternative to what I'm using now. However, I really enjoy ~vundo~'s simplicity and low visual overhead.
+The ~vundo~ package is my way to go when it comes to undo changes. I was using ~undo-tree~ before, and I still think it is a valid alternative to what I'm using now. However, I really enjoy ~vundo~'s simplicity and low visual overhead. However, on [2024-10-29 Tue 15:51] I decided to go back to ~undo-tree~ because ~vundo~ is buggy: sometimes I get weird errors when going substantially back in time with the changes, and I also got some ~"No possible route"~ bugs several times.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-buffers.el"
-  (use-package vundo
+  (use-package undo-tree
     :straight t
-    :bind (("C-x u" . vundo))
-    :config
-    (setq vundo-glyph-alist vundo-unicode-symbols)
-    (set-face-attribute 'vundo-default nil :height 1.0))
+    :init
+    (global-undo-tree-mode))
 #+end_src
 
 My typing skills improved consistently in these years of Emacs usage. Thus, I needed a way to also move the cursor faster in the buffers. That's why I started using ~avy~, whose functionality could be a bit cumbersome at first, but after one gets used to it, is a 10x improvement in speed.
@@ -1436,7 +1446,16 @@ The following is a series of packages to enable LSP and major-modes for some pro
     :config
     (add-to-list 'eglot-server-programs
   	       '((c-mode)
-  		 . ("clangd")))
+  		 . ("clangd"
+                      "-j=8"
+                      "--log=error"
+                      "--malloc-trim"
+                      "--background-index"
+                      "--clang-tidy"
+                      "--completion-style=detailed"
+                      "--pch-storage=memory"
+                      "--header-insertion=never"
+                      "--header-insertion-decorators=0")))
     (if (eq system-type 'darwin)
         (add-to-list 'eglot-server-programs
   		   '((python-mode)
