@@ -8,10 +8,6 @@
     ;; Custom tools and applications that I use
     (defconst mg-browser "/usr/bin/firefox")
     (defconst mg-keyboard-layout-changer "/usr/bin/setxkbmap")
-    (defconst mg-bluetooth-applet "blueman-applet")
-    (defconst mg-network-applet "nm-applet")
-    (defconst mg-redlight "redshift")
-    (defconst mg-status-bar "/usr/bin/polybar")
 
     ;; Custom application started that leverages on `xstarter'
     (defun mg-starter ()
@@ -109,11 +105,6 @@ work."
     (add-hook 'exwm-init-hook
 	      (lambda ()
 		(progn
-		  (start-process mg-bluetooth-applet nil mg-bluetooth-applet)
-		  (start-process "xset" nil "xset" "s 300 5")
-		  (start-process mg-network-applet nil mg-network-applet)
-		  (start-process mg-redlight nil mg-redlight)
-  		  (start-process mg-status-bar nil mg-status-bar)
 		  (start-process "dbus-update-activation-environment" nil "dbus-update-activation-environment" "DISPLAY")
 		  (when (not (equal (system-name) mg-work-laptop-hostname))
 		    (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)))
