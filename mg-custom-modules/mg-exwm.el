@@ -37,8 +37,14 @@
 (defconst mg-exwm--default-layout-script-name "default.sh"
   "Script to enable the default layout.")
 
+(defconst mg-exwm--workstation-layout-script-name "workstation_new.sh"
+  "Script to enable the workstation layout.")
+
 (defconst mg-exwm--xrandr-think-name "eDP1"
   "Name assigned by xrandr to the screen of \"think\".")
+
+(defconst mg-exwm--xrandr-vertical-name "HDMI1"
+  "Name of the vertical monitor of my workstation.")
 
 (defun mg-exwm--change-layout (script)
   "Change the current xrandr layout by executing SCRIPT."
@@ -57,6 +63,13 @@
   ;; NOTE: The Zurich layout has two screens, therefore move
   ;; workspaces 2 and 5 to second screen
   (setq exwm-randr-workspace-monitor-plist `(2 ,mg-exwm--xrandr-think-name 5 ,mg-exwm--xrandr-think-name))
+  (exwm-randr-refresh))
+
+(defun mg-exwm-trigger-workstation-layout ()
+  "Trigger the workstation layout"
+  (interactive)
+  (mg-exwm--change-layout mg-exwm--workstation-layout-script-name)
+  (setq exwm-randr-workspace-monitor-plist `(2 ,mg-exwm--xrandr-think-name 5 ,mg-exwm--xrandr-vertical-name))
   (exwm-randr-refresh))
 
 (provide 'mg-exwm)

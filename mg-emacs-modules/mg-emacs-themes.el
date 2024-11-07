@@ -1,14 +1,14 @@
 (defun mg-init-macos-theme ()
   "Enable the theme environment of choice for darwin."
-  (set-frame-font "Liberation Mono 17" nil t)
-  (use-package standard-themes :straight t :config
-    (load-theme 'standard-dark t)))
+  (set-frame-font "Iosevka Comfy 17" nil t)
+  (use-package ef-themes :straight t :config
+    (load-theme 'ef-autumn t)))
 
 (defun mg-init-linux-theme ()
   "Enable the theme enviroment of choice for linux."
-  (set-frame-font "Liberation Mono 14" nil t)
-  (use-package standard-themes :straight t :config
-    (load-theme 'standard-dark t)))
+  (set-frame-font "Iosevka Comfy 14" nil t)
+  (use-package ef-themes :straight t :config
+    (load-theme 'ef-autumn t)))
 
 (if (display-graphic-p)
     (progn
@@ -20,17 +20,5 @@
 
 (use-package hide-mode-line
   :straight t)
-
-(set-face-attribute 'mode-line-inactive nil
-		    :height 150
-		    :background "#665c54"
-		    :foreground "#000000"
-                    :box '(:width 0))
-
-(set-face-attribute 'mode-line-active nil
-		    :height 150
-		    :background "#bdae93"
-		    :foreground "#000000"
-                    :box '(:width 0))
 
 (provide 'mg-emacs-themes)

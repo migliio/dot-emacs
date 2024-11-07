@@ -306,6 +306,7 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
       (defconst mg-bluetooth-applet "blueman-applet")
       (defconst mg-network-applet "nm-applet")
       (defconst mg-redlight "redshift")
+      (defconst mg-status-bar "/usr/bin/polybar")
 
       ;; Custom application started that leverages on `xstarter'
       (defun mg-starter ()
@@ -322,13 +323,8 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
   				candidates)))
   	(start-process "" nil application-path)))
 
-
       (setq exwm-workspace-number 6)
       (add-hook 'exwm-update-class-hook #'mg-exwm-update-class)
-      (require 'exwm-systemtray)
-      (exwm-systemtray-enable)
-      (setq exwm-systemtray-height 22)
-      (setq exwm-systemtray-gap 3)
       (require 'exwm-randr)
       (exwm-randr-enable)
       (setq exwm-input-prefix-keys
@@ -402,13 +398,9 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
   	    ([?\s-f] .
   	     (lambda ()
   	       (interactive)
-  	       (mg-check-and-toggle-deepwork-mode)))
-  	    ,@(mapcar (lambda (i)
-  			`(,(kbd (format "s-%d" i)) .
-  			  (lambda ()
-  			    (interactive)
-  			    (exwm-workspace-switch-create ,i))))
-  		      (number-sequence 0 9))))
+  	       (mg-check-and-toggle-deepwork-mode)))))
+      (setq exwm-workspace-index-map 
+  	  (lambda (index) (number-to-string (1+ index))))
       (add-hook 'exwm-init-hook
   	      (lambda ()
   		(progn
@@ -416,15 +408,10 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
   		  (start-process "xset" nil "xset" "s 300 5")
   		  (start-process mg-network-applet nil mg-network-applet)
   		  (start-process mg-redlight nil mg-redlight)
+    		  (start-process mg-status-bar nil mg-status-bar)
   		  (start-process "dbus-update-activation-environment" nil "dbus-update-activation-environment" "DISPLAY")
   		  (when (not (equal (system-name) mg-work-laptop-hostname))
   		    (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)))
-
-    (use-package exwm-modeline
-      :straight t
-      :after (exwm)
-      :config
-      (add-hook 'exwm-init-hook #'exwm-modeline-mode))
 
     (use-package desktop-environment
       :straight t
@@ -448,10 +435,6 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
       (desktop-environment-volume-toggle-command "pamixer -t")
       (desktop-environment-screenlock-command "xsecurelock"))
 
-    (use-package bluetooth
-      :after (exwm)
-      :straight t)
-
     (use-package time
       :straight t
       :after (exwm)
@@ -464,7 +447,8 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
     (use-package mg-exwm
       :ensure nil
       :bind (("C-c u w l z" . mg-exwm-trigger-zurich-layout)
-	   ("C-c u w l d" . mg-exwm-trigger-default-layout))))
+  	   ("C-c u w l d" . mg-exwm-trigger-default-layout)
+  	   ("C-c u w l w" . mg-exwm-trigger-workstation-layout))))
 
   (provide 'mg-emacs-exwm)
 #+end_src
@@ -476,15 +460,15 @@ I typically prefer simple and highly legible themes. Back in the days, I used to
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (defun mg-init-macos-theme ()
     "Enable the theme environment of choice for darwin."
-    (set-frame-font "Liberation Mono 17" nil t)
-    (use-package standard-themes :straight t :config
-      (load-theme 'standard-dark t)))
+    (set-frame-font "Iosevka Comfy 17" nil t)
+    (use-package ef-themes :straight t :config
+      (load-theme 'ef-autumn t)))
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (set-frame-font "Liberation Mono 14" nil t)
-    (use-package standard-themes :straight t :config
-      (load-theme 'standard-dark t)))
+    (set-frame-font "Iosevka Comfy 14" nil t)
+    (use-package ef-themes :straight t :config
+      (load-theme 'ef-autumn t)))
 
   (if (display-graphic-p)
       (progn
@@ -500,18 +484,6 @@ The following piece of code introduces ~hide-mode-line~ mode, which is used in a
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (use-package hide-mode-line
     :straight t)
-
-  (set-face-attribute 'mode-line-inactive nil
-  		    :height 150
-  		    :background "#665c54"
-  		    :foreground "#000000"
-                      :box '(:width 0))
-
-  (set-face-attribute 'mode-line-active nil
-  		    :height 150
-  		    :background "#bdae93"
-  		    :foreground "#000000"
-                      :box '(:width 0))
 
   (provide 'mg-emacs-themes)
 #+end_src
@@ -749,7 +721,9 @@ The ~vundo~ package is my way to go when it comes to undo changes. I was using ~
   (use-package undo-tree
     :straight t
     :init
-    (global-undo-tree-mode))
+    (global-undo-tree-mode)
+    :custom
+    (undo-tree-auto-save-history nil))
 #+end_src
 
 My typing skills improved consistently in these years of Emacs usage. Thus, I needed a way to also move the cursor faster in the buffers. That's why I started using ~avy~, whose functionality could be a bit cumbersome at first, but after one gets used to it, is a 10x improvement in speed.
@@ -1914,8 +1888,14 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defconst mg-exwm--default-layout-script-name "default.sh"
     "Script to enable the default layout.")
 
+  (defconst mg-exwm--workstation-layout-script-name "workstation_new.sh"
+    "Script to enable the workstation layout.")
+
   (defconst mg-exwm--xrandr-think-name "eDP1"
     "Name assigned by xrandr to the screen of \"think\".")
+
+  (defconst mg-exwm--xrandr-vertical-name "HDMI1"
+    "Name of the vertical monitor of my workstation.")
 
   (defun mg-exwm--change-layout (script)
     "Change the current xrandr layout by executing SCRIPT."
@@ -1934,6 +1914,13 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     ;; NOTE: The Zurich layout has two screens, therefore move
     ;; workspaces 2 and 5 to second screen
     (setq exwm-randr-workspace-monitor-plist `(2 ,mg-exwm--xrandr-think-name 5 ,mg-exwm--xrandr-think-name))
+    (exwm-randr-refresh))
+
+  (defun mg-exwm-trigger-workstation-layout ()
+    "Trigger the workstation layout"
+    (interactive)
+    (mg-exwm--change-layout mg-exwm--workstation-layout-script-name)
+    (setq exwm-randr-workspace-monitor-plist `(2 ,mg-exwm--xrandr-think-name 5 ,mg-exwm--xrandr-vertical-name))
     (exwm-randr-refresh))
 
   (provide 'mg-exwm)
@@ -2283,6 +2270,44 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     	      (throw 'no-time time))
     	    (insert (format "* %s\n" (string-trim (mg-org--task-prompt))))
     	    (insert (format "SCHEDULED: <%s>\n\n" time))))))))
+
+
+  (defvar my-org-export-functions
+    '((html-buffer . org-html-export-as-html)
+      (latex-buffer . org-latex-export-as-latex)))
+
+  (defvar my-org-select-export-history nil)
+
+  (defun my-org-select-export-function ()
+    (let ((default (car my-org-select-export-history)))
+      (intern
+       (completing-read
+        (format-prompt "Select export type" default)
+        my-org-export-functions
+        nil :require-match nil 'my-org-select-export-history
+        default))))
+
+  (defun my-org-export-get-function ()
+    (alist-get
+     (my-org-select-export-function)
+     my-org-export-functions))
+
+  (defun my-org-export-region-to-html (beg end export-fn)
+    (interactive
+     (list
+      (region-beginning)
+      (region-end)
+      (my-org-export-get-function)))
+    (unless (region-active-p)
+      (user-error "No active region; aborting"))
+    (let ((current-window (selected-window)))
+      (unwind-protect
+          (progn
+            (narrow-to-region beg end)
+            (funcall export-fn nil nil t t nil))
+        (select-window current-window)
+        (deactivate-mark)
+        (widen))))
 
   (provide 'mg-org)
   ;;; mg-org.el ends here

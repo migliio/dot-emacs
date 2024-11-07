@@ -11,6 +11,7 @@
     (defconst mg-bluetooth-applet "blueman-applet")
     (defconst mg-network-applet "nm-applet")
     (defconst mg-redlight "redshift")
+    (defconst mg-status-bar "/usr/bin/polybar")
 
     ;; Custom application started that leverages on `xstarter'
     (defun mg-starter ()
@@ -27,13 +28,8 @@ work."
 				candidates)))
 	(start-process "" nil application-path)))
 
-
     (setq exwm-workspace-number 6)
     (add-hook 'exwm-update-class-hook #'mg-exwm-update-class)
-    (require 'exwm-systemtray)
-    (exwm-systemtray-enable)
-    (setq exwm-systemtray-height 22)
-    (setq exwm-systemtray-gap 3)
     (require 'exwm-randr)
     (exwm-randr-enable)
     (setq exwm-input-prefix-keys
@@ -107,13 +103,9 @@ work."
 	    ([?\s-f] .
 	     (lambda ()
 	       (interactive)
-	       (mg-check-and-toggle-deepwork-mode)))
-	    ,@(mapcar (lambda (i)
-			`(,(kbd (format "s-%d" i)) .
-			  (lambda ()
-			    (interactive)
-			    (exwm-workspace-switch-create ,i))))
-		      (number-sequence 0 9))))
+	       (mg-check-and-toggle-deepwork-mode)))))
+    (setq exwm-workspace-index-map 
+	  (lambda (index) (number-to-string (1+ index))))
     (add-hook 'exwm-init-hook
 	      (lambda ()
 		(progn
@@ -121,15 +113,10 @@ work."
 		  (start-process "xset" nil "xset" "s 300 5")
 		  (start-process mg-network-applet nil mg-network-applet)
 		  (start-process mg-redlight nil mg-redlight)
+  		  (start-process mg-status-bar nil mg-status-bar)
 		  (start-process "dbus-update-activation-environment" nil "dbus-update-activation-environment" "DISPLAY")
 		  (when (not (equal (system-name) mg-work-laptop-hostname))
 		    (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)))
-
-  (use-package exwm-modeline
-    :straight t
-    :after (exwm)
-    :config
-    (add-hook 'exwm-init-hook #'exwm-modeline-mode))
 
   (use-package desktop-environment
     :straight t
@@ -153,10 +140,6 @@ work."
     (desktop-environment-volume-toggle-command "pamixer -t")
     (desktop-environment-screenlock-command "xsecurelock"))
 
-  (use-package bluetooth
-    :after (exwm)
-    :straight t)
-
   (use-package time
     :straight t
     :after (exwm)
@@ -169,6 +152,7 @@ work."
   (use-package mg-exwm
     :ensure nil
     :bind (("C-c u w l z" . mg-exwm-trigger-zurich-layout)
-	   ("C-c u w l d" . mg-exwm-trigger-default-layout))))
+	   ("C-c u w l d" . mg-exwm-trigger-default-layout)
+	   ("C-c u w l w" . mg-exwm-trigger-workstation-layout))))
 
 (provide 'mg-emacs-exwm)
