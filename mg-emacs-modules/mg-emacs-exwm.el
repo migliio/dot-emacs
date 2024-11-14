@@ -169,6 +169,6 @@ work."
   (use-package mg-exwm
     :ensure nil
     :bind (("C-c u w l z" . mg-exwm-trigger-zurich-layout)
-	   ("C-c u w l d" . mg-exwm-trigger-default-layout))))
+	   ("C-c u w l d" . mg-exwm-trigger-default-layout)))
 
 (provide 'mg-emacs-exwm)

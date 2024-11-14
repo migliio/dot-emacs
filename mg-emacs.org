@@ -15,48 +15,48 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 
 #+RESULTS:
 #+begin_example
-| ./  |                    |                                |       |
-| ├── | init.el            |                                |       |
-| ├── | LICENSE.md         |                                |       |
-| ├── | mg-custom-modules/ |                                |       |
-| │   | ├──                | mg-citar-denote.el             |       |
-| │   | ├──                | mg-defaults-extensions.el      |       |
-| │   | ├──                | mg-denote.el                   |       |
-| │   | ├──                | mg-emacs.el                    |       |
-| │   | ├──                | mg-exwm.el                     |       |
-| │   | ├──                | mg-kernel.el                   |       |
-| │   | ├──                | mg-macos.el                    |       |
-| │   | ├──                | mg-modeline.el                 |       |
-| │   | ├──                | mg-notmuch.el                  |       |
-| │   | ├──                | mg-org.el                      |       |
-| │   | ├──                | mg-org-gtd.el                  |       |
-| │   | ├──                | mg-pkm-utils.el                |       |
-| │   | └──                | mg-utils.el                    |       |
-| ├── | mg-emacs-modules/  |                                |       |
-| │   | ├──                | mg-emacs-ai.el                 |       |
-| │   | ├──                | mg-emacs-bib.el                |       |
-| │   | ├──                | mg-emacs-browsing.el           |       |
-| │   | ├──                | mg-emacs-buffers-completion.el |       |
-| │   | ├──                | mg-emacs-buffers.el            |       |
-| │   | ├──                | mg-emacs-coding.el             |       |
-| │   | ├──                | mg-emacs-contacts.el           |       |
-| │   | ├──                | mg-emacs-defaults.el           |       |
-| │   | ├──                | mg-emacs-denote.el             |       |
-| │   | ├──                | mg-emacs-exwm.el               |       |
-| │   | ├──                | mg-emacs-files.el              |       |
-| │   | ├──                | mg-emacs-flashcards.el         |       |
-| │   | ├──                | mg-emacs-git.el                |       |
-| │   | ├──                | mg-emacs-languages.el          |       |
-| │   | ├──                | mg-emacs-layouts.el            |       |
-| │   | ├──                | mg-emacs-ledger.el             |       |
-| │   | ├──                | mg-emacs-markup.el             |       |
-| │   | ├──                | mg-emacs-notmuch.el            |       |
-| │   | ├──                | mg-emacs-org.el                |       |
-| │   | ├──                | mg-emacs-package-managers.el   |       |
-| │   | └──                | mg-emacs-themes.el             |       |
-| └── | mg-emacs.org       |                                |       |
-|     |                    |                                |       |
-| 3   | directories,       | 37                             | files |
+| ./  |                           |                                |       |
+| ├── | .mg-emacs.org.~undo-tree~ |                                |       |
+| ├── | LICENSE.md                |                                |       |
+| ├── | init.el                   |                                |       |
+| ├── | mg-custom-modules/        |                                |       |
+| │   | ├──                       | mg-citar-denote.el             |       |
+| │   | ├──                       | mg-defaults-extensions.el      |       |
+| │   | ├──                       | mg-denote.el                   |       |
+| │   | ├──                       | mg-emacs.el                    |       |
+| │   | ├──                       | mg-exwm.el                     |       |
+| │   | ├──                       | mg-kernel.el                   |       |
+| │   | ├──                       | mg-macos.el                    |       |
+| │   | ├──                       | mg-modeline.el                 |       |
+| │   | ├──                       | mg-notmuch.el                  |       |
+| │   | ├──                       | mg-org-gtd.el                  |       |
+| │   | ├──                       | mg-org.el                      |       |
+| │   | ├──                       | mg-pkm-utils.el                |       |
+| │   | └──                       | mg-utils.el                    |       |
+| ├── | mg-emacs-modules/         |                                |       |
+| │   | ├──                       | mg-emacs-ai.el                 |       |
+| │   | ├──                       | mg-emacs-bib.el                |       |
+| │   | ├──                       | mg-emacs-browsing.el           |       |
+| │   | ├──                       | mg-emacs-buffers-completion.el |       |
+| │   | ├──                       | mg-emacs-buffers.el            |       |
+| │   | ├──                       | mg-emacs-coding.el             |       |
+| │   | ├──                       | mg-emacs-defaults.el           |       |
+| │   | ├──                       | mg-emacs-denote.el             |       |
+| │   | ├──                       | mg-emacs-exwm.el               |       |
+| │   | ├──                       | mg-emacs-files.el              |       |
+| │   | ├──                       | mg-emacs-flashcards.el         |       |
+| │   | ├──                       | mg-emacs-git.el                |       |
+| │   | ├──                       | mg-emacs-languages.el          |       |
+| │   | ├──                       | mg-emacs-layouts.el            |       |
+| │   | ├──                       | mg-emacs-ledger.el             |       |
+| │   | ├──                       | mg-emacs-markup.el             |       |
+| │   | ├──                       | mg-emacs-notmuch.el            |       |
+| │   | ├──                       | mg-emacs-org.el                |       |
+| │   | ├──                       | mg-emacs-package-managers.el   |       |
+| │   | └──                       | mg-emacs-themes.el             |       |
+| └── | mg-emacs.org              |                                |       |
+|     |                           |                                |       |
+| 3   | directories,              | 37                             | files |
 #+end_example
 
 In general, this configuration is organized using modules, each designed to introduce a set of packages for a specific purpose. The objective is to minimize the number of packages introduced within a single module to ensure a clear separation of concerns. Introducing too many packages at once reduces clarity.
@@ -158,104 +158,104 @@ The code below is used to disable some boring modes like ~scroll-bar-mode~ and ~
 Historically, this module enclosed a bunch of other customizations for variables related to specific modes (e.g., ~org-mode~, ~c-mode~). I found it confusing and even wrong in some cases. That's why now the idea is to tweak emacs-specific variables *only*.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-defaults.el"
-    (use-package emacs
-      :bind (("M-n" . forward-paragraph)
-    	 ("M-p" . backward-paragraph)
-    	 ("C-c u r s" . replace-string)
-    	 ("C-c u r q" . query-replace-regexp)
-    	 ("C-c u r r" . query-replace)
-    	 ("C-c u r c" . comment-region)
-    	 ("C-c u r u" . uncomment-region)
-    	 ("C-c u r i" . indent-region)
-    	 ("C-c u r a r" . align-regexp)
-    	 ("C-c u r a e" . align-entire)
-    	 ("C-c u c w" . whitespace-mode)
-    	 ("C-c u m" . compile)
-    	 ("C-c u x" . async-shell-command)
-    	 ("C-c u w f" . toggle-frame-fullscreen)
-    	 ("C-c u w m" . toggle-frame-maximized)
-    	 ("C-x C-n" . next-buffer)
-    	 ("C-x C-p" . previous-buffer))
-      :init
-      (global-set-key (kbd "C-x C-n") nil)
-      (global-set-key (kbd "C-x C-p") nil)
-      (defconst emacs-tmp-dir (expand-file-name (format "emacs%d" (user-uid)) temporary-file-directory))
-      (defconst mg-dot-private-file "~/Repositories/knock-files-private")
-      (defconst mg-emacs-root "~/.emacs.d")
-      (defconst mg-sendmail-bin "/usr/bin/msmtp")
-      (setq inhibit-startup-screen t
-    	completion-cycle-threshold 3
-    	tab-always-indent 'complete
-    	create-lockfiles nil
-    	user-emacs-directory (expand-file-name "~/.cache/emacs/")
-    	url-history-file (expand-file-name "url/history" user-emacs-directory)
-    	custom-file (if (boundp 'server-socket-dir)
-    			(expand-file-name "custom.el" server-socket-dir)
-    		      (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory))
-    	backup-by-copying t
-    	delete-old-versions t
-    	kept-new-versions 6
-    	kept-old-versions 2
-    	message-send-mail-function 'message-send-mail-with-sendmail
-    	sendmail-program mg-sendmail-bin
-    	version-control t
-    	auto-save-list-file-prefix emacs-tmp-dir
-    	auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
-    	backup-directory-alist `((".*" . ,emacs-tmp-dir)))
-      (setq-default frame-title-format '("%b")
-    		ring-bell-function 'ignore
-    		tab-width 8
-    		frame-resize-pixelwise t
-    		linum-format "%4d "
-    		use-short-answers t
-    		electric-indent-mode nil
-    		make-backup-files nil
-    		global-auto-revert-mode t
-    		confirm-kill-processes nil
-    		process-connection-type nil
-    		org-src-fontify-natively t
-   		warning-minimum-level :emergency
-    		set-language-environment "UTF-8"
-    		system-time-locale "C"
-    		native-comp-async-report-warnings-errors nil)
-      (load custom-file t)
-      (add-hook 'window-setup-hook 'toggle-frame-maximized t)
-      (add-to-list 'yank-excluded-properties 'face)
-      (if (display-graphic-p)
-          (dolist (mode
-    	       '(tool-bar-mode
-    		 scroll-bar-mode
-    		 menu-bar-mode
-    		 tooltip-mode
-    		 blink-cursor-mode))
-    	(funcall mode 0)))
-      (dolist (mode
-    	   '(global-visual-line-mode
-    	     show-paren-mode))
-        (funcall mode 1)))
+  (use-package emacs
+    :bind (("M-n" . forward-paragraph)
+  	 ("M-p" . backward-paragraph)
+  	 ("C-c u r s" . replace-string)
+  	 ("C-c u r q" . query-replace-regexp)
+  	 ("C-c u r r" . query-replace)
+  	 ("C-c u r c" . comment-region)
+  	 ("C-c u r u" . uncomment-region)
+  	 ("C-c u r i" . indent-region)
+  	 ("C-c u r a r" . align-regexp)
+  	 ("C-c u r a e" . align-entire)
+  	 ("C-c u c w" . whitespace-mode)
+  	 ("C-c u m" . compile)
+  	 ("C-c u x" . async-shell-command)
+  	 ("C-c u w f" . toggle-frame-fullscreen)
+  	 ("C-c u w m" . toggle-frame-maximized)
+  	 ("C-x C-n" . next-buffer)
+  	 ("C-x C-p" . previous-buffer))
+    :init
+    (global-set-key (kbd "C-x C-n") nil)
+    (global-set-key (kbd "C-x C-p") nil)
+    (defconst emacs-tmp-dir (expand-file-name (format "emacs%d" (user-uid)) temporary-file-directory))
+    (defconst mg-dot-private-file "~/Repositories/knock-files-private")
+    (defconst mg-emacs-root "~/.emacs.d")
+    (defconst mg-sendmail-bin "/usr/bin/msmtp")
+    (setq inhibit-startup-screen t
+  	completion-cycle-threshold 3
+  	tab-always-indent 'complete
+  	create-lockfiles nil
+  	user-emacs-directory (expand-file-name "~/.cache/emacs/")
+  	url-history-file (expand-file-name "url/history" user-emacs-directory)
+  	custom-file (if (boundp 'server-socket-dir)
+  			(expand-file-name "custom.el" server-socket-dir)
+  		      (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory))
+  	backup-by-copying t
+  	delete-old-versions t
+  	kept-new-versions 6
+  	kept-old-versions 2
+  	message-send-mail-function 'message-send-mail-with-sendmail
+  	sendmail-program mg-sendmail-bin
+  	version-control t
+  	auto-save-list-file-prefix emacs-tmp-dir
+  	auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
+  	backup-directory-alist `((".*" . ,emacs-tmp-dir)))
+    (setq-default frame-title-format '("%b")
+  		ring-bell-function 'ignore
+  		tab-width 8
+  		frame-resize-pixelwise t
+  		linum-format "%4d "
+  		use-short-answers t
+  		electric-indent-mode nil
+  		make-backup-files nil
+  		global-auto-revert-mode t
+  		confirm-kill-processes nil
+  		process-connection-type nil
+  		org-src-fontify-natively t
+  		warning-minimum-level :emergency
+  		set-language-environment "UTF-8"
+  		system-time-locale "C"
+  		native-comp-async-report-warnings-errors nil)
+    (load custom-file t)
+    (add-hook 'window-setup-hook 'toggle-frame-maximized t)
+    (add-to-list 'yank-excluded-properties 'face)
+    (if (display-graphic-p)
+        (dolist (mode
+  	       '(tool-bar-mode
+  		 scroll-bar-mode
+  		 menu-bar-mode
+  		 tooltip-mode
+  		 blink-cursor-mode))
+  	(funcall mode 0)))
+    (dolist (mode
+  	   '(global-visual-line-mode
+  	     show-paren-mode))
+      (funcall mode 1)))
 
-    (when (eq system-type 'darwin)
-      (use-package mg-macos
-        :ensure nil
-        :config
-        (mg-macos-support-enable)))
+  (use-package mg-macos
+    :if (eq system-type 'darwin)
+    :ensure nil
+    :config
+    (mg-macos-support-enable))
 
-    (use-package mg-emacs
-      :ensure nil
-      :bind (("C-c p s" . mg-take-screenshot)
-    	 ("C-c u f" . mg-add-current-file-name-to-killring)
-    	 ("C-c u s i" . mg-show-machine-info)
-    	 ("C-c u s s" . mg-shutdown-machine-with-confirmation)
-    	 ("C-c u t" . mg-insert-today-timestamp-formatted)))
+  (use-package mg-emacs
+    :ensure nil
+    :bind (("C-c p s" . mg-take-screenshot)
+  	 ("C-c u f" . mg-add-current-file-name-to-killring)
+  	 ("C-c u s i" . mg-show-machine-info)
+  	 ("C-c u s s" . mg-shutdown-machine-with-confirmation)
+  	 ("C-c u t" . mg-insert-today-timestamp-formatted)))
 
-    (use-package mg-defaults-extensions
-      :ensure nil
-      :config
-      (add-hook 'prog-mode-hook
-    	    #'mg-line-numbers-highlight-line-mode))
+  (use-package mg-defaults-extensions
+    :ensure nil
+    :config
+    (add-hook 'prog-mode-hook
+  	    #'mg-line-numbers-highlight-line-mode))
 
-    (use-package mg-utils
-      :ensure nil)
+  (use-package mg-utils
+    :ensure nil)
 #+end_src
 
 The ~mg-line-numbers-highlight-line-mode~ minor mode is only used when the ~prog-mode~ major mode is enabled. There is no reason for my specific use cases to have line numbers outside of coding. However, I use this feature quite extensively when programming. In text editors like Emacs, relative line numbers add a 10x speed in the way you insert/remove/modify text.
@@ -464,7 +464,7 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
     (use-package mg-exwm
       :ensure nil
       :bind (("C-c u w l z" . mg-exwm-trigger-zurich-layout)
-	   ("C-c u w l d" . mg-exwm-trigger-default-layout))))
+  	   ("C-c u w l d" . mg-exwm-trigger-default-layout)))
 
   (provide 'mg-emacs-exwm)
 #+end_src
@@ -476,15 +476,15 @@ I typically prefer simple and highly legible themes. Back in the days, I used to
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (defun mg-init-macos-theme ()
     "Enable the theme environment of choice for darwin."
-    (set-frame-font "Liberation Mono 17" nil t)
-    (use-package standard-themes :straight t :config
-      (load-theme 'standard-dark t)))
+    (set-frame-font "Iosevka Comfy 17" nil t)
+    (use-package zenburn-theme :straight t :config
+      (load-theme 'zenburn t)))
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (set-frame-font "Liberation Mono 14" nil t)
-    (use-package standard-themes :straight t :config
-      (load-theme 'standard-dark t)))
+    (set-frame-font "Iosevka Comfy 14" nil t)
+    (use-package ef-themes :straight t :config
+      (load-theme 'ef-autumn t)))
 
   (if (display-graphic-p)
       (progn
@@ -495,23 +495,11 @@ I typically prefer simple and highly legible themes. Back in the days, I used to
     (set-face-background 'default "undefined"))
 #+end_src
 
-The following piece of code introduces ~hide-mode-line~ mode, which is used in a custom function of mine to enable PDF presentation mode (not technically an Emacs mode, rather a custom layout). Moreover, I have some customization on the mode-line colors, which is perfect in conjunction with the default Emacs dark theme.
+The following piece of code introduces ~hide-mode-line~ mode, which is used in a custom function of mine to enable PDF presentation mode (not technically an Emacs mode, rather a custom layout).
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (use-package hide-mode-line
     :straight t)
-
-  (set-face-attribute 'mode-line-inactive nil
-  		    :height 150
-  		    :background "#665c54"
-  		    :foreground "#000000"
-                      :box '(:width 0))
-
-  (set-face-attribute 'mode-line-active nil
-  		    :height 150
-  		    :background "#bdae93"
-  		    :foreground "#000000"
-                      :box '(:width 0))
 
   (provide 'mg-emacs-themes)
 #+end_src
@@ -749,7 +737,9 @@ The ~vundo~ package is my way to go when it comes to undo changes. I was using ~
   (use-package undo-tree
     :straight t
     :init
-    (global-undo-tree-mode))
+    (global-undo-tree-mode)
+    :custom
+    (undo-tree-auto-save-history nil))
 #+end_src
 
 My typing skills improved consistently in these years of Emacs usage. Thus, I needed a way to also move the cursor faster in the buffers. That's why I started using ~avy~, whose functionality could be a bit cumbersome at first, but after one gets used to it, is a 10x improvement in speed.
@@ -1176,7 +1166,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
        (course . "#+include: \"/home/claudio/Repositories/knock-files/org-headers/header_notes_document_small.org\"\n* Course details\n- Lecturer ::\n- University ::\n- Academic year ::\n- Resources ::\n- Description ::\n* Lecture notes\n* COMMENT Flashcards\n")
        (zettel . "#+references: \n\n\n-----\n")
        (place . "* Details\n- Link ::\n- Visited ::\n- Description ::\n* Notes\n")
-       (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- BBDB entry ::\n- Additional information ::\n* Notes")))
+       (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- Additional information ::\n* Notes")))
     (denote-date-prompt-use-org-read-date t)
     :config
     (denote-rename-buffer-mode 1)
@@ -1193,6 +1183,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
      ("C-c n z f" . mg-denote-find-zettel)
      ("C-c n z g" . mg-denote-grep-on-zettels)
      ("C-c n u" . mg-denote-copy-timestamp-to-killring)
+     ("C-c n o r" . mg-denote-get-references-in-dired)
      ("C-c n z i" . mg-denote-insert-zettel-link)))
 
   (use-package denote-explore
@@ -1307,7 +1298,7 @@ Spaced repetition is perhaps the only scientific approach to the learning proces
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-flashcards.el"
   (use-package anki-editor
-    :straight t
+    :straight (:type git :host github :repo "anki-editor/anki-editor" :branch "master")
     :bind
     (("C-c o a i" . anki-editor-insert-note)
      ("C-c o a p" . anki-editor-push-notes)))
@@ -1503,6 +1494,9 @@ In this module, I enable some of the packages I use for browsing the web. The pr
     (defengine google-maps
       "https://www.google.com/maps/search/%s/"
       :keybinding "M")
+    (defengine semantic-scholar
+      "https://www.semanticscholar.org/search?q=%s&sort=relevance"
+      :keybinding "r")
     (defengine openstreetmap
       "https://www.openstreetmap.org/search?query=%s"
       :keybinding "m")
@@ -2508,6 +2502,20 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     (let ((zettels
   	 (denote-directory-files denote-signature-regexp)))
       (consult-grep zettels)))
+
+  (defun mg-denote-get-references-in-dired ()
+      "Get the reference notes from the `denote-directory' listed in `dired'.
+  Although this functionality is not only related to `denote', rather on 'dired', it's still relevant in this library: all notes I have are `denote' entries."
+      (interactive)
+      (dired denote-directory)
+      (revert-buffer)
+      (dired-mark-files-regexp "_bib")
+      (dired-toggle-marks)
+      (dired-do-kill-lines)
+      ;; NOTE: We don't want zettels to appear, this function just shows
+      ;; reference entries
+      (dired-mark-files-regexp denote-signature-regexp)
+      (dired-do-kill-lines))
 
   ;;; mg-denote.el ends here
 #+end_src

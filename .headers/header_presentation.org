@@ -1,5 +1,10 @@
 #+LATEX_CLASS: beamer
 #+LATEX_CLASS_OPTIONS: [9pt]
 #+LATEX_HEADER: \usetheme{metropolis}
+#+LATEX_HEADER: \usepackage{fontspec} 
+#+LATEX_HEADER: \setsansfont{Inter}
 #+LATEX_HEADER: \usepackage[sorting=none]{biblatex}
+#+LATEX_HEADER: \setbeamercolor{background canvas}{bg=white}
+#+LATEX_HEADER: \setbeamertemplate{footline}[text line]{\parbox{\dimexpr\textwidth-2\fboxsep\relax}{\vspace*{-8pt}IBM Research Zürich\hfill\insertshortauthor\hfill\insertpagenumber}}
+#+LATEX_HEADER: \titlegraphic{\hfill\includegraphics[width=4cm]{~/Vault/pkm/assets/20240910T111228--ibm-research-logo__research_work.png}}
 #+OPTIONS: H:2

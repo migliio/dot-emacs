@@ -1,7 +1,9 @@
 (use-package undo-tree
   :straight t
   :init
-  (global-undo-tree-mode))
+  (global-undo-tree-mode)
+  :custom
+  (undo-tree-auto-save-history nil))
 
 (use-package avy
   :straight t

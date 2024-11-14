@@ -49,7 +49,7 @@
      (course . "#+include: \"/home/claudio/Repositories/knock-files/org-headers/header_notes_document_small.org\"\n* Course details\n- Lecturer ::\n- University ::\n- Academic year ::\n- Resources ::\n- Description ::\n* Lecture notes\n* COMMENT Flashcards\n")
      (zettel . "#+references: \n\n\n-----\n")
      (place . "* Details\n- Link ::\n- Visited ::\n- Description ::\n* Notes\n")
-     (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- BBDB entry ::\n- Additional information ::\n* Notes")))
+     (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- Additional information ::\n* Notes")))
   (denote-date-prompt-use-org-read-date t)
   :config
   (denote-rename-buffer-mode 1)
