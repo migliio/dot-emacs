@@ -74,11 +74,11 @@
 	     show-paren-mode))
     (funcall mode 1)))
 
-(when (eq system-type 'darwin)
-  (use-package mg-macos
-    :ensure nil
-    :config
-    (mg-macos-support-enable)))
+(use-package mg-macos
+  :if (eq system-type 'darwin)
+  :ensure nil
+  :config
+  (mg-macos-support-enable))
 
 (use-package mg-emacs
   :ensure nil

@@ -118,5 +118,43 @@ file with the time-blocking and then it adds it to the
   	    (insert (format "* %s\n" (string-trim (mg-org--task-prompt))))
   	    (insert (format "SCHEDULED: <%s>\n\n" time))))))))
 
+
+(defvar my-org-export-functions
+  '((html-buffer . org-html-export-as-html)
+    (latex-buffer . org-latex-export-as-latex)))
+
+(defvar my-org-select-export-history nil)
+
+(defun my-org-select-export-function ()
+  (let ((default (car my-org-select-export-history)))
+    (intern
+     (completing-read
+      (format-prompt "Select export type" default)
+      my-org-export-functions
+      nil :require-match nil 'my-org-select-export-history
+      default))))
+
+(defun my-org-export-get-function ()
+  (alist-get
+   (my-org-select-export-function)
+   my-org-export-functions))
+
+(defun my-org-export-region-to-html (beg end export-fn)
+  (interactive
+   (list
+    (region-beginning)
+    (region-end)
+    (my-org-export-get-function)))
+  (unless (region-active-p)
+    (user-error "No active region; aborting"))
+  (let ((current-window (selected-window)))
+    (unwind-protect
+        (progn
+          (narrow-to-region beg end)
+          (funcall export-fn nil nil t t nil))
+      (select-window current-window)
+      (deactivate-mark)
+      (widen))))
+
 (provide 'mg-org)
 ;;; mg-org.el ends here

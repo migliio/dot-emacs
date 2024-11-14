@@ -87,4 +87,18 @@
 	 (denote-directory-files denote-signature-regexp)))
     (consult-grep zettels)))
 
+(defun mg-denote-get-references-in-dired ()
+    "Get the reference notes from the `denote-directory' listed in `dired'.
+Although this functionality is not only related to `denote', rather on 'dired', it's still relevant in this library: all notes I have are `denote' entries."
+    (interactive)
+    (dired denote-directory)
+    (revert-buffer)
+    (dired-mark-files-regexp "_bib")
+    (dired-toggle-marks)
+    (dired-do-kill-lines)
+    ;; NOTE: We don't want zettels to appear, this function just shows
+    ;; reference entries
+    (dired-mark-files-regexp denote-signature-regexp)
+    (dired-do-kill-lines))
+
 ;;; mg-denote.el ends here

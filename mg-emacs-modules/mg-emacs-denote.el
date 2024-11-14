@@ -66,6 +66,7 @@
    ("C-c n z f" . mg-denote-find-zettel)
    ("C-c n z g" . mg-denote-grep-on-zettels)
    ("C-c n u" . mg-denote-copy-timestamp-to-killring)
+   ("C-c n o r" . mg-denote-get-references-in-dired)
    ("C-c n z i" . mg-denote-insert-zettel-link)))
 
 (use-package denote-explore

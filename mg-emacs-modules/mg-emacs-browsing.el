@@ -25,6 +25,9 @@
   (defengine google-maps
     "https://www.google.com/maps/search/%s/"
     :keybinding "M")
+  (defengine semantic-scholar
+    "https://www.semanticscholar.org/search?q=%s&sort=relevance"
+    :keybinding "r")
   (defengine openstreetmap
     "https://www.openstreetmap.org/search?query=%s"
     :keybinding "m")
