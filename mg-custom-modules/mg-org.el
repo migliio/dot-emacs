@@ -156,5 +156,15 @@ file with the time-blocking and then it adds it to the
       (deactivate-mark)
       (widen))))
 
+(defun mg-org-capture-generate-flash-header ()
+  "Generate the header to use in flaschards."
+  (let ((link (mg-org--capture-get-last-file-link)))
+    (format "%s @ %s" (mg-org--capture-get-last-file-link) (denote-get-identifier))))
+
+(defun mg-org--capture-get-last-file-link ()
+  "In `org-capture' context, get last visited file's name and format as link."
+  (let ((link (format "[[file:%s]]" (plist-get org-capture-plist :original-file))))
+    link))
+
 (provide 'mg-org)
 ;;; mg-org.el ends here
