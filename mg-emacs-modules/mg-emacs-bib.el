@@ -48,4 +48,9 @@
   :no-require
   :config (citar-embark-mode))
 
+(use-package mg-bib
+  :after (ebib parsebib biblio)
+  :ensure nil
+  :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)))
+
 (provide 'mg-emacs-bib)

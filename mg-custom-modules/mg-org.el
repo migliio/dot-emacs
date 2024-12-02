@@ -38,6 +38,7 @@
 (defconst mg-books-file "~/Vault/pkm/20240102T104309--books__personal_reading.org")
 (defconst mg-planning-file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
 (defconst mg-flashcards-file "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org")
+(defconst mg-reading-list-file "~/Vault/pkm/20241130T124328--references-reading-list__metanote_research.org")
 (defconst mg-latex-cmd "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f")
 
 ;; Required for string-trim function

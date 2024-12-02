@@ -1236,6 +1236,10 @@ This module introduces several packages that I use to manage bibliographic entri
     :no-require
     :config (citar-embark-mode))
 
+  (use-package mg-bib
+    :ensure nil
+    :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)))
+
   (provide 'mg-emacs-bib)
 #+end_src
 
@@ -1623,7 +1627,6 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 #+end_src
 
 * The ~mg-custom-modules~ libraries
-
 ** The ~mg-utils.el~ library
 
 #+begin_src emacs-lisp :tangle "mg-custom-modules/mg-utils.el" :mkdirp yes
@@ -1830,11 +1833,12 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
       (message "System-level info => BAT: %s - CPU: %s - MEM: %s - DSK: %s - VOL: %s - KBD: %s"
   	     battery-info cpu-info ram-info disk-info volume-info keyboard-layout-info)))
 
-  (defun mg-shutdown-machine-with-confirmation
+  (defun mg-shutdown-machine-with-confirmation ()
       "Ask for confirmation and shut down the system if confirmed."
     (when (yes-or-no-p "Are you sure you want to shut down the system? ")
       (shell-command mg-shutdown-system-cmd)))
 
+  (provide 'mg-emacs)
   ;;; mg-emacs.el ends here
 #+end_src
 
@@ -2183,6 +2187,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defconst mg-books-file "~/Vault/pkm/20240102T104309--books__personal_reading.org")
   (defconst mg-planning-file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
   (defconst mg-flashcards-file "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org")
+  (defconst mg-reading-list-file "~/Vault/pkm/20241130T124328--references-reading-list__metanote_research.org")
   (defconst mg-latex-cmd "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f")
 
   ;; Required for string-trim function
@@ -2313,6 +2318,55 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   (provide 'mg-org)
   ;;; mg-org.el ends here
+#+end_src
+
+** The ~mg-bib.el~ library
+
+#+begin_src emacs-lisp :tangle "mg-custom-modules/mg-bib.el"
+  ;;; mg-bib.el --- Extensions for bibliographic packages -*- lexical-binding: t -*-
+
+  ;; Copyright (C) 2024  Claudio Migliorelli
+
+  ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
+  ;; URL: https://crawlingaway.org/emacs/dot-emacs
+  ;; Version: 0.0.1
+  ;; Package-Requires: ((emacs "29.1"))
+
+  ;; This file is NOT part of GNU Emacs.
+
+  ;; This program is free software; you can redistribute it and/or modify
+  ;; it under the terms of the GNU General Public License as published by
+  ;; the Free Software Foundation, either version 3 of the License, or
+  ;; (at your option) any later version.
+  ;;
+  ;; This program is distributed in the hope that it will be useful,
+  ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ;; GNU General Public License for more details.
+  ;;
+  ;; You should have received a copy of the GNU General Public License
+  ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+  ;;; Commentary:
+  ;; This library introduces some extensions for packages I use to
+  ;; manage bibliography files.
+
+  ;;; Code:
+
+  (defun mg-bib-search-add-to-reading-list ()
+    "Search for a bibliography entry in the minibuffer, and add it to `mg-reading-list-file'."
+    (interactive)
+    (let ((key (citar-select-ref)))
+      (save-excursion
+        (with-current-buffer (find-file-noselect mg-reading-list-file)
+  	(goto-char (point-max))
+  	(beginning-of-line)
+  	(insert (format "* TODO %s\n:PROPERTIES:\n:CITEKEY: [cite:@%s]\n:END:\n"
+  			(citar-get-value "title" key)
+  			key))))))
+
+  (provide 'mg-bib)
+  ;;; mg-bib.el ends here
 #+end_src
 
 ** The ~mg-notmuch.el~ library
