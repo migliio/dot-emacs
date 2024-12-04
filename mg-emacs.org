@@ -446,7 +446,7 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
 
 ** The ~mg-emacs-themes.el~ module
 
-I typically prefer simple and highly legible themes. Back in the days, I used to change theme quite often. The theme I've been enjoying the most is likely [[https://github.com/bbatsov/zenburn-emacs][Zenburn]], because it is also the one I used for the longest period of time without switching to any other theme. After some time though, I switched to ~modus-vivendi~, because of its simplicity and legibility. I'm finding it better than the one I was using before, and I think I'll stick with it for years to come. However, the Emacs standard theme is even more legible and plain, so it should be worth trying it.
+I typically prefer simple and highly legible themes. I continuously change between themes, and the journey to find the one that really fits is still in progress. However, I generally use two different configurations based on the system I'm in (i.e., Linux vs. Mac). I prefer dark themes over light ones, and I use a night shift warmer colors settings across the entire day. I find warm light better for my eyes.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (defun mg-init-macos-theme ()
@@ -457,9 +457,9 @@ I typically prefer simple and highly legible themes. Back in the days, I used to
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (set-frame-font "Iosevka Comfy 14" nil t)
-    (use-package ef-themes :straight t :config
-      (load-theme 'ef-autumn t)))
+    (set-frame-font "Liberation Mono 14" nil t)
+    (use-package standard-themes :straight t :config
+      (load-theme 'standard-dark t)))
 
   (if (display-graphic-p)
       (progn
