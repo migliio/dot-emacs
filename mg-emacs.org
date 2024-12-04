@@ -214,7 +214,7 @@ Historically, this module enclosed a bunch of other customizations for variables
   		confirm-kill-processes nil
   		process-connection-type nil
   		org-src-fontify-natively t
-  		warning-minimum-level :emergency
+  		;; warning-minimum-level :emergency
   		set-language-environment "UTF-8"
   		system-time-locale "C"
   		native-comp-async-report-warnings-errors nil)
@@ -452,8 +452,8 @@ I typically prefer simple and highly legible themes. I continuously change betwe
   (defun mg-init-macos-theme ()
     "Enable the theme environment of choice for darwin."
     (set-frame-font "Liberation Mono 17" nil t)
-    (use-package zenburn-theme :straight t :config
-      (load-theme 'zenburn t)))
+    (use-package standard-themes :straight t :config
+      (load-theme 'standard-dark t)))
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
@@ -482,6 +482,9 @@ The following piece of code introduces ~hide-mode-line~ mode, which is used in a
 The only other feature that needs some clarification for the above code is the conditional statement on the ~display-graphic-p~. When not on the GUI version of Emacs (i.e., from CLI), I prefer not to select any theme and just stick with the one used in the terminal emulator. I find this way to go way less confusing, and surely lowers cognitive overhead for me.
 
 ** The ~mg-emacs-layouts.el~ module
+:PROPERTIES:
+:ID:       3B58B914-77A7-4942-A229-1A639C6B9287
+:END:
 
 In this module I enable some other packages I use to visually customize buffers and text within Emacs. For instance, I use ~olivetti~ and ~logos~ in conjunction for conveniently display text to avoid distractions. This comes into play when I need to write huge wall of texts without switching back and forth to code listings (moving from a full-width piece of code to the ~olivetti-logos~ layout is indeed confusing to me, and raises cognitive overload).
 
@@ -679,6 +682,7 @@ There are cases when I need to open a file with an external program (e.g., video
   				("\\.webm\\'" "mpv" (file))
   				("\\.mkv\\'" "mpv" (file))
   				("\\.m4a\\'" "mpv --force-window" (file))
+  				("\\.mov\\'" "mpv" (file))
   				("\\.ppt\\'" "libreoffice" (file))
   				("\\.pptx\\'" "libreoffice" (file))
   				("\\.doc\\'" "libreoffice" (file))
@@ -780,12 +784,13 @@ Those questions are all answered by just looking at the agenda, fired up with ju
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-org.el"
   (use-package mg-org
     :ensure nil
+    :after (denote)
     :bind (("C-c o c d" . mg-org-compute-deep-work-minutes)
   	 ("C-c o b" . mg-org-block-time)))
 
   (use-package org
     :straight t
-    :after (denote)
+    :after (denote mg-bib)
     :bind (("C-c a" . org-agenda)
   	 ("C-c C-;" . org-insert-structure-template)
   	 ("C-c c" . org-capture)
@@ -827,64 +832,59 @@ Those questions are all answered by just looking at the agenda, fired up with ju
     (org-outline-path-complete-in-steps nil)
     (org-clock-sources '(agenda))
     (org-capture-templates
-     '(("i" "Inbox")
+     '(("b" "Bibliography")
+       ("bp" "Bibliography (paper)" entry (file mg-references-file)
+        #'mg-bib-denote-org-capture-paper-biblio
+        :kill-buffer t
+        :jump-to-captured nil)
+       ("i" "Inbox")
        ("it" "Todo entry" entry (file mg-inbox-file)
-        "* TODO %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+  	"* TODO %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
        ("im" "Mail entry" entry (file mg-inbox-file)
-        "* TODO Process \"%a\" %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+  	"* TODO Process \"%a\" %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
        ("in" "Notes entry" entry (file mg-capture-notes-file)
-        "* %U (%a) :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
+  	"* %U (%a) :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
        ("a" "Agenda")
        ("am" "Meeting entry" entry (file+headline mg-agenda-file "Future")
-        "* Meeting with %? :meeting:\n:PROPERTIES:\n:LOCATION:\n:NOTIFY_BEFORE:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
+  	"* Meeting with %? :meeting:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
        ("ae" "Event entry" entry (file+headline mg-agenda-file "Future")
-        "* %? :event:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY:\n:NOTES:\n:NOTIFY_BEFORE:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
+  	"* %? :event:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
        ("ac" "Call entry" entry (file+headline mg-agenda-file "Future")
-        "* Call with %? :call:\n:PROPERTIES:\n:CATEGORY:\n:NOTIFY_BEFORE:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
+  	"* Call with %? :call:\n:PROPERTIES:\n:CATEGORY:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
        ("ap" "Coaching session with Prot entry" entry (file+headline mg-agenda-file "[[denote:20240510T212918][Protesilaos Stavrou]]")
-        "* Coaching session :@home:@personal:\n:PROPERTIES:\n:LOCATION: @home\n:CATEGORY: PROT\n:LINK:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n** Topics to discuss\n** Questions from last time\n")
+  	"* Coaching session :@home:@personal:\n:PROPERTIES:\n:LOCATION: @home\n:CATEGORY: PROT\n:LINK:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n** Topics to discuss\n** Questions from last time\n")
        ("r" "Resources")
        ("ra" "Conference attendance" entry (file mg-conferences-file)
-        "* %^{Conference name}\n:PROPERTIES:\n:WHERE: %?\n:WEBSITE: %?\n:END:\n")
+  	"* %^{Conference name}\n:PROPERTIES:\n:WHERE: %?\n:WEBSITE: %?\n:END:\n")
        ("rb" "Book archiving" entry (file+headline mg-books-file "Inbox")
-        "* %^{Book title}\n:PROPERTIES:\n:TITLE: %^{Book title}\n:AUTHOR: %^{Author}\n:YEAR: %^{Year}\n:PAGES: %^{Pages}\n:RATING: %^{Rating (From * to *****)}\n:LINK: %^{Book link}\n:END:\n")
+  	"* %^{Book title}\n:PROPERTIES:\n:TITLE: %^{Book title}\n:AUTHOR: %^{Author}\n:YEAR: %^{Year}\n:PAGES: %^{Pages}\n:RATING: %^{Rating (From * to *****)}\n:LINK: %^{Book link}\n:END:\n")
        ("P" "Planning")
        ("Py" "Year plan" plain (file mg-planning-file)
-        "* %^{Year} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Milestones ::\n- Values and life philosophy ::\n- 5 years vision(s) ::\n- Financial goals ::\n- [ ] Review ::\n")
+  	"* %^{Year} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Milestones ::\n- Values and life philosophy ::\n- 5 years vision(s) ::\n- Financial goals ::\n- [ ] Review ::\n")
        ("Pq" "Quarter plan" plain (file mg-planning-file)
-        "** %^{Quarter} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Long-term projects ::\n- Financial/expenses planning ::\n- [ ] Review ::\n")
+  	"** %^{Quarter} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Long-term projects ::\n- Financial/expenses planning ::\n- [ ] Review ::\n")
        ("Pm" "Month plan" plain (file mg-planning-file)
-        "*** %^{Month} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Short-term projects ::\n- [ ] Review ::\n")
+  	"*** %^{Month} %U\n- Overview ::\n- Feelings :: %^{Feelings|good|neutral|bad}\n- Short-term projects ::\n- [ ] Review ::\n")
        ("f" "Flashcards")
-       ("fp" "Physics flaschard" entry (file+headline mg-flashcards-file "Physics") "* %(if (not (equal (plist-get org-capture-plist :original-file) 'nil))
-       (mg-insert-denote-or-normal-link (plist-get org-capture-plist :original-file))
-     (buffer-name (plist-get org-capture-plist :original-buffer)))\n:PROPERTIES:\n:ANKI_DECK: Physics\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
-       ("fc" "Computer science flashcard" entry (file+headline mg-flashcards-file "Computer science") "* %(if (not (equal (plist-get org-capture-plist :original-file) 'nil))
-       (mg-insert-denote-or-normal-link (plist-get org-capture-plist :original-file))
-     (buffer-name (plist-get org-capture-plist :original-buffer)))\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
-       ("fk" "Kernel flashcard" entry (file+headline mg-flashcards-file "Kernel") "* %(mg-insert-denote-or-normal-link (format \"%s/%s\" denote-directory (buffer-name (plist-get org-capture-plist :original-buffer))))\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
-       ("fs" "Security flashcard" entry (file+headline mg-flashcards-file "Security") "* %(if (not (equal (plist-get org-capture-plist :original-file) 'nil))
-       (mg-insert-denote-or-normal-link (plist-get org-capture-plist :original-file))
-     (buffer-name (plist-get org-capture-plist :original-buffer)))\n:PROPERTIES:\n:ANKI_DECK: Security\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
-       ("fm" "Mathematics flashcard" entry (file+headline mg-flashcards-file "Mathematics") "* %(if (not (equal (plist-get org-capture-plist :original-file) 'nil))
-       (mg-insert-denote-or-normal-link (plist-get org-capture-plist :original-file))
-     (buffer-name (plist-get org-capture-plist :original-buffer)))\n:PROPERTIES:\n:ANKI_DECK: Mathematics\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
-       ("fe" "English flashcard" entry (file+headline mg-flashcards-file "English") "* %(if (not (equal (plist-get org-capture-plist :original-file) 'nil))
-       (mg-insert-denote-or-normal-link (plist-get org-capture-plist :original-file))
-     (buffer-name (plist-get org-capture-plist :original-buffer)))\n:PROPERTIES:\n:ANKI_DECK: English\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+       ("fp" "Physics flaschard" entry (file+headline mg-flashcards-file "Physics") "* %(mg-org-capture-generate-flash-header)\n:PROPERTIES:\n:ANKI_DECK: Physics\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+       ("fc" "Computer science flashcard" entry (file+headline mg-flashcards-file "Computer science") "* %(mg-org-capture-generate-flash-header)\n:PROPERTIES:\n:ANKI_DECK: Computer science\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+       ("fk" "Kernel flashcard" entry (file+headline mg-flashcards-file "Kernel") "* %(mg-org-capture-generate-flash-header)\n:PROPERTIES:\n:ANKI_DECK: Kernel\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+       ("fs" "Security flashcard" entry (file+headline mg-flashcards-file "Security") "* %(mg-org-capture-generate-flash-header)\n:PROPERTIES:\n:ANKI_DECK: Security\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+       ("fm" "Mathematics flashcard" entry (file+headline mg-flashcards-file "Mathematics") "* %(mg-org-capture-generate-flash-header)\n:PROPERTIES:\n:ANKI_DECK: Mathematics\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
+       ("fe" "English flashcard" entry (file+headline mg-flashcards-file "English") "* %(mg-org-capture-generate-flash-header)\n:PROPERTIES:\n:ANKI_DECK: English\n:ANKI_NOTE_TYPE: Basic\n:END:\n** Front\n%?\n** Back\n")
        ("p" "Projects")
        ("pl" "Learning project" plain (file+headline mg-personal-projects-file "Learning")
-        "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+  	"** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("ph" "Home project" plain (file+headline mg-personal-projects-file "Home")
-        "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+  	"** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("pp" "Productivity and tooling project" plain (file+headline mg-personal-projects-file "Productivity and tooling")
-        "** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+  	"** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("pw" "Work project" plain (file+headline mg-work-projects-file "Work")
-        "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+  	"** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("pb" "Blogging project" plain (file+headline mg-personal-projects-file "Blogging")
-        "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+  	"** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("ps" "Study project" plain (file+headline mg-work-projects-file "Study")
-        "** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")))
+  	"** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")))
     (org-refile-targets '((mg-work-projects-file :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
   			(mg-personal-projects-file :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
   			(mg-books-file :regexp . "\\(?:\\(?:2023\\|2024\\)s\\)")
@@ -892,7 +892,7 @@ Those questions are all answered by just looking at the agenda, fired up with ju
     (org-agenda-block-separator "==============================================================================")
     (org-agenda-custom-commands
      '(("a" "Agenda"
-        ((agenda ""
+  	((agenda ""
   	       ((org-agenda-span 1)
   		(org-agenda-skip-function
   		 (lambda ()
@@ -902,17 +902,17 @@ Those questions are all answered by just looking at the agenda, fired up with ju
   		(org-agenda-day-face-function (lambda (date) 'org-agenda-date))
   		(org-agenda-format-date "%A %-e %B %Y")
   		(org-agenda-overriding-header "Today's schedule:\n")))
-         (todo "DOING"
+  	 (todo "DOING"
   	     ((org-agenda-skip-function
   	       '(org-agenda-skip-entry-if 'deadline))
   	      (org-agenda-prefix-format "  %i %-12:c [%e] ")
   	      (org-agenda-overriding-header "\nDOING Tasks:\n")))
-         (todo "NEXT"
+  	 (todo "NEXT"
   	     ((org-agenda-skip-function
   	       '(org-agenda-skip-entry-if 'deadline))
   	      (org-agenda-prefix-format "  %i %-12:c [%e] ")
   	      (org-agenda-overriding-header "\nNEXT Tasks:\n")))
-         (agenda "" ((org-agenda-time-grid nil)
+  	 (agenda "" ((org-agenda-time-grid nil)
   		   (org-agenda-start-day "+1d")
   		   (org-agenda-start-on-weekday nil)
   		   (org-agenda-span 30)
@@ -921,12 +921,12 @@ Those questions are all answered by just looking at the agenda, fired up with ju
   		   (org-agenda-entry-types '(:deadline))
   		   (org-agenda-skip-function '(org-agenda-skip-entry-if 'done))
   		   (org-agenda-overriding-header "\nUpcoming deadlines (+30d):\n")))
-         (tags-todo "inbox"
+  	 (tags-todo "inbox"
   		  ((org-agenda-prefix-format "  %?-12t% s")
   		   (org-agenda-overriding-header "\nInbox:\n")))
-         (tags "CLOSED>=\"<today>\""
+  	 (tags "CLOSED>=\"<today>\""
   	     ((org-agenda-overriding-header "\nCompleted today:\n")))
-         (agenda ""
+  	 (agenda ""
   	       ((org-agenda-start-on-weekday nil)
   		(org-agenda-skip-function
   		 (lambda ()
@@ -936,14 +936,14 @@ Those questions are all answered by just looking at the agenda, fired up with ju
   		(org-deadline-warning-days 0)
   		(org-scheduled-past-days 0)
   		(org-agenda-overriding-header "\nWeek at a glance:\n")))
-         ))))
+  	 ))))
     :config
     (when (display-graphic-p)
       (progn
-        (require 'oc-biblatex)
-        (setq org-cite-export-processors
+  	(require 'oc-biblatex)
+  	(setq org-cite-export-processors
   	    '((latex biblatex))
-  	    org-latex-pdf-process (list mg-latex-cmd))))
+  	    org-latex-pdf-process mg-latex-cmds)))
     (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5)
   	org-format-latex-options (plist-put org-format-latex-options :background "Transparent")
   	org-latex-create-formula-image-program 'dvisvgm)
@@ -1006,7 +1006,7 @@ Those questions are all answered by just looking at the agenda, fired up with ju
     (add-to-list 'org-latex-classes
   	       '("tufnotes"
   		 "\\documentclass{tufte-handout}
-  				         \\usepackage{xcolor}
+  					 \\usepackage{xcolor}
   					       \\usepackage{graphicx} %% allow embedded images
   					       \\setkeys{Gin}{width=\\linewidth,totalheight=\\textheight,keepaspectratio}
   					       \\usepackage{amsmath}  %% extended mathematics
@@ -1015,26 +1015,26 @@ Those questions are all answered by just looking at the agenda, fired up with ju
   					       \\usepackage{multicol} %% multiple column layout facilities
   					       \\RequirePackage[many]{tcolorbox}
   					       \\usepackage{fancyvrb} %% extended verbatim environments
-  					         \\fvset{fontsize=\\normalsize}%% default font size for fancy-verbatim environments
+  						 \\fvset{fontsize=\\normalsize}%% default font size for fancy-verbatim environments
 
-  			        \\definecolor{g1}{HTML}{077358}
-  			        \\definecolor{g2}{HTML}{00b096}
+  				\\definecolor{g1}{HTML}{077358}
+  				\\definecolor{g2}{HTML}{00b096}
 
-  			        %%section format
-  			        \\titleformat{\\section}
-  			        {\\normalfont\\Large\\itshape\\color{g1}}%% format applied to label+text
-  			        {\\llap{\\colorbox{g1}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesection}}}}%% label
-  			        {1em}%% horizontal separation between label and title body
-  			        {}%% before the title body
-  			        []%% after the title body
+  				%%section format
+  				\\titleformat{\\section}
+  				{\\normalfont\\Large\\itshape\\color{g1}}%% format applied to label+text
+  				{\\llap{\\colorbox{g1}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesection}}}}%% label
+  				{1em}%% horizontal separation between label and title body
+  				{}%% before the title body
+  				[]%% after the title body
 
-  			        %% subsection format
-  			        \\titleformat{\\subsection}%%
-  			        {\\normalfont\\large\\itshape\\color{g2}}%% format applied to label+text
-  			        {\\llap{\\colorbox{g2}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesubsection}}}}%% label
-  			        {1em}%% horizontal separation between label and title body
-  			        {}%% before the title body
-  			        []%% after the title body
+  				%% subsection format
+  				\\titleformat{\\subsection}%%
+  				{\\normalfont\\large\\itshape\\color{g2}}%% format applied to label+text
+  				{\\llap{\\colorbox{g2}{\\parbox{1.5cm}{\\hfill\\color{white}\\thesubsection}}}}%% label
+  				{1em}%% horizontal separation between label and title body
+  				{}%% before the title body
+  				[]%% after the title body
 
   							      \\newtheorem{note}{Note}[section]
 
@@ -1048,7 +1048,7 @@ Those questions are all answered by just looking at the agenda, fired up with ju
   							       before skip=10pt,
   							       after skip=10pt,
   							       breakable,
-  						        }"
+  							}"
 
   		 ("\\section{%s}" . "\\section*{%s}")
   		 ("\\subsection{%s}" . "\\subsection*{%s}")
@@ -1066,18 +1066,21 @@ Those questions are all answered by just looking at the agenda, fired up with ju
   			       (scheme . t)
   			       (lisp . t)
   			       (haskell . t)
-  			       (R . t)))
-    ;; Enable and set org-crypt
-    (require 'org-crypt)
+  			       (R . t))))
+
+  ;; Enable and set org-crypt
+  (use-package org-crypt
+    :ensure nil
+    :config
     (org-crypt-use-before-save-magic)
     (setq org-tags-exclude-from-inheritance (quote (crypt)))
-
     ;; GPG key to use for encryption
     (setq org-crypt-key nil))
 
   (use-package mg-pkm-utils
     :ensure nil
-    :bind (("C-c p c d" . mg-org-compute-deep-work-minutes)))
+    :bind (("C-c p c d" . mg-org-compute-deep-work-minutes))
+    ("C-c p p" . mg-toggle-pdf-presentation-mode))
 
   (provide 'mg-emacs-org)
 #+end_src
@@ -1120,7 +1123,6 @@ The second fundamental package that I use for (networked) note-taking is ~denote
     :init
     (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
     :custom
-    (denote-directory (expand-file-name mg-pkm-base-directory))
     (denote-known-keywords '("emacs" "security" "kernel" "mathematics" "algorithms"))
     (denote-infer-keywords t)
     (denote-sort-keywords t)
@@ -1238,6 +1240,11 @@ This module introduces several packages that I use to manage bibliographic entri
     :after citar embark
     :no-require
     :config (citar-embark-mode))
+
+  (use-package mg-bib
+    :ensure nil
+    :after (org denote)
+    :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)))
 
   (provide 'mg-emacs-bib)
 #+end_src
@@ -1626,7 +1633,6 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 #+end_src
 
 * The ~mg-custom-modules~ libraries
-
 ** The ~mg-utils.el~ library
 
 #+begin_src emacs-lisp :tangle "mg-custom-modules/mg-utils.el" :mkdirp yes
@@ -1667,6 +1673,9 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   (defconst mg-pkm-base-directory "~/Vault/pkm"
     "This constant keeps track of the base directory for my entire knowledge base.")
+
+  (defconst denote-directory (expand-file-name mg-pkm-base-directory)
+    "This constant keeps track of the denote directory for my entire knowledge base.")
 
   (defun mg-get-today-timestamp ()
     "Helper function to get today's timestamp with the abbreviated day name."
@@ -1833,11 +1842,12 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
       (message "System-level info => BAT: %s - CPU: %s - MEM: %s - DSK: %s - VOL: %s - KBD: %s"
   	     battery-info cpu-info ram-info disk-info volume-info keyboard-layout-info)))
 
-  (defun mg-shutdown-machine-with-confirmation
+  (defun mg-shutdown-machine-with-confirmation ()
       "Ask for confirmation and shut down the system if confirmed."
     (when (yes-or-no-p "Are you sure you want to shut down the system? ")
       (shell-command mg-shutdown-system-cmd)))
 
+  (provide 'mg-emacs)
   ;;; mg-emacs.el ends here
 #+end_src
 
@@ -2176,17 +2186,19 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   ;;; Code:
 
-  (defconst mg-work-projects-file "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org")
-  (defconst mg-inbox-file "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org")
-  (defconst mg-agenda-file "~/Vault/pkm/20231210T224321--agenda__personal.org")
-  (defconst mg-archive-file "~/Vault/pkm/.archive/archive.org")
-  (defconst mg-capture-notes-file "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org")
-  (defconst mg-conferences-file "~/Vault/pkm/20231210T222135--conferences__personal_research.org")
-  (defconst mg-personal-projects-file "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org")
-  (defconst mg-books-file "~/Vault/pkm/20240102T104309--books__personal_reading.org")
-  (defconst mg-planning-file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
-  (defconst mg-flashcards-file "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org")
-  (defconst mg-latex-cmd "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f")
+  (defconst mg-work-projects-file (format "%s/%s" denote-directory "20231210T220334--work-and-study-projects__project_work.org"))
+  (defconst mg-inbox-file (format "%s/%s" denote-directory "20231211T145832--inbox__gtd_personal.org"))
+  (defconst mg-agenda-file (format "%s/%s" denote-directory "20231210T224321--agenda__personal.org"))
+  (defconst mg-archive-file (format "%s/%s" denote-directory ".archive/archive.org"))
+  (defconst mg-capture-notes-file (format "%s/%s" denote-directory "20231213T172757--capture-notes__gtd_personal.org"))
+  (defconst mg-conferences-file (format "%s/%s" denote-directory "20231210T222135--conferences__personal_research.org"))
+  (defconst mg-personal-projects-file (format "%s/%s" denote-directory "20231210T220139--personal-projects__personal_project.org"))
+  (defconst mg-books-file (format "%s/%s" denote-directory "20240102T104309--books__personal_reading.org"))
+  (defconst mg-planning-file (format "%s/%s" denote-directory "20240104T191508--planning__personal_planning.org"))
+  (defconst mg-flashcards-file (format "%s/%s" denote-directory "20240220T165813--flashcards__learning_personal.org"))
+  (defconst mg-reading-list-file (format "%s/%s" denote-directory "20241130T124328--references-reading-list__metanote_research.org"))
+  (defconst mg-references-file (format "%s/%s" denote-directory "20241204T111546--references__main_metanote_research.org"))
+  (defconst mg-latex-cmds '("latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
 
   ;; Required for string-trim function
   (require 'subr-x)
@@ -2304,8 +2316,177 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
         (deactivate-mark)
         (widen))))
 
+  (defun mg-org-capture-generate-flash-header ()
+    "Generate the header to use in flaschards."
+    (let ((link (mg-org--capture-get-last-file-link)))
+      (format "%s @ %s" (mg-org--capture-get-last-file-link) (denote-get-identifier))))
+
+  (defun mg-org--capture-get-last-file-link ()
+    "In `org-capture' context, get last visited file's name and format as link."
+    (let ((link (format "[[file:%s]]" (plist-get org-capture-plist :original-file))))
+      link))
+
   (provide 'mg-org)
   ;;; mg-org.el ends here
+#+end_src
+
+** The ~mg-bib.el~ library
+:PROPERTIES:
+:ID:       FBDD1B14-1B4E-4905-ABBB-DA9131AF0644
+:END:
+
+#+begin_src emacs-lisp :tangle "mg-custom-modules/mg-bib.el"
+  ;;; mg-bib.el --- Extensions for bibliographic packages -*- lexical-binding: t -*-
+
+  ;; Copyright (C) 2024  Claudio Migliorelli
+
+  ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
+  ;; URL: https://crawlingaway.org/emacs/dot-emacs
+  ;; Version: 0.0.1
+  ;; Package-Requires: ((emacs "29.1"))
+
+  ;; This file is NOT part of GNU Emacs.
+
+  ;; This program is free software; you can redistribute it and/or modify
+  ;; it under the terms of the GNU General Public License as published by
+  ;; the Free Software Foundation, either version 3 of the License, or
+  ;; (at your option) any later version.
+  ;;
+  ;; This program is distributed in the hope that it will be useful,
+  ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ;; GNU General Public License for more details.
+  ;;
+  ;; You should have received a copy of the GNU General Public License
+  ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+  ;;; Commentary:
+  ;; This library introduces some extensions for packages I use to
+  ;; manage bibliography files.
+
+  ;;; Code:
+
+  (defun mg-bib-search-add-to-reading-list ()
+    "Search for a bibliography entry in the minibuffer, and add it to `mg-reading-list-file'."
+    (interactive)
+    (let ((key (citar-select-ref)))
+      (save-excursion
+        (with-current-buffer (find-file-noselect mg-reading-list-file)
+    	(goto-char (point-max))
+    	(beginning-of-line)
+    	(insert (format "* TODO %s [cite:@%s]\n"
+    			(citar-get-value "title" key)
+    			key))))))
+
+  (defun mg-bib--denote-bibtex-title (bibtex)
+    "Returns the bibtex title from BIBTEX."
+    (when (string-match "\\s *title\\s *=\\s *{\\(.*\\)}," bibtex)
+      (match-string-no-properties 1 bibtex)))
+
+  (defun mg-bib--denote-bibtex-key (bibtex)
+    "Returns the bibtex key from BIBTEX."
+    (when (string-match "@.*{\\(.*\\)," bibtex)
+      (match-string-no-properties 1 bibtex)))
+
+  (defun mg-bib--denote-bibtex-year (bibtex)
+    "Returns the year from BIBTEX."
+    (when (string-match "\\s *year\\s *=\\s *{\\(.*\\)}," bibtex)
+      (match-string-no-properties 1 bibtex)))
+
+  (defun mg-bib--denote-bibtex-author (bibtex)
+    "Returns the author field from BIBTEX.
+  Most of the BibTeX objects have the author field organized as
+  \"<name> <surname> and ...\". Therefore, first <surname> is
+  isolated afterwards to create the entry ID."
+    (when (string-match "\\s *author\\s *=\\s *{\\(.*\\)}," bibtex)
+      (match-string-no-properties 1 bibtex)))
+
+  (defun mg-bib--denote-bibtex-get-author-surname (authors)
+    "Get the first author's surname starting from the string of
+   authors AUTHORS."
+    (let ((surname (nth 1 (string-split authors))))
+      (mg-bib--denote-reformat-entry surname)))
+
+  (defun mg-bib--denote-reformat-entry (entry)
+    "Reformat BibTeX entry ENTRY to later generate a key from it."
+    (let ((case-fold-search t))
+      (replace-regexp-in-string
+       "[^a-z0-9]" ""
+       (downcase (car (string-split entry))))))
+
+  (defun mg-bib--reformat-bib-key (bibtex)
+    "Reformat the bibtex key for entry BIBTEX."
+    (let* ((title (mg-bib--denote-reformat-entry (mg-bib--denote-bibtex-title bibtex)))
+    	 (author (mg-bib--denote-bibtex-get-author-surname (mg-bib--denote-bibtex-author bibtex)))
+    	 (year (mg-bib--denote-bibtex-year bibtex))
+    	 (new-key (format "%s_%s_%s" author title year)))
+      new-key))
+
+  (defun mg-bib--denote-pull-resource-for-entry (key)
+    "Prompt the user for file path of paper having key KEY, format
+   the file name and move it in the `denote-directory'."
+    (let* ((file-path (read-file-name "Select a PDF file: "))
+           (file-exists (file-exists-p file-path))
+           (is-pdf (string-match-p "\\.pdf$" file-path)))
+      (cond
+       ((not file-exists)
+        (user-error "Error: File does not exist."))
+       ((not is-pdf)
+        (user-error "Error: Selected file is not a PDF.")))
+      (let* ((keywords (denote-keywords-prompt))
+  	   (identifier (denote-create-unique-file-identifier file-path))
+  	   (new-file-name (format "%s--%s__%s" identifier key
+  				  (mapconcat #'identity 
+  					     (delete-dups (copy-sequence keywords))
+  					     "_")))
+  	   (new-file-path (format "%s/assets/%s.pdf" (denote-directory) new-file-name)))
+        (rename-file file-path new-file-path))))
+
+  (defun mg-bib-denote-org-capture-paper-biblio ()
+    "Custom org-capture template to add a paper reference."
+    (let* ((old-bibtex (mg-bib--denote-bibtex-prompt))
+  	 (old-key (mg-bib--denote-bibtex-key old-bibtex))
+    	 (key (mg-bib--reformat-bib-key old-bibtex))
+  	 (title (mg-bib--denote-bibtex-title old-bibtex))
+  	 (bibtex (s-replace-regexp old-key key old-bibtex))
+  	 (heading (format "* %s [cite:@%s]\n" title key)))
+      (mg-bib--denote-pull-resource-for-entry key)
+      (concat heading (mg-bib--denote-bibtex-org-block bibtex))))
+
+  (defun mg-bib--denote-bibtex-org-block (bibtex)
+    "Returns a string representing an org `bibtex' source block
+    encompassing BIBTEX, a string of a bibtex entry."
+    (let* ((src
+    	  (concat "#+begin_src bibtex\n" bibtex "\n#+end_src"))
+    	 (entries
+    	  "- File ::\n- Notes ::\n- Search keywords ::\n"))
+      (format "%s\n%s\n" entries src)))
+
+  (defun mg-bib--denote-bibtex-prompt (&optional default-bibtex)
+    "Ask the user for a bibtex entry. Returns the sanitised
+    version. See `mg-bib--denote-sanitise-bibtex' for details."
+    (let* ((def default-bibtex)
+           (format (if (and def (not (string-empty-p def)))
+                       (format "Bibtex [%s]: " def)
+                     "Bibtex: "))
+           (sanitised-bibtex (mg-bib--denote-bibtex-sanitise (read-string format nil nil def))))
+      (if sanitised-bibtex
+          sanitised-bibtex
+        (user-error "Invalid BiBTeX entry provided to `mg-bib--denote-bibtex-prompt'"))))
+
+  (defun mg-bib--denote-bibtex-sanitise (bibtex)
+    "Returns a santised version of BIBTEX. Sanitisation entails remove
+    all non alpha-numeric characters from the bibtex key, and
+     returning this updated bibtex entry. If BIBTEX is not a valid
+     bibtex entry, returns nil."
+    (when (string-match "@.*{\\(.*\\)," bibtex)
+      (let* ((key (match-string-no-properties 1 bibtex))
+             (sanitised-key (replace-regexp-in-string "[^A-Za-z0-9]" "" key)))
+        (replace-regexp-in-string key sanitised-key bibtex))))
+
+  (provide 'mg-bib)
+
+  ;;; mg-bib.el ends here
 #+end_src
 
 ** The ~mg-notmuch.el~ library
@@ -2421,8 +2602,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defun mg-toggle-pdf-presentation-mode ()
     "Toggle a presentation mode to show PDFs in a clean layout.
 
-      When showing a PDF in docview, the modeline should be hidden, and
-      the document itself should be centered, for better visibility."
+  When showing a PDF in docview, the modeline should be hidden, and the document itself should be centered, for better visibility."
     (interactive)
     (toggle-frame-fullscreen)
     (if (not (bound-and-true-p hide-mode-line-mode))
@@ -2533,7 +2713,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
       "Get the reference notes from the `denote-directory' listed in `dired'.
   Although this functionality is not only related to `denote', rather on 'dired', it's still relevant in this library: all notes I have are `denote' entries."
       (interactive)
-      (dired denote-directory)
+      (dired (denote-directory))
       (revert-buffer)
       (dired-mark-files-regexp "_bib")
       (dired-toggle-marks)

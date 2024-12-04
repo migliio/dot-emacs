@@ -36,6 +36,9 @@
 (defconst mg-pkm-base-directory "~/Vault/pkm"
   "This constant keeps track of the base directory for my entire knowledge base.")
 
+(defconst denote-directory (expand-file-name mg-pkm-base-directory)
+  "This constant keeps track of the denote directory for my entire knowledge base.")
+
 (defun mg-get-today-timestamp ()
   "Helper function to get today's timestamp with the abbreviated day name."
   (format-time-string "%Y-%m-%d %a"))

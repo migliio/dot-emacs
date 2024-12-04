@@ -23,6 +23,7 @@
 				("\\.webm\\'" "mpv" (file))
 				("\\.mkv\\'" "mpv" (file))
 				("\\.m4a\\'" "mpv --force-window" (file))
+				("\\.mov\\'" "mpv" (file))
 				("\\.ppt\\'" "libreoffice" (file))
 				("\\.pptx\\'" "libreoffice" (file))
 				("\\.doc\\'" "libreoffice" (file))

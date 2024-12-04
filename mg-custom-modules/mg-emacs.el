@@ -152,9 +152,10 @@
     (message "System-level info => BAT: %s - CPU: %s - MEM: %s - DSK: %s - VOL: %s - KBD: %s"
 	     battery-info cpu-info ram-info disk-info volume-info keyboard-layout-info)))
 
-(defun mg-shutdown-machine-with-confirmation
+(defun mg-shutdown-machine-with-confirmation ()
     "Ask for confirmation and shut down the system if confirmed."
   (when (yes-or-no-p "Are you sure you want to shut down the system? ")
     (shell-command mg-shutdown-system-cmd)))
 
+(provide 'mg-emacs)
 ;;; mg-emacs.el ends here

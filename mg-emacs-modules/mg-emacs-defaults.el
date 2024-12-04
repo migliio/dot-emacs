@@ -54,7 +54,7 @@
 		confirm-kill-processes nil
 		process-connection-type nil
 		org-src-fontify-natively t
-		warning-minimum-level :emergency
+		;; warning-minimum-level :emergency
 		set-language-environment "UTF-8"
 		system-time-locale "C"
 		native-comp-async-report-warnings-errors nil)

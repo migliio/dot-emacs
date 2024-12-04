@@ -53,8 +53,7 @@
 (defun mg-toggle-pdf-presentation-mode ()
   "Toggle a presentation mode to show PDFs in a clean layout.
 
-    When showing a PDF in docview, the modeline should be hidden, and
-    the document itself should be centered, for better visibility."
+When showing a PDF in docview, the modeline should be hidden, and the document itself should be centered, for better visibility."
   (interactive)
   (toggle-frame-fullscreen)
   (if (not (bound-and-true-p hide-mode-line-mode))

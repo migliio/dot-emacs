@@ -28,7 +28,6 @@
   :init
   (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
   :custom
-  (denote-directory (expand-file-name mg-pkm-base-directory))
   (denote-known-keywords '("emacs" "security" "kernel" "mathematics" "algorithms"))
   (denote-infer-keywords t)
   (denote-sort-keywords t)
