@@ -1,11 +1,12 @@
 (use-package mg-org
   :ensure nil
+  :after (denote)
   :bind (("C-c o c d" . mg-org-compute-deep-work-minutes)
 	 ("C-c o b" . mg-org-block-time)))
 
 (use-package org
   :straight t
-  :after (denote)
+  :after (denote mg-bib)
   :bind (("C-c a" . org-agenda)
 	 ("C-c C-;" . org-insert-structure-template)
 	 ("C-c c" . org-capture)
@@ -47,7 +48,12 @@
   (org-outline-path-complete-in-steps nil)
   (org-clock-sources '(agenda))
   (org-capture-templates
-   '(("i" "Inbox")
+   '(("b" "Bibliography")
+     ("bp" "Bibliography (paper)" entry (file mg-references-file)
+      #'mg-bib-denote-org-capture-paper-biblio
+      :kill-buffer t
+      :jump-to-captured nil)
+     ("i" "Inbox")
      ("it" "Todo entry" entry (file mg-inbox-file)
 	"* TODO %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
      ("im" "Mail entry" entry (file mg-inbox-file)
@@ -153,7 +159,7 @@
 	(require 'oc-biblatex)
 	(setq org-cite-export-processors
 	    '((latex biblatex))
-	    org-latex-pdf-process (list mg-latex-cmd))))
+	    org-latex-pdf-process mg-latex-cmds)))
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5)
 	org-format-latex-options (plist-put org-format-latex-options :background "Transparent")
 	org-latex-create-formula-image-program 'dvisvgm)

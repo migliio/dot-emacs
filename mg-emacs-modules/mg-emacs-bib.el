@@ -49,8 +49,8 @@
   :config (citar-embark-mode))
 
 (use-package mg-bib
-  :after (ebib parsebib biblio)
   :ensure nil
+  :after (org denote)
   :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)))
 
 (provide 'mg-emacs-bib)

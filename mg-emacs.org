@@ -214,7 +214,7 @@ Historically, this module enclosed a bunch of other customizations for variables
   		confirm-kill-processes nil
   		process-connection-type nil
   		org-src-fontify-natively t
-  		warning-minimum-level :emergency
+  		;; warning-minimum-level :emergency
   		set-language-environment "UTF-8"
   		system-time-locale "C"
   		native-comp-async-report-warnings-errors nil)
@@ -784,12 +784,13 @@ Those questions are all answered by just looking at the agenda, fired up with ju
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-org.el"
   (use-package mg-org
     :ensure nil
+    :after (denote)
     :bind (("C-c o c d" . mg-org-compute-deep-work-minutes)
   	 ("C-c o b" . mg-org-block-time)))
 
   (use-package org
     :straight t
-    :after (denote)
+    :after (denote mg-bib)
     :bind (("C-c a" . org-agenda)
   	 ("C-c C-;" . org-insert-structure-template)
   	 ("C-c c" . org-capture)
@@ -831,7 +832,12 @@ Those questions are all answered by just looking at the agenda, fired up with ju
     (org-outline-path-complete-in-steps nil)
     (org-clock-sources '(agenda))
     (org-capture-templates
-     '(("i" "Inbox")
+     '(("b" "Bibliography")
+       ("bp" "Bibliography (paper)" entry (file mg-references-file)
+        #'mg-bib-denote-org-capture-paper-biblio
+        :kill-buffer t
+        :jump-to-captured nil)
+       ("i" "Inbox")
        ("it" "Todo entry" entry (file mg-inbox-file)
   	"* TODO %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
        ("im" "Mail entry" entry (file mg-inbox-file)
@@ -937,7 +943,7 @@ Those questions are all answered by just looking at the agenda, fired up with ju
   	(require 'oc-biblatex)
   	(setq org-cite-export-processors
   	    '((latex biblatex))
-  	    org-latex-pdf-process (list mg-latex-cmd))))
+  	    org-latex-pdf-process mg-latex-cmds)))
     (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5)
   	org-format-latex-options (plist-put org-format-latex-options :background "Transparent")
   	org-latex-create-formula-image-program 'dvisvgm)
@@ -1117,7 +1123,6 @@ The second fundamental package that I use for (networked) note-taking is ~denote
     :init
     (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
     :custom
-    (denote-directory (expand-file-name mg-pkm-base-directory))
     (denote-known-keywords '("emacs" "security" "kernel" "mathematics" "algorithms"))
     (denote-infer-keywords t)
     (denote-sort-keywords t)
@@ -1238,6 +1243,7 @@ This module introduces several packages that I use to manage bibliographic entri
 
   (use-package mg-bib
     :ensure nil
+    :after (org denote)
     :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)))
 
   (provide 'mg-emacs-bib)
@@ -1667,6 +1673,9 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   (defconst mg-pkm-base-directory "~/Vault/pkm"
     "This constant keeps track of the base directory for my entire knowledge base.")
+
+  (defconst denote-directory (expand-file-name mg-pkm-base-directory)
+    "This constant keeps track of the denote directory for my entire knowledge base.")
 
   (defun mg-get-today-timestamp ()
     "Helper function to get today's timestamp with the abbreviated day name."
@@ -2177,18 +2186,19 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   ;;; Code:
 
-  (defconst mg-work-projects-file "~/Vault/pkm/20231210T220334--work-and-study-projects__project_work.org")
-  (defconst mg-inbox-file "~/Vault/pkm/20231211T145832--inbox__gtd_personal.org")
-  (defconst mg-agenda-file "~/Vault/pkm/20231210T224321--agenda__personal.org")
-  (defconst mg-archive-file "~/Vault/pkm/.archive/archive.org")
-  (defconst mg-capture-notes-file "~/Vault/pkm/20231213T172757--capture-notes__gtd_personal.org")
-  (defconst mg-conferences-file "~/Vault/pkm/20231210T222135--conferences__personal_research.org")
-  (defconst mg-personal-projects-file "~/Vault/pkm/20231210T220139--personal-projects__personal_project.org")
-  (defconst mg-books-file "~/Vault/pkm/20240102T104309--books__personal_reading.org")
-  (defconst mg-planning-file "~/Vault/pkm/20240104T191508--planning__personal_planning.org")
-  (defconst mg-flashcards-file "~/Vault/pkm/20240220T165813--flashcards__learning_personal.org")
-  (defconst mg-reading-list-file "~/Vault/pkm/20241130T124328--references-reading-list__metanote_research.org")
-  (defconst mg-latex-cmd "latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f")
+  (defconst mg-work-projects-file (format "%s/%s" denote-directory "20231210T220334--work-and-study-projects__project_work.org"))
+  (defconst mg-inbox-file (format "%s/%s" denote-directory "20231211T145832--inbox__gtd_personal.org"))
+  (defconst mg-agenda-file (format "%s/%s" denote-directory "20231210T224321--agenda__personal.org"))
+  (defconst mg-archive-file (format "%s/%s" denote-directory ".archive/archive.org"))
+  (defconst mg-capture-notes-file (format "%s/%s" denote-directory "20231213T172757--capture-notes__gtd_personal.org"))
+  (defconst mg-conferences-file (format "%s/%s" denote-directory "20231210T222135--conferences__personal_research.org"))
+  (defconst mg-personal-projects-file (format "%s/%s" denote-directory "20231210T220139--personal-projects__personal_project.org"))
+  (defconst mg-books-file (format "%s/%s" denote-directory "20240102T104309--books__personal_reading.org"))
+  (defconst mg-planning-file (format "%s/%s" denote-directory "20240104T191508--planning__personal_planning.org"))
+  (defconst mg-flashcards-file (format "%s/%s" denote-directory "20240220T165813--flashcards__learning_personal.org"))
+  (defconst mg-reading-list-file (format "%s/%s" denote-directory "20241130T124328--references-reading-list__metanote_research.org"))
+  (defconst mg-references-file (format "%s/%s" denote-directory "20241204T111546--references__main_metanote_research.org"))
+  (defconst mg-latex-cmds '("latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
 
   ;; Required for string-trim function
   (require 'subr-x)
@@ -2321,6 +2331,9 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 #+end_src
 
 ** The ~mg-bib.el~ library
+:PROPERTIES:
+:ID:       FBDD1B14-1B4E-4905-ABBB-DA9131AF0644
+:END:
 
 #+begin_src emacs-lisp :tangle "mg-custom-modules/mg-bib.el"
   ;;; mg-bib.el --- Extensions for bibliographic packages -*- lexical-binding: t -*-
@@ -2359,13 +2372,120 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     (let ((key (citar-select-ref)))
       (save-excursion
         (with-current-buffer (find-file-noselect mg-reading-list-file)
-  	(goto-char (point-max))
-  	(beginning-of-line)
-  	(insert (format "* TODO %s\n:PROPERTIES:\n:CITEKEY: [cite:@%s]\n:END:\n"
-  			(citar-get-value "title" key)
-  			key))))))
+    	(goto-char (point-max))
+    	(beginning-of-line)
+    	(insert (format "* TODO %s [cite:@%s]\n"
+    			(citar-get-value "title" key)
+    			key))))))
+
+  (defun mg-bib--denote-bibtex-title (bibtex)
+    "Returns the bibtex title from BIBTEX."
+    (when (string-match "\\s *title\\s *=\\s *{\\(.*\\)}," bibtex)
+      (match-string-no-properties 1 bibtex)))
+
+  (defun mg-bib--denote-bibtex-key (bibtex)
+    "Returns the bibtex key from BIBTEX."
+    (when (string-match "@.*{\\(.*\\)," bibtex)
+      (match-string-no-properties 1 bibtex)))
+
+  (defun mg-bib--denote-bibtex-year (bibtex)
+    "Returns the year from BIBTEX."
+    (when (string-match "\\s *year\\s *=\\s *{\\(.*\\)}," bibtex)
+      (match-string-no-properties 1 bibtex)))
+
+  (defun mg-bib--denote-bibtex-author (bibtex)
+    "Returns the author field from BIBTEX.
+  Most of the BibTeX objects have the author field organized as
+  \"<name> <surname> and ...\". Therefore, first <surname> is
+  isolated afterwards to create the entry ID."
+    (when (string-match "\\s *author\\s *=\\s *{\\(.*\\)}," bibtex)
+      (match-string-no-properties 1 bibtex)))
+
+  (defun mg-bib--denote-bibtex-get-author-surname (authors)
+    "Get the first author's surname starting from the string of
+   authors AUTHORS."
+    (let ((surname (nth 1 (string-split authors))))
+      (mg-bib--denote-reformat-entry surname)))
+
+  (defun mg-bib--denote-reformat-entry (entry)
+    "Reformat BibTeX entry ENTRY to later generate a key from it."
+    (let ((case-fold-search t))
+      (replace-regexp-in-string
+       "[^a-z0-9]" ""
+       (downcase (car (string-split entry))))))
+
+  (defun mg-bib--reformat-bib-key (bibtex)
+    "Reformat the bibtex key for entry BIBTEX."
+    (let* ((title (mg-bib--denote-reformat-entry (mg-bib--denote-bibtex-title bibtex)))
+    	 (author (mg-bib--denote-bibtex-get-author-surname (mg-bib--denote-bibtex-author bibtex)))
+    	 (year (mg-bib--denote-bibtex-year bibtex))
+    	 (new-key (format "%s_%s_%s" author title year)))
+      new-key))
+
+  (defun mg-bib--denote-pull-resource-for-entry (key)
+    "Prompt the user for file path of paper having key KEY, format
+   the file name and move it in the `denote-directory'."
+    (let* ((file-path (read-file-name "Select a PDF file: "))
+           (file-exists (file-exists-p file-path))
+           (is-pdf (string-match-p "\\.pdf$" file-path)))
+      (cond
+       ((not file-exists)
+        (user-error "Error: File does not exist."))
+       ((not is-pdf)
+        (user-error "Error: Selected file is not a PDF.")))
+      (let* ((keywords (denote-keywords-prompt))
+  	   (identifier (denote-create-unique-file-identifier file-path))
+  	   (new-file-name (format "%s--%s__%s" identifier key
+  				  (mapconcat #'identity 
+  					     (delete-dups (copy-sequence keywords))
+  					     "_")))
+  	   (new-file-path (format "%s/assets/%s.pdf" (denote-directory) new-file-name)))
+        (rename-file file-path new-file-path))))
+
+  (defun mg-bib-denote-org-capture-paper-biblio ()
+    "Custom org-capture template to add a paper reference."
+    (let* ((old-bibtex (mg-bib--denote-bibtex-prompt))
+  	 (old-key (mg-bib--denote-bibtex-key old-bibtex))
+    	 (key (mg-bib--reformat-bib-key old-bibtex))
+  	 (title (mg-bib--denote-bibtex-title old-bibtex))
+  	 (bibtex (s-replace-regexp old-key key old-bibtex))
+  	 (heading (format "* %s [cite:@%s]\n" title key)))
+      (mg-bib--denote-pull-resource-for-entry key)
+      (concat heading (mg-bib--denote-bibtex-org-block bibtex))))
+
+  (defun mg-bib--denote-bibtex-org-block (bibtex)
+    "Returns a string representing an org `bibtex' source block
+    encompassing BIBTEX, a string of a bibtex entry."
+    (let* ((src
+    	  (concat "#+begin_src bibtex\n" bibtex "\n#+end_src"))
+    	 (entries
+    	  "- File ::\n- Notes ::\n- Search keywords ::\n"))
+      (format "%s\n%s\n" entries src)))
+
+  (defun mg-bib--denote-bibtex-prompt (&optional default-bibtex)
+    "Ask the user for a bibtex entry. Returns the sanitised
+    version. See `mg-bib--denote-sanitise-bibtex' for details."
+    (let* ((def default-bibtex)
+           (format (if (and def (not (string-empty-p def)))
+                       (format "Bibtex [%s]: " def)
+                     "Bibtex: "))
+           (sanitised-bibtex (mg-bib--denote-bibtex-sanitise (read-string format nil nil def))))
+      (if sanitised-bibtex
+          sanitised-bibtex
+        (user-error "Invalid BiBTeX entry provided to `mg-bib--denote-bibtex-prompt'"))))
+
+  (defun mg-bib--denote-bibtex-sanitise (bibtex)
+    "Returns a santised version of BIBTEX. Sanitisation entails remove
+    all non alpha-numeric characters from the bibtex key, and
+     returning this updated bibtex entry. If BIBTEX is not a valid
+     bibtex entry, returns nil."
+    (when (string-match "@.*{\\(.*\\)," bibtex)
+      (let* ((key (match-string-no-properties 1 bibtex))
+             (sanitised-key (replace-regexp-in-string "[^A-Za-z0-9]" "" key)))
+        (replace-regexp-in-string key sanitised-key bibtex))))
 
   (provide 'mg-bib)
+
   ;;; mg-bib.el ends here
 #+end_src
 
@@ -2593,7 +2713,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
       "Get the reference notes from the `denote-directory' listed in `dired'.
   Although this functionality is not only related to `denote', rather on 'dired', it's still relevant in this library: all notes I have are `denote' entries."
       (interactive)
-      (dired denote-directory)
+      (dired (denote-directory))
       (revert-buffer)
       (dired-mark-files-regexp "_bib")
       (dired-toggle-marks)

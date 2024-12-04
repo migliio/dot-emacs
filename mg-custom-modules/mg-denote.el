@@ -91,7 +91,7 @@
     "Get the reference notes from the `denote-directory' listed in `dired'.
 Although this functionality is not only related to `denote', rather on 'dired', it's still relevant in this library: all notes I have are `denote' entries."
     (interactive)
-    (dired denote-directory)
+    (dired (denote-directory))
     (revert-buffer)
     (dired-mark-files-regexp "_bib")
     (dired-toggle-marks)

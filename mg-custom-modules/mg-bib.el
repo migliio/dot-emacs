@@ -34,11 +34,118 @@
   (let ((key (citar-select-ref)))
     (save-excursion
       (with-current-buffer (find-file-noselect mg-reading-list-file)
-	(goto-char (point-max))
-	(beginning-of-line)
-	(insert (format "* TODO %s\n:PROPERTIES:\n:CITEKEY: [cite:@%s]\n:END:\n"
-			(citar-get-value "title" key)
-			key))))))
+  	(goto-char (point-max))
+  	(beginning-of-line)
+  	(insert (format "* TODO %s [cite:@%s]\n"
+  			(citar-get-value "title" key)
+  			key))))))
+
+(defun mg-bib--denote-bibtex-title (bibtex)
+  "Returns the bibtex title from BIBTEX."
+  (when (string-match "\\s *title\\s *=\\s *{\\(.*\\)}," bibtex)
+    (match-string-no-properties 1 bibtex)))
+
+(defun mg-bib--denote-bibtex-key (bibtex)
+  "Returns the bibtex key from BIBTEX."
+  (when (string-match "@.*{\\(.*\\)," bibtex)
+    (match-string-no-properties 1 bibtex)))
+
+(defun mg-bib--denote-bibtex-year (bibtex)
+  "Returns the year from BIBTEX."
+  (when (string-match "\\s *year\\s *=\\s *{\\(.*\\)}," bibtex)
+    (match-string-no-properties 1 bibtex)))
+
+(defun mg-bib--denote-bibtex-author (bibtex)
+  "Returns the author field from BIBTEX.
+Most of the BibTeX objects have the author field organized as
+\"<name> <surname> and ...\". Therefore, first <surname> is
+isolated afterwards to create the entry ID."
+  (when (string-match "\\s *author\\s *=\\s *{\\(.*\\)}," bibtex)
+    (match-string-no-properties 1 bibtex)))
+
+(defun mg-bib--denote-bibtex-get-author-surname (authors)
+  "Get the first author's surname starting from the string of
+ authors AUTHORS."
+  (let ((surname (nth 1 (string-split authors))))
+    (mg-bib--denote-reformat-entry surname)))
+
+(defun mg-bib--denote-reformat-entry (entry)
+  "Reformat BibTeX entry ENTRY to later generate a key from it."
+  (let ((case-fold-search t))
+    (replace-regexp-in-string
+     "[^a-z0-9]" ""
+     (downcase (car (string-split entry))))))
+
+(defun mg-bib--reformat-bib-key (bibtex)
+  "Reformat the bibtex key for entry BIBTEX."
+  (let* ((title (mg-bib--denote-reformat-entry (mg-bib--denote-bibtex-title bibtex)))
+  	 (author (mg-bib--denote-bibtex-get-author-surname (mg-bib--denote-bibtex-author bibtex)))
+  	 (year (mg-bib--denote-bibtex-year bibtex))
+  	 (new-key (format "%s_%s_%s" author title year)))
+    new-key))
+
+(defun mg-bib--denote-pull-resource-for-entry (key)
+  "Prompt the user for file path of paper having key KEY, format
+ the file name and move it in the `denote-directory'."
+  (let* ((file-path (read-file-name "Select a PDF file: "))
+         (file-exists (file-exists-p file-path))
+         (is-pdf (string-match-p "\\.pdf$" file-path)))
+    (cond
+     ((not file-exists)
+      (user-error "Error: File does not exist."))
+     ((not is-pdf)
+      (user-error "Error: Selected file is not a PDF.")))
+    (let* ((keywords (denote-keywords-prompt))
+	   (identifier (denote-create-unique-file-identifier file-path))
+	   (new-file-name (format "%s--%s__%s" identifier key
+				  (mapconcat #'identity 
+					     (delete-dups (copy-sequence keywords))
+					     "_")))
+	   (new-file-path (format "%s/assets/%s.pdf" (denote-directory) new-file-name)))
+      (rename-file file-path new-file-path))))
+
+(defun mg-bib-denote-org-capture-paper-biblio ()
+  "Custom org-capture template to add a paper reference."
+  (let* ((old-bibtex (mg-bib--denote-bibtex-prompt))
+	 (old-key (mg-bib--denote-bibtex-key old-bibtex))
+  	 (key (mg-bib--reformat-bib-key old-bibtex))
+	 (title (mg-bib--denote-bibtex-title old-bibtex))
+	 (bibtex (s-replace-regexp old-key key old-bibtex))
+	 (heading (format "* %s [cite:@%s]\n" title key)))
+    (mg-bib--denote-pull-resource-for-entry key)
+    (concat heading (mg-bib--denote-bibtex-org-block bibtex))))
+
+(defun mg-bib--denote-bibtex-org-block (bibtex)
+  "Returns a string representing an org `bibtex' source block
+  encompassing BIBTEX, a string of a bibtex entry."
+  (let* ((src
+  	  (concat "#+begin_src bibtex\n" bibtex "\n#+end_src"))
+  	 (entries
+  	  "- File ::\n- Notes ::\n- Search keywords ::\n"))
+    (format "%s\n%s\n" entries src)))
+
+(defun mg-bib--denote-bibtex-prompt (&optional default-bibtex)
+  "Ask the user for a bibtex entry. Returns the sanitised
+  version. See `mg-bib--denote-sanitise-bibtex' for details."
+  (let* ((def default-bibtex)
+         (format (if (and def (not (string-empty-p def)))
+                     (format "Bibtex [%s]: " def)
+                   "Bibtex: "))
+         (sanitised-bibtex (mg-bib--denote-bibtex-sanitise (read-string format nil nil def))))
+    (if sanitised-bibtex
+        sanitised-bibtex
+      (user-error "Invalid BiBTeX entry provided to `mg-bib--denote-bibtex-prompt'"))))
+
+(defun mg-bib--denote-bibtex-sanitise (bibtex)
+  "Returns a santised version of BIBTEX. Sanitisation entails remove
+  all non alpha-numeric characters from the bibtex key, and
+   returning this updated bibtex entry. If BIBTEX is not a valid
+   bibtex entry, returns nil."
+  (when (string-match "@.*{\\(.*\\)," bibtex)
+    (let* ((key (match-string-no-properties 1 bibtex))
+           (sanitised-key (replace-regexp-in-string "[^A-Za-z0-9]" "" key)))
+      (replace-regexp-in-string key sanitised-key bibtex))))
 
 (provide 'mg-bib)
+
 ;;; mg-bib.el ends here
