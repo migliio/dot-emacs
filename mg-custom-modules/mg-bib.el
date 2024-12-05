@@ -146,6 +146,37 @@ isolated afterwards to create the entry ID."
            (sanitised-key (replace-regexp-in-string "[^A-Za-z0-9]" "" key)))
       (replace-regexp-in-string key sanitised-key bibtex))))
 
-(provide 'mg-bib)
+(defun mg-bib--retrieve-keywords-from-bib-file (&optional file)
+  "Retrieve keywords from my bibliography file, or, if specified, from FILE."
+  (let* ((entries 
+	  (org-map-entries (lambda ()
+			    (when-let
+				((keywords (org-entry-get (point) "KEYWORDS")))
+			      (list
+			       :keywords keywords
+			       :title (nth 4 (org-heading-components))
+			       :line (line-number-at-pos))))))
+	 (user-choice
+	  (completing-read "Choose a keyword you want to filter: "
+			   (delete-dups (flatten-list
+					 (mapcar (lambda (entry)
+						   (string-split
+						    (string-trim (plist-get entry :keywords)) ", "))
+						 entries)))))
+	 (filtered-entries
+	  (seq-filter (lambda (entry)
+			(string-match-p user-choice (plist-get entry :keywords)))
+		      entries)))
+    ))
 
+(with-eval-after-load 'org
+  (add-to-list 'org-capture-templates
+	       '("b" "Bibliography"))
+  (add-to-list 'org-capture-templates 
+	       '("bp" "Bibliography (paper)" entry (file mg-references-file)
+		 #'mg-bib-denote-org-capture-paper-biblio
+		 :kill-buffer t
+		 :jump-to-captured nil)))
+
+(provide 'mg-bib)
 ;;; mg-bib.el ends here

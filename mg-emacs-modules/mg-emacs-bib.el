@@ -50,7 +50,7 @@
 
 (use-package mg-bib
   :ensure nil
-  :after (org denote)
+  :after org
   :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)))
 
 (provide 'mg-emacs-bib)

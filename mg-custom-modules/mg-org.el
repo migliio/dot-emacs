@@ -39,7 +39,7 @@
 (defconst mg-planning-file (format "%s/%s" denote-directory "20240104T191508--planning__personal_planning.org"))
 (defconst mg-flashcards-file (format "%s/%s" denote-directory "20240220T165813--flashcards__learning_personal.org"))
 (defconst mg-reading-list-file (format "%s/%s" denote-directory "20241130T124328--references-reading-list__metanote_research.org"))
-(defconst mg-references-file (format "%s/%s" denote-directory "20241204T111546--references__main_metanote_research.org"))
+(defconst mg-references-file (expand-file-name "20241204T192736--references__main_metanote_research.org" denote-directory))
 (defconst mg-latex-cmds '("latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
 
 ;; Required for string-trim function

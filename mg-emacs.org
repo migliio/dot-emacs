@@ -1,3 +1,6 @@
+:PROPERTIES:
+:ID:       d3909734-3c20-430c-b0c1-7246984a0111
+:END:
 #+TITLE: Emacs configuration
 #+AUTHOR: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
 #+macro: latest-export-date (eval (format-time-string "%Y-%m-%d, %A @ %I:%M %p"))
@@ -784,13 +787,11 @@ Those questions are all answered by just looking at the agenda, fired up with ju
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-org.el"
   (use-package mg-org
     :ensure nil
-    :after (denote)
     :bind (("C-c o c d" . mg-org-compute-deep-work-minutes)
   	 ("C-c o b" . mg-org-block-time)))
 
   (use-package org
     :straight t
-    :after (denote mg-bib)
     :bind (("C-c a" . org-agenda)
   	 ("C-c C-;" . org-insert-structure-template)
   	 ("C-c c" . org-capture)
@@ -832,12 +833,7 @@ Those questions are all answered by just looking at the agenda, fired up with ju
     (org-outline-path-complete-in-steps nil)
     (org-clock-sources '(agenda))
     (org-capture-templates
-     '(("b" "Bibliography")
-       ("bp" "Bibliography (paper)" entry (file mg-references-file)
-        #'mg-bib-denote-org-capture-paper-biblio
-        :kill-buffer t
-        :jump-to-captured nil)
-       ("i" "Inbox")
+     '(("i" "Inbox")
        ("it" "Todo entry" entry (file mg-inbox-file)
   	"* TODO %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
        ("im" "Mail entry" entry (file mg-inbox-file)
@@ -1187,6 +1183,9 @@ The second fundamental package that I use for (networked) note-taking is ~denote
 #+end_src
 
 ** The ~mg-emacs-bib.el~ module
+:PROPERTIES:
+:ID:       39930734-961e-4da9-9df4-a9e7e4223e2b
+:END:
 
 This module introduces several packages that I use to manage bibliographic entries and references in general. In my research work, is super important to have a tidied, smooth and efficient way of managing these things. I use ~citar~ as the main bibliography manager, and the I use ~citar-denote~ and ~citar-embark~ on top of it. The former is actually extremely convenient for people like me using ~denote~ (see [[id:64ce0bed-fefc-4603-91ef-24b4fd102795][The ~mg-emacs-denote.el~ module]]) as their note-taking tool of choice: it allows to link reference notes to bibliography entries, and have a convenient way to search notes and open associated artifacts (e.g., PDF files or web pages).
 
@@ -1243,7 +1242,7 @@ This module introduces several packages that I use to manage bibliographic entri
 
   (use-package mg-bib
     :ensure nil
-    :after (org denote)
+    :after org
     :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)))
 
   (provide 'mg-emacs-bib)
@@ -2197,7 +2196,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defconst mg-planning-file (format "%s/%s" denote-directory "20240104T191508--planning__personal_planning.org"))
   (defconst mg-flashcards-file (format "%s/%s" denote-directory "20240220T165813--flashcards__learning_personal.org"))
   (defconst mg-reading-list-file (format "%s/%s" denote-directory "20241130T124328--references-reading-list__metanote_research.org"))
-  (defconst mg-references-file (format "%s/%s" denote-directory "20241204T111546--references__main_metanote_research.org"))
+  (defconst mg-references-file (expand-file-name "20241204T192736--references__main_metanote_research.org" denote-directory))
   (defconst mg-latex-cmds '("latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
 
   ;; Required for string-trim function
@@ -2484,8 +2483,39 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
              (sanitised-key (replace-regexp-in-string "[^A-Za-z0-9]" "" key)))
         (replace-regexp-in-string key sanitised-key bibtex))))
 
-  (provide 'mg-bib)
+  (defun mg-bib--retrieve-keywords-from-bib-file (&optional file)
+    "Retrieve keywords from my bibliography file, or, if specified, from FILE."
+    (let* ((entries 
+  	  (org-map-entries (lambda ()
+  			    (when-let
+  				((keywords (org-entry-get (point) "KEYWORDS")))
+  			      (list
+  			       :keywords keywords
+  			       :title (nth 4 (org-heading-components))
+  			       :line (line-number-at-pos))))))
+  	 (user-choice
+  	  (completing-read "Choose a keyword you want to filter: "
+  			   (delete-dups (flatten-list
+  					 (mapcar (lambda (entry)
+  						   (string-split
+  						    (string-trim (plist-get entry :keywords)) ", "))
+  						 entries)))))
+  	 (filtered-entries
+  	  (seq-filter (lambda (entry)
+  			(string-match-p user-choice (plist-get entry :keywords)))
+  		      entries)))
+      ))
 
+  (with-eval-after-load 'org
+    (add-to-list 'org-capture-templates
+  	       '("b" "Bibliography"))
+    (add-to-list 'org-capture-templates 
+  	       '("bp" "Bibliography (paper)" entry (file mg-references-file)
+  		 #'mg-bib-denote-org-capture-paper-biblio
+  		 :kill-buffer t
+  		 :jump-to-captured nil)))
+
+  (provide 'mg-bib)
   ;;; mg-bib.el ends here
 #+end_src
 
