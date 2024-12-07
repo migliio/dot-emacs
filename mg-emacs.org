@@ -1237,10 +1237,7 @@ This module introduces several packages that I use to manage bibliographic entri
 
   (use-package mg-bib
     :ensure nil
-<<<<<<< HEAD
-=======
     :after org
->>>>>>> 86e831e26c16300a9c64c0ce2b945871be2e12a7
     :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)))
 
   (provide 'mg-emacs-bib)
@@ -2212,8 +2209,6 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   ;;; Code:
 
-<<<<<<< HEAD
-=======
   (defconst mg-work-projects-file (format "%s/%s" denote-directory "20231210T220334--work-and-study-projects__project_work.org"))
   (defconst mg-inbox-file (format "%s/%s" denote-directory "20231211T145832--inbox__gtd_personal.org"))
   (defconst mg-agenda-file (format "%s/%s" denote-directory "20231210T224321--agenda__personal.org"))
@@ -2228,7 +2223,6 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defconst mg-references-file (expand-file-name "20241204T192736--references__main_metanote_research.org" denote-directory))
   (defconst mg-latex-cmds '("latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
 
->>>>>>> 86e831e26c16300a9c64c0ce2b945871be2e12a7
   ;; Required for string-trim function
   (require 'subr-x)
   (defun mg-extract-heading-name (heading)
