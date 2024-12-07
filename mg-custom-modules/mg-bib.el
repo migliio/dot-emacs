@@ -158,4 +158,14 @@
       (setq title (match-string 1)))
     title))
 
+(with-eval-after-load 'org
+  (add-to-list 'org-capture-templates
+	       '("b" "Bibliography"))
+  (add-to-list 'org-capture-templates 
+	       '("bp" "Bibliography (paper)" entry (file mg-references-file)
+		 #'mg-bib-denote-org-capture-paper-biblio
+		 :kill-buffer t
+		 :jump-to-captured nil)))
+
+(provide 'mg-bib)
 ;;; mg-bib.el ends here

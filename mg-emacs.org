@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID:       58382C3C-DCDE-4B47-A066-C40A5F131D1D
+:ID:       d3909734-3c20-430c-b0c1-7246984a0111
 :END:
 #+TITLE: Emacs configuration
 #+AUTHOR: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
@@ -449,7 +449,7 @@ EXWM just works. There are no additional requirements needed, just Emacs and a c
 
 ** The ~mg-emacs-themes.el~ module
 
-I typically prefer simple and highly legible themes. Back in the days, I used to change theme quite often. The theme I've been enjoying the most is likely [[https://github.com/bbatsov/zenburn-emacs][Zenburn]], because it is also the one I used for the longest period of time without switching to any other theme. After some time though, I switched to ~modus-vivendi~, because of its simplicity and legibility. I'm finding it better than the one I was using before, and I think I'll stick with it for years to come. However, the Emacs standard theme is even more legible and plain, so it should be worth trying it.
+I typically prefer simple and highly legible themes. I continuously change between themes, and the journey to find the one that really fits is still in progress. However, I generally use two different configurations based on the system I'm in (i.e., Linux vs. Mac). I prefer dark themes over light ones, and I use a night shift warmer colors settings across the entire day. I find warm light better for my eyes.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (defun mg-init-macos-theme ()
@@ -460,9 +460,9 @@ I typically prefer simple and highly legible themes. Back in the days, I used to
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (set-frame-font "Iosevka Comfy 14" nil t)
-    (use-package ef-themes :straight t :config
-      (load-theme 'ef-autumn t)))
+    (set-frame-font "Liberation Mono 14" nil t)
+    (use-package standard-themes :straight t :config
+      (load-theme 'standard-dark t)))
 
   (if (display-graphic-p)
       (progn
@@ -1179,6 +1179,9 @@ The second fundamental package that I use for (networked) note-taking is ~denote
 #+end_src
 
 ** The ~mg-emacs-bib.el~ module
+:PROPERTIES:
+:ID:       39930734-961e-4da9-9df4-a9e7e4223e2b
+:END:
 
 This module introduces several packages that I use to manage bibliographic entries and references in general. In my research work, is super important to have a tidied, smooth and efficient way of managing these things. I use ~citar~ as the main bibliography manager, and the I use ~citar-denote~ and ~citar-embark~ on top of it. The former is actually extremely convenient for people like me using ~denote~ (see [[id:64ce0bed-fefc-4603-91ef-24b4fd102795][The ~mg-emacs-denote.el~ module]]) as their note-taking tool of choice: it allows to link reference notes to bibliography entries, and have a convenient way to search notes and open associated artifacts (e.g., PDF files or web pages).
 
@@ -1234,6 +1237,10 @@ This module introduces several packages that I use to manage bibliographic entri
 
   (use-package mg-bib
     :ensure nil
+<<<<<<< HEAD
+=======
+    :after org
+>>>>>>> 86e831e26c16300a9c64c0ce2b945871be2e12a7
     :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)))
 
   (provide 'mg-emacs-bib)
@@ -2205,6 +2212,23 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   ;;; Code:
 
+<<<<<<< HEAD
+=======
+  (defconst mg-work-projects-file (format "%s/%s" denote-directory "20231210T220334--work-and-study-projects__project_work.org"))
+  (defconst mg-inbox-file (format "%s/%s" denote-directory "20231211T145832--inbox__gtd_personal.org"))
+  (defconst mg-agenda-file (format "%s/%s" denote-directory "20231210T224321--agenda__personal.org"))
+  (defconst mg-archive-file (format "%s/%s" denote-directory ".archive/archive.org"))
+  (defconst mg-capture-notes-file (format "%s/%s" denote-directory "20231213T172757--capture-notes__gtd_personal.org"))
+  (defconst mg-conferences-file (format "%s/%s" denote-directory "20231210T222135--conferences__personal_research.org"))
+  (defconst mg-personal-projects-file (format "%s/%s" denote-directory "20231210T220139--personal-projects__personal_project.org"))
+  (defconst mg-books-file (format "%s/%s" denote-directory "20240102T104309--books__personal_reading.org"))
+  (defconst mg-planning-file (format "%s/%s" denote-directory "20240104T191508--planning__personal_planning.org"))
+  (defconst mg-flashcards-file (format "%s/%s" denote-directory "20240220T165813--flashcards__learning_personal.org"))
+  (defconst mg-reading-list-file (format "%s/%s" denote-directory "20241130T124328--references-reading-list__metanote_research.org"))
+  (defconst mg-references-file (expand-file-name "20241204T192736--references__main_metanote_research.org" denote-directory))
+  (defconst mg-latex-cmds '("latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
+
+>>>>>>> 86e831e26c16300a9c64c0ce2b945871be2e12a7
   ;; Required for string-trim function
   (require 'subr-x)
   (defun mg-extract-heading-name (heading)
@@ -2501,6 +2525,16 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
         (setq title (match-string 1)))
       title))
 
+  (with-eval-after-load 'org
+    (add-to-list 'org-capture-templates
+  	       '("b" "Bibliography"))
+    (add-to-list 'org-capture-templates 
+  	       '("bp" "Bibliography (paper)" entry (file mg-references-file)
+  		 #'mg-bib-denote-org-capture-paper-biblio
+  		 :kill-buffer t
+  		 :jump-to-captured nil)))
+
+  (provide 'mg-bib)
   ;;; mg-bib.el ends here
 #+end_src
 
