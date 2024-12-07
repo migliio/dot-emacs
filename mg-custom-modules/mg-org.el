@@ -28,20 +28,6 @@
 
 ;;; Code:
 
-(defconst mg-work-projects-file (format "%s/%s" denote-directory "20231210T220334--work-and-study-projects__project_work.org"))
-(defconst mg-inbox-file (format "%s/%s" denote-directory "20231211T145832--inbox__gtd_personal.org"))
-(defconst mg-agenda-file (format "%s/%s" denote-directory "20231210T224321--agenda__personal.org"))
-(defconst mg-archive-file (format "%s/%s" denote-directory ".archive/archive.org"))
-(defconst mg-capture-notes-file (format "%s/%s" denote-directory "20231213T172757--capture-notes__gtd_personal.org"))
-(defconst mg-conferences-file (format "%s/%s" denote-directory "20231210T222135--conferences__personal_research.org"))
-(defconst mg-personal-projects-file (format "%s/%s" denote-directory "20231210T220139--personal-projects__personal_project.org"))
-(defconst mg-books-file (format "%s/%s" denote-directory "20240102T104309--books__personal_reading.org"))
-(defconst mg-planning-file (format "%s/%s" denote-directory "20240104T191508--planning__personal_planning.org"))
-(defconst mg-flashcards-file (format "%s/%s" denote-directory "20240220T165813--flashcards__learning_personal.org"))
-(defconst mg-reading-list-file (format "%s/%s" denote-directory "20241130T124328--references-reading-list__metanote_research.org"))
-(defconst mg-references-file (format "%s/%s" denote-directory "20241204T111546--references__main_metanote_research.org"))
-(defconst mg-latex-cmds '("latexmk -pdflatex='lualatex -shell-escape -interaction nonstopmode' -pdf -f  %f"))
-
 ;; Required for string-trim function
 (require 'subr-x)
 (defun mg-extract-heading-name (heading)

@@ -1,5 +1,3 @@
-(require 'mg-org)
-
 (use-package denote
   :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main")
   :bind (("C-c n n" . denote)
@@ -59,7 +57,6 @@
 
 (use-package mg-denote
   :ensure nil
-  :after denote
   :bind
   (("C-c n f f" . mg-denote-find-file)
    ("C-c n z f" . mg-denote-find-zettel)
@@ -77,7 +74,6 @@
   (denote-explore-network-graphviz-filetype "gexf"))
 
 (use-package denote-menu
-  :after (denote)
   :straight t
   :config
   :bind (("C-c n m l" . list-denotes)

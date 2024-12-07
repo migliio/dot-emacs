@@ -1,7 +1,7 @@
 #+LATEX_CLASS: beamer
 #+LATEX_CLASS_OPTIONS: [9pt]
 #+LATEX_HEADER: \usetheme{metropolis}
-#+LATEX_HEADER: \usepackage{fontspec} 
+#+LATEX_HEADER: \usepackage{fontspec}
 #+LATEX_HEADER: \setsansfont{Inter}
 #+LATEX_HEADER: \usepackage[sorting=none]{biblatex}
 #+LATEX_HEADER: \setbeamercolor{background canvas}{bg=white}

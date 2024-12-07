@@ -1,7 +1,5 @@
 (use-package citar
   :straight t
-  :init
-  (defconst mg-bibliography-path "~/Vault/library/org/main/main.bib")
   :custom
   (org-cite-insert-processor 'citar)
   (org-cite-follow-processor 'citar)
@@ -21,7 +19,6 @@
 
 (use-package citar-denote
   :straight t
-  :after (denote)
   :custom
   (citar-open-always-create-notes nil)
   (citar-denote-file-type 'org)
@@ -43,14 +40,15 @@
 	 ("C-c n c f" . citar-denote-find-citation)
 	 ("C-c n c l" . citar-denote-link-reference)))
 
+(use-package embark
+  :straight t)
+
 (use-package citar-embark
-  :after citar embark
-  :no-require
+  :straight t
   :config (citar-embark-mode))
 
 (use-package mg-bib
   :ensure nil
-  :after (org denote)
   :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)))
 
 (provide 'mg-emacs-bib)
