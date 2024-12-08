@@ -47,9 +47,12 @@
   :straight t
   :config (citar-embark-mode))
 
+(use-package biblio
+  :straight t)
+
 (use-package mg-bib
   :ensure nil
-  :after org
+  :after (org)
   :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)))
 
 (provide 'mg-emacs-bib)

@@ -29,8 +29,6 @@
 
 ;;; Code:
 
-(require 'mg-utils)
-
 (defvar mg-screenshots-directory "~/.screenshots"
   "Directory for storing screenshots.
 

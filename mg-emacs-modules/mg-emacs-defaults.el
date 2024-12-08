@@ -81,7 +81,7 @@
   (mg-macos-support-enable))
 
 (use-package mg-emacs
-  :ensure nil
+  :after (mg-utils)
   :bind (("C-c p s" . mg-take-screenshot)
 	 ("C-c u f" . mg-add-current-file-name-to-killring)
 	 ("C-c u s i" . mg-show-machine-info)
