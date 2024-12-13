@@ -1,7 +1,7 @@
 (defun mg-init-macos-theme ()
   "Enable the theme environment of choice for darwin."
   (set-frame-font "Iosevka Comfy Light 18" nil t)
-  (load-theme 'modus-operandi t))
+  (load-theme 'modus-vivendi t))
 
 (defun mg-init-linux-theme ()
   "Enable the theme enviroment of choice for linux."

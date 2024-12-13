@@ -40,19 +40,14 @@
 	 ("C-c n c f" . citar-denote-find-citation)
 	 ("C-c n c l" . citar-denote-link-reference)))
 
-(use-package embark
-  :straight t)
-
-(use-package citar-embark
-  :straight t
-  :config (citar-embark-mode))
-
 (use-package biblio
-  :straight t)
+  :straight t
+  :bind (("C-c p b b" . biblio-lookup)))
 
 (use-package mg-bib
   :ensure nil
   :after (org)
-  :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)))
+  :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)
+	 ("C-c p b c" . mg-bib-count-references)))
 
 (provide 'mg-emacs-bib)

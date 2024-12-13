@@ -59,7 +59,7 @@
   "This constant keeps track of the planning file within my knowledge base.")
 (defconst mg-flashcards-file (format "%s/%s" denote-directory "20240220T165813--flashcards__learning_personal.org")
   "This constant keeps track of the flashcards file within my knowledge base.")
-(defconst mg-reading-list-file (format "%s/%s" denote-directory "20241130T124328--references-reading-list__metanote_research.org")
+(defconst mg-reading-list-file (format "%s/%s" denote-directory "20241130T124328--reading-list__metanote_research.org")
   "This constant keeps track of the reading list file within my knowledge base.")
 (defconst mg-references-file (format "%s/%s" denote-directory "20241204T111546--references__main_metanote_research.org")
   "This constant keeps track of the references file within my knowledge base.")

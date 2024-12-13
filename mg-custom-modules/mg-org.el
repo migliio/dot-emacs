@@ -43,8 +43,6 @@
     (push (substring heading start) parts)  ; Remaining text after last link
     (string-join (reverse parts) "")))
 
-(require 'mg-emacs-org)
-
 (defun mg-org-get-clock-minutes (file start-date end-date)
   "Get minutes from org-clock of a specific file and date."
   (interactive
@@ -106,7 +104,6 @@ file with the time-blocking and then it adds it to the
   	    (insert (format "* %s\n" (string-trim (mg-org--task-prompt))))
   	    (insert (format "SCHEDULED: <%s>\n\n" time))))))))
 
-
 (defvar my-org-export-functions
   '((html-buffer . org-html-export-as-html)
     (latex-buffer . org-latex-export-as-latex)))
@@ -144,15 +141,35 @@ file with the time-blocking and then it adds it to the
       (deactivate-mark)
       (widen))))
 
+(defun mg-org-get-number-headings-in-file (file)
+  "Get the number of org headings for FILE."
+  (let ((count 0)
+	(buffer (find-file-noselect file)))
+    (with-current-buffer buffer
+      (org-map-entries (lambda () (setq count (+ count 1))) nil 'file))
+    count))
+
 (defun mg-org-capture-generate-flash-header ()
   "Generate the header to use in flaschards."
   (let ((link (mg-org--capture-get-last-file-link)))
     (format "%s @ %s" (mg-org--capture-get-last-file-link) (denote-get-identifier))))
 
-(defun mg-org--capture-get-last-file-link ()
-  "In `org-capture' context, get last visited file's name and format as link."
-  (let ((link (format "[[file:%s]]" (plist-get org-capture-plist :original-file))))
-    link))
+(defun mg-org-compile-tex-from-assets ()
+  "Compile a tex file from pkm's assets, clean intermediary files and open the resulting PDF."
+  (interactive)
+  (let* ((default-directory (expand-file-name "assets/" denote-directory))
+	 (file-name (read-file-name "Insert the tex file path: ")))
+    (compile
+     (format "%s && %s && %s && %s"
+	     (format "lualatex %s" file-name)
+	     (format "biber %s" (s-replace-regexp ".tex" "" file-name))
+	     (format "lualatex %s" file-name)
+	     "rm -f *.nav *.log *.bcf *.snm *.aux *.blg *.out *.toc *.bbl *.xml"))))
 
-(provide 'mg-org)
+  (defun mg-org--capture-get-last-file-link ()
+    "In `org-capture' context, get last visited file's name and format as link."
+    (let ((link (format "[[file:%s]]" (plist-get org-capture-plist :original-file))))
+      link))
+
+  (provide 'mg-org)
 ;;; mg-org.el ends here

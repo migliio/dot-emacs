@@ -1,10 +1,14 @@
 (use-package mg-org
+  :after (org)
   :ensure nil
   :bind (("C-c o c d" . mg-org-compute-deep-work-minutes)
-	 ("C-c o b" . mg-org-block-time)))
+	 ("C-c o b" . mg-org-block-time)
+	 ("C-c o m" . mg-org-compile-tex-from-assets)))
 
 (use-package org
   :straight t
+  :init
+  (require 'mg-bib)
   :bind (("C-c a" . org-agenda)
 	 ("C-c C-;" . org-insert-structure-template)
 	 ("C-c c" . org-capture)
@@ -46,7 +50,16 @@
   (org-outline-path-complete-in-steps nil)
   (org-clock-sources '(agenda))
   (org-capture-templates
-   '(("i" "Inbox")
+   '(("b" "Bibliography")
+     ("bp" "Bibliography (paper)" entry (file mg-references-file)
+      #'mg-bib-denote-org-capture-paper-biblio
+      :kill-buffer t
+      :jump-to-captured nil)
+     ("bw" "Bibliography (website)" entry (file mg-references-file)
+      #'mg-bib-denote-org-capture-website-biblio
+      :kill-buffer t
+      :jump-to-captured nil)
+     ("i" "Inbox")
      ("it" "Todo entry" entry (file mg-inbox-file)
 	"* TODO %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
      ("im" "Mail entry" entry (file mg-inbox-file)
@@ -157,6 +170,9 @@
 	org-format-latex-options (plist-put org-format-latex-options :background "Transparent")
 	org-latex-create-formula-image-program 'dvisvgm)
   (require 'ox-latex)
+  ;; discard all intermediary files when exporting to latex
+  (add-to-list 'org-latex-logfiles-extensions "tex")
+  (setq org-latex-remove-logfilest t)
   (add-to-list 'org-latex-classes
 	       '("res"
 		 "\\documentclass[margin]{res}\n
