@@ -17,6 +17,8 @@
 	 ("C-c o d" . org-do-demote)
 	 ("C-c p o r" . org-clock-report)
 	 ("C-c l" . org-store-link))
+  :init
+  (require 'mg-bib)
   :custom
   (org-src-tab-acts-natively t)
   (org-agenda-files (list mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))

@@ -284,169 +284,6 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line to keep 
   (provide 'mg-emacs-defaults)
 #+end_src
 
-** The ~mg-emacs-exwm.el~ module
-:PROPERTIES:
-:ID:       f027d45b-3a55-450b-8d24-98e3a9530809
-:END:
-
-I use EXWM as X window manager on every Linux machine I own. I started using it ~ [2023-10-07 Sat] and never went back since then. The reason that moved me in adopting it is somehow trivial: I know Emacs, I know its keybindings, and I know how to tweak it. Having other tiling window manages, such as i3, bspwn, and the like, forces you to learn new, inconsistent and sometimes complex languages to configure them.
-
-To give you an example, I tried AwesomeWM for a while. I was quite happy with it and I really enjoyed some of its minimalistic features and good flexibility. However, I was quite unhappy with Lua and I felt I was not really mastering the language the way I wanted to. Therefore, switching to an environment and language I knew was indeed a reasonable choice.
-
-EXWM just works. There are no additional requirements needed, just Emacs and a couple of third-party tools for the system tray. Besides that, nothing else. This is exactly what I look for when adopting a new tool.
-
-#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-exwm.el"
-  (when (and (display-graphic-p) (not (eq system-type 'darwin)))
-    (defun mg-exwm-update-class ()
-      (exwm-workspace-rename-buffer exwm-class-name))
-    (use-package exwm
-      :straight t
-      :config
-
-      ;; Custom tools and applications that I use
-      (defconst mg-browser "/usr/bin/firefox")
-      (defconst mg-keyboard-layout-changer "/usr/bin/setxkbmap")
-
-      ;; Custom application started that leverages on `xstarter'
-      (defun mg-starter ()
-        "Choose the application to run from a list generated with
-  `xstarter', which is, then, a prerequisite for this function to
-  work."
-        (interactive)
-        (let* ((candidates (split-string
-  			  (shell-command-to-string "xstarter -P")
-  			  "\n"
-  			  t))
-  	     (application-path (completing-read
-  				"Application to launch: "
-  				candidates)))
-  	(start-process "" nil application-path)))
-
-      (setq exwm-workspace-number 6)
-      (add-hook 'exwm-update-class-hook #'mg-exwm-update-class)
-      (require 'exwm-randr)
-      (exwm-randr-enable)
-      (setq exwm-input-prefix-keys
-  	  '(?\C-x
-  	    ?\C-u
-  	    ?\C-n
-  	    ?\C-t
-  	    ?\C-h
-  	    ?\C-p
-  	    ?\C-g
-  	    ?\M-x
-  	    ?\M-`
-  	    ?\M-&
-  	    ?\M-:
-  	    ?\C-\M-j
-  	    ?\C-\ ))
-      (setq exwm-input-simulation-keys
-  	  '(([?\C-b] . [left])
-  	    ([?\C-f] . [right])
-  	    ([?\C-p] . [up])
-  	    ([?\C-n] . [down])
-  	    ([?\C-a] . [home])
-  	    ([?\C-e] . [end])
-  	    ([?\M-v] . [prior])
-  	    ([?\C-v] . [next])
-  	    ([?\C-d] . [delete])
-  	    ([?\C-k] . [S-end delete])))
-      (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
-      (setq exwm-layout-show-all-buffers t)
-      (setq exwm-workspace-show-all-buffers t)
-      (exwm-input-set-key
-       (kbd "<XF86MonBrightnessUp>")
-       (lambda ()
-         (interactive)
-         (start-process-shell-command
-  	"light" nil "light -A 10")))
-      (exwm-input-set-key
-       (kbd "<XF86MonBrightnessDown>")
-       (lambda ()
-         (interactive)
-         (start-process-shell-command
-  	"light" nil "light -U 10")))
-      (setq exwm-input-global-keys
-  	  `(
-  	    ([?\s-r] . exwm-reset)
-  	    ([?\s-k]
-  	     . delete-window)
-  	    ([s-left] . windmove-left)
-  	    ([s-right] . windmove-right)
-  	    ([s-up] . windmove-up)
-  	    ([s-down] . windmove-down)
-  	    ([?\s-m] . exwm-workspace-move-window)
-  	    ([?\s-\ ] .
-  	     (lambda ()
-  	       (interactive)
-  	       (mg-starter)))
-  	    ([?\s-w] . exwm-workspace-switch)
-  	    ([?\s-`] . (lambda () (interactive) (exwm-workspace-switch-create 0)))
-  	    ([?\s-b] .
-  	     (lambda ()
-  	       (interactive)
-  	       (start-process "" nil mg-browser)))
-  	    ([?\s-i] .
-  	     (lambda ()
-  	       (interactive)
-  	       (start-process "" nil mg-keyboard-layout-changer "it")))
-  	    ([?\s-u] .
-  	     (lambda ()
-  	       (interactive)
-  	       (start-process "" nil mg-keyboard-layout-changer "us")))
-  	    ([?\s-f] .
-  	     (lambda ()
-  	       (interactive)
-  	       (mg-check-and-toggle-deepwork-mode)))))
-      (setq exwm-workspace-index-map 
-  	  (lambda (index) (number-to-string (1+ index))))
-      (add-hook 'exwm-init-hook
-  	      (lambda ()
-  		(progn
-  		  (start-process "dbus-update-activation-environment" nil "dbus-update-activation-environment" "DISPLAY")
-  		  (when (not (equal (system-name) mg-work-laptop-hostname))
-  		    (start-process "x-on-resize" nil "x-on-resize" "-c /home/claudio/Repositories/knock-files/cli-utils/monitor_hotplug.sh"))) t)))
-
-    (use-package desktop-environment
-      :straight t
-      :after (exwm)
-      :config
-      (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>") #'desktop-environment-volume-increment)
-      (exwm-input-set-key (kbd "<XF86AudioLowerVolume>") #'desktop-environment-volume-decrement)
-      (exwm-input-set-key (kbd "<XF86AudioMute>") #'desktop-environment-toggle-mute)
-      (exwm-input-set-key (kbd "s-l") #'desktop-environment-lock-screen)
-      (exwm-input-set-key (kbd "<XF86AudioPlay>") #'desktop-environment-toggle-music)
-      (exwm-input-set-key (kbd "<XF86AudioPause>") #'desktop-environment-toggle-music)
-      (exwm-input-set-key (kbd "<XF86AudioNext>") #'desktop-environment-music-next)
-      (exwm-input-set-key (kbd "s-s") #'desktop-environment-screenshot-part)
-      :custom
-      (desktop-environment-volume-get-command "pamixer --get-volume")
-      (desktop-environment-volume-set-command "pamixer %s")
-      (desktop-environment-volume-toggle-regexp nil)
-      (desktop-environment-volume-get-regexp "\\([0-9]+\\)")
-      (desktop-environment-volume-normal-increment "-i 5 --allow-boost")
-      (desktop-environment-volume-normal-decrement "-d 5")
-      (desktop-environment-volume-toggle-command "pamixer -t")
-      (desktop-environment-screenlock-command "xsecurelock"))
-
-    (use-package time
-      :straight t
-      :after (exwm)
-      :custom
-      (display-time-format "[%d/%b %H:%M]")
-      :config
-      (display-time-mode)
-      (display-battery-mode))
-
-    (use-package mg-exwm
-      :ensure nil
-      :bind (("C-c u w l z" . mg-exwm-trigger-zurich-layout)
-  	   ("C-c u w l d" . mg-exwm-trigger-default-layout)
-  	   ("C-c u w l w" . mg-exwm-trigger-workstation-layout))))
-
-  (provide 'mg-emacs-exwm)
-#+end_src
-
 ** The ~mg-emacs-themes.el~ module
 
 I typically prefer simple and highly legible themes. I continuously change between themes, and the journey to find the one that really fits is still in progress. However, I generally use two different configurations based on the system I'm in (i.e., Linux vs. Mac). I prefer dark themes over light ones, and I use a night shift warmer colors settings across the entire day. I find warm light better for my eyes.
@@ -459,15 +296,14 @@ I typically prefer simple and highly legible themes. I continuously change betwe
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (set-frame-font "Liberation Mono 14" nil t)
-    (use-package standard-themes :straight t :config
-      (load-theme 'standard-dark t)))
+    (set-frame-font "Iosevka Comfy 14" nil t)
+    (load-theme 'modus-vivendi t))
 
   (if (display-graphic-p)
       (progn
         (if (equal system-type 'darwin)
-  	  (mg-init-macos-theme)
-  	(mg-init-linux-theme))
+    	  (mg-init-macos-theme)
+    	(mg-init-linux-theme))
         (set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
@@ -803,6 +639,8 @@ Those questions are all answered by just looking at the agenda, fired up with ju
   	 ("C-c o d" . org-do-demote)
   	 ("C-c p o r" . org-clock-report)
   	 ("C-c l" . org-store-link))
+    :init
+    (require 'mg-bib)
     :custom
     (org-src-tab-acts-natively t)
     (org-agenda-files (list mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))
@@ -1885,87 +1723,6 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   ;;; mg-emacs.el ends here
 #+end_src
 
-** The ~mg-exwm.el~ library
-
-#+begin_src emacs-lisp :tangle "mg-custom-modules/mg-exwm.el"
-  ;;; mg-exwm.el --- Utility functions for EXWM -*- lexical-binding: t -*-
-
-  ;; Copyright (C) 2024  Claudio Migliorelli
-
-  ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
-  ;; URL: https://crawlingaway.com/emacs/dot-emacs
-  ;; Version: 0.0.1
-  ;; Package-Requires: ((emacs "29.4"))
-
-  ;; This file is NOT part of GNU Emacs.
-
-  ;; This program is free software; you can redistribute it and/or modify
-  ;; it under the terms of the GNU General Public License as published by
-  ;; the Free Software Foundation, either version 3 of the License, or
-  ;; (at your option) any later version.
-  ;;
-  ;; This program is distributed in the hope that it will be useful,
-  ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ;; GNU General Public License for more details.
-  ;;
-  ;; You should have received a copy of the GNU General Public License
-  ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-  ;;; Commentary:
-  ;; This library includes some utility functions that I use when EXWM
-  ;; is enabled.
-
-  ;;; Code:
-
-  (defconst mg-exwm--screenlayout-dir "~/.screenlayout"
-    "Directory for screenlayouts to be used with randr.")
-
-  (defconst mg-exwm--zurich-layout-script-name "zurich.sh"
-    "Script to enable the layout for the workstation in Zurich.")
-
-  (defconst mg-exwm--default-layout-script-name "default.sh"
-    "Script to enable the default layout.")
-
-  (defconst mg-exwm--workstation-layout-script-name "workstation_new.sh"
-    "Script to enable the workstation layout.")
-
-  (defconst mg-exwm--xrandr-think-name "eDP1"
-    "Name assigned by xrandr to the screen of \"think\".")
-
-  (defconst mg-exwm--xrandr-vertical-name "HDMI1"
-    "Name of the vertical monitor of my workstation.")
-
-  (defun mg-exwm--change-layout (script)
-    "Change the current xrandr layout by executing SCRIPT."
-    (start-process-shell-command "screenlayout" nil
-  			       (format "%s/%s" mg-exwm--screenlayout-dir script)))
-
-  (defun mg-exwm-trigger-default-layout ()
-    "Trigger the default layout."
-    (interactive)
-    (mg-exwm--change-layout mg-exwm--default-layout-script-name))
-
-  (defun mg-exwm-trigger-zurich-layout ()
-    "Trigger layout for the workstation in Zurich."
-    (interactive)
-    (mg-exwm--change-layout mg-exwm--zurich-layout-script-name)
-    ;; NOTE: The Zurich layout has two screens, therefore move
-    ;; workspaces 2 and 5 to second screen
-    (setq exwm-randr-workspace-monitor-plist `(2 ,mg-exwm--xrandr-think-name 5 ,mg-exwm--xrandr-think-name))
-    (exwm-randr-refresh))
-
-  (defun mg-exwm-trigger-workstation-layout ()
-    "Trigger the workstation layout"
-    (interactive)
-    (mg-exwm--change-layout mg-exwm--workstation-layout-script-name)
-    (setq exwm-randr-workspace-monitor-plist `(2 ,mg-exwm--xrandr-think-name 5 ,mg-exwm--xrandr-vertical-name))
-    (exwm-randr-refresh))
-
-  (provide 'mg-exwm)
-  ;;; mg-exwm.el ends here
-#+end_src
-
 ** The ~mg-defaults-extensions.el~ library
 
 #+begin_src emacs-lisp :tangle "mg-custom-modules/mg-defaults-extensions.el"
@@ -2411,31 +2168,33 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defun mg-bib-denote-org-capture-paper-biblio ()
     "Custom org-capture template to add a paper reference."
     (let* ((old-bibtex (mg-bib--denote-bibtex-prompt))
-      	 (old-key (mg-bib--denote-bibtex-key old-bibtex))
-        	 (key (mg-bib--reformat-bib-key old-bibtex))
-      	 (title (mg-bib--denote-bibtex-title old-bibtex))
-      	 (bibtex (s-replace-regexp old-key key old-bibtex))
-      	 (heading (format "* %s [cite:@%s]\n" title key))
-    	 (new-file-path (mg-bib--denote-pull-resource-for-entry key)))
-      (concat heading (mg-bib--denote-bibtex-org-block bibtex new-file-path))))
+  	 (old-key (mg-bib--denote-bibtex-key old-bibtex))
+  	 (key (mg-bib--reformat-bib-key old-bibtex))
+  	 (title (mg-bib--denote-bibtex-title old-bibtex))
+  	 (bibtex (s-replace-regexp old-key key old-bibtex))
+  	 (heading (format "* %s [cite:@%s]\n" title key))
+  	 (new-file-name (mg-bib--denote-pull-resource-for-entry key)))
+      (concat heading (mg-bib--add-bibtex-file-field
+  		     (mg-bib--denote-bibtex-org-block bibtex) new-file-name))))
+
   (defun mg-bib-denote-org-capture-website-biblio ()
     "Custom `org-capture` template to add a website reference."
     (let* ((url (read-string "URL: "))
-           (title (mg-bib--www-get-page-title url))
-           (authors (read-string "Insert author(s) (name, surname + \"and\"): "))
-           (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
-           (old-bibtex 
-      	  (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
-                    "0000"
-                    authors
-                    title
-                    url
-                    date
-                    (format-time-string "%Y-%m-%d")))
-           (key (mg-bib--reformat-bib-key old-bibtex))
-           (bibtex (s-replace-regexp "0000" key old-bibtex))
-           (heading (format "* %s [cite:@%s]\n" title key))
-      	 (keywords (mg-bib--keywords-prompt)))
+  	 (title (mg-bib--www-get-page-title url))
+  	 (authors (read-string "Insert author(s) (name, surname + \"and\"): "))
+  	 (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
+  	 (old-bibtex
+  	  (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
+  		  "0000"
+  		  authors
+  		  title
+  		  url
+  		  date
+  		  (format-time-string "%Y-%m-%d")))
+  	 (key (mg-bib--reformat-bib-key old-bibtex))
+  	 (bibtex (s-replace-regexp "0000" key old-bibtex))
+  	 (heading (format "* %s [cite:@%s]\n" title key))
+  	 (keywords (mg-bib--keywords-prompt)))
       (concat heading (mg-bib--denote-bibtex-org-block bibtex))))
 
   (defun mg-bib-search-add-to-reading-list ()
@@ -2480,6 +2239,23 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     (when (string-match "\\s *title\\s *=\\s *{\\(\\(?:.\\|\n\\)*?\\)}," bibtex)
       (mg-bib--normalize-bibtex-title (match-string-no-properties 1 bibtex))))
 
+  (defun mg-bib--add-bibtex-file-field (bibtex-entry file-path)
+    "Add a file field with path FILE-PATH to the end of
+   BIBTEX-ENTRY."
+    (mg-bib--add-bibtex-field bibtex-entry
+  			    (concat "file = {%s:../pkm/assets/%s:application/pdf}" file-path)))
+
+  (defun mg-bib--normalize-bibtex-entry (bibtex)
+    "Remove all occurrences of \\n, from the BIBTEX and normalize spacing."
+    (replace-regexp-in-string ",file" "file"
+  			    (replace-regexp-in-string "\n[ \t]*," ",\\&" bibtex)))
+
+  (defun mg-bib--add-bibtex-field (bibtex-entry field)
+    "Add FIELD to the end of BIBTEX-ENTRY."
+    (let* ((entry-without-closing (replace-regexp-in-string "}\s*$" "" bibtex-entry))
+  	 (file-field field))
+      (mg-bib--normalize-bibtex-entry
+       (concat entry-without-closing "," file-field "\n}"))))
   (defun mg-bib--denote-bibtex-key (bibtex)
     "Returns the bibtex key from BIBTEX."
     (when (string-match "@.*{\\(.*\\)," bibtex)
@@ -2545,8 +2321,8 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     "Prompt the user for file path of paper having key KEY, format
      the file name and move it in the `denote-directory'."
     (let* ((file-path (read-file-name "Select a PDF file: "))
-           (file-exists (file-exists-p file-path))
-           (is-pdf (string-match-p "\\.pdf$" file-path)))
+  	 (file-exists (file-exists-p file-path))
+  	 (is-pdf (string-match-p "\\.pdf$" file-path)))
       (cond
        ((not file-exists)
         (user-error "Error: File does not exist."))
@@ -2575,12 +2351,12 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     "Ask the user for a bibtex entry. Returns the sanitised
       version. See `mg-bib--denote-sanitise-bibtex' for details."
     (let* ((def default-bibtex)
-           (format (if (and def (not (string-empty-p def)))
-                       (format "Bibtex [%s]: " def)
-                     "Bibtex: "))
-           (sanitised-bibtex (mg-bib--denote-bibtex-sanitise (read-string format nil nil def))))
+  	 (format (if (and def (not (string-empty-p def)))
+  		     (format "Bibtex [%s]: " def)
+  		   "Bibtex: "))
+  	 (sanitised-bibtex (mg-bib--denote-bibtex-sanitise (read-string format nil nil def))))
       (if sanitised-bibtex
-          sanitised-bibtex
+  	sanitised-bibtex
         (user-error "Invalid BiBTeX entry provided to `mg-bib--denote-bibtex-prompt'"))))
 
   (defun mg-bib--denote-bibtex-sanitise (bibtex)
@@ -2590,7 +2366,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
        bibtex entry, returns nil."
     (when (string-match "@.*{\\(.*\\)," bibtex)
       (let* ((key (match-string-no-properties 1 bibtex))
-             (sanitised-key (replace-regexp-in-string "[^A-Za-z0-9]" "" key)))
+  	   (sanitised-key (replace-regexp-in-string "[^A-Za-z0-9]" "" key)))
         (replace-regexp-in-string key sanitised-key bibtex))))
 
   ;; TODO and to double check (may be buggy)

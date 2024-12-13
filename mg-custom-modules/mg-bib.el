@@ -33,31 +33,33 @@
 (defun mg-bib-denote-org-capture-paper-biblio ()
   "Custom org-capture template to add a paper reference."
   (let* ((old-bibtex (mg-bib--denote-bibtex-prompt))
-    	 (old-key (mg-bib--denote-bibtex-key old-bibtex))
-      	 (key (mg-bib--reformat-bib-key old-bibtex))
-    	 (title (mg-bib--denote-bibtex-title old-bibtex))
-    	 (bibtex (s-replace-regexp old-key key old-bibtex))
-    	 (heading (format "* %s [cite:@%s]\n" title key))
-  	 (new-file-path (mg-bib--denote-pull-resource-for-entry key)))
-    (concat heading (mg-bib--denote-bibtex-org-block bibtex new-file-path))))
+	 (old-key (mg-bib--denote-bibtex-key old-bibtex))
+	 (key (mg-bib--reformat-bib-key old-bibtex))
+	 (title (mg-bib--denote-bibtex-title old-bibtex))
+	 (bibtex (s-replace-regexp old-key key old-bibtex))
+	 (heading (format "* %s [cite:@%s]\n" title key))
+	 (new-file-name (mg-bib--denote-pull-resource-for-entry key)))
+    (concat heading (mg-bib--add-bibtex-file-field
+		     (mg-bib--denote-bibtex-org-block bibtex) new-file-name))))
+
 (defun mg-bib-denote-org-capture-website-biblio ()
   "Custom `org-capture` template to add a website reference."
   (let* ((url (read-string "URL: "))
-         (title (mg-bib--www-get-page-title url))
-         (authors (read-string "Insert author(s) (name, surname + \"and\"): "))
-         (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
-         (old-bibtex 
-    	  (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
-                  "0000"
-                  authors
-                  title
-                  url
-                  date
-                  (format-time-string "%Y-%m-%d")))
-         (key (mg-bib--reformat-bib-key old-bibtex))
-         (bibtex (s-replace-regexp "0000" key old-bibtex))
-         (heading (format "* %s [cite:@%s]\n" title key))
-    	 (keywords (mg-bib--keywords-prompt)))
+	 (title (mg-bib--www-get-page-title url))
+	 (authors (read-string "Insert author(s) (name, surname + \"and\"): "))
+	 (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
+	 (old-bibtex
+	  (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
+		  "0000"
+		  authors
+		  title
+		  url
+		  date
+		  (format-time-string "%Y-%m-%d")))
+	 (key (mg-bib--reformat-bib-key old-bibtex))
+	 (bibtex (s-replace-regexp "0000" key old-bibtex))
+	 (heading (format "* %s [cite:@%s]\n" title key))
+	 (keywords (mg-bib--keywords-prompt)))
     (concat heading (mg-bib--denote-bibtex-org-block bibtex))))
 
 (defun mg-bib-search-add-to-reading-list ()
@@ -102,6 +104,23 @@
   (when (string-match "\\s *title\\s *=\\s *{\\(\\(?:.\\|\n\\)*?\\)}," bibtex)
     (mg-bib--normalize-bibtex-title (match-string-no-properties 1 bibtex))))
 
+(defun mg-bib--add-bibtex-file-field (bibtex-entry file-path)
+  "Add a file field with path FILE-PATH to the end of
+ BIBTEX-ENTRY."
+  (mg-bib--add-bibtex-field bibtex-entry
+			    (concat "file = {%s:../pkm/assets/%s:application/pdf}" file-path)))
+
+(defun mg-bib--normalize-bibtex-entry (bibtex)
+  "Remove all occurrences of \\n, from the BIBTEX and normalize spacing."
+  (replace-regexp-in-string ",file" "file"
+			    (replace-regexp-in-string "\n[ \t]*," ",\\&" bibtex)))
+
+(defun mg-bib--add-bibtex-field (bibtex-entry field)
+  "Add FIELD to the end of BIBTEX-ENTRY."
+  (let* ((entry-without-closing (replace-regexp-in-string "}\s*$" "" bibtex-entry))
+	 (file-field field))
+    (mg-bib--normalize-bibtex-entry
+     (concat entry-without-closing "," file-field "\n}"))))
 (defun mg-bib--denote-bibtex-key (bibtex)
   "Returns the bibtex key from BIBTEX."
   (when (string-match "@.*{\\(.*\\)," bibtex)
@@ -167,8 +186,8 @@
   "Prompt the user for file path of paper having key KEY, format
    the file name and move it in the `denote-directory'."
   (let* ((file-path (read-file-name "Select a PDF file: "))
-         (file-exists (file-exists-p file-path))
-         (is-pdf (string-match-p "\\.pdf$" file-path)))
+	 (file-exists (file-exists-p file-path))
+	 (is-pdf (string-match-p "\\.pdf$" file-path)))
     (cond
      ((not file-exists)
       (user-error "Error: File does not exist."))
@@ -197,12 +216,12 @@
   "Ask the user for a bibtex entry. Returns the sanitised
     version. See `mg-bib--denote-sanitise-bibtex' for details."
   (let* ((def default-bibtex)
-         (format (if (and def (not (string-empty-p def)))
-                     (format "Bibtex [%s]: " def)
-                   "Bibtex: "))
-         (sanitised-bibtex (mg-bib--denote-bibtex-sanitise (read-string format nil nil def))))
+	 (format (if (and def (not (string-empty-p def)))
+		     (format "Bibtex [%s]: " def)
+		   "Bibtex: "))
+	 (sanitised-bibtex (mg-bib--denote-bibtex-sanitise (read-string format nil nil def))))
     (if sanitised-bibtex
-        sanitised-bibtex
+	sanitised-bibtex
       (user-error "Invalid BiBTeX entry provided to `mg-bib--denote-bibtex-prompt'"))))
 
 (defun mg-bib--denote-bibtex-sanitise (bibtex)
@@ -212,7 +231,7 @@
      bibtex entry, returns nil."
   (when (string-match "@.*{\\(.*\\)," bibtex)
     (let* ((key (match-string-no-properties 1 bibtex))
-           (sanitised-key (replace-regexp-in-string "[^A-Za-z0-9]" "" key)))
+	   (sanitised-key (replace-regexp-in-string "[^A-Za-z0-9]" "" key)))
       (replace-regexp-in-string key sanitised-key bibtex))))
 
 ;; TODO and to double check (may be buggy)
