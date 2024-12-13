@@ -40,13 +40,6 @@
 	 ("C-c n c f" . citar-denote-find-citation)
 	 ("C-c n c l" . citar-denote-link-reference)))
 
-(use-package embark
-  :straight t)
-
-(use-package citar-embark
-  :straight t
-  :config (citar-embark-mode))
-
 (use-package biblio
   :straight t)
 

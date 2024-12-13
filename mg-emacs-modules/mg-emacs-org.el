@@ -13,6 +13,8 @@
 	 ("C-c o d" . org-do-demote)
 	 ("C-c p o r" . org-clock-report)
 	 ("C-c l" . org-store-link))
+  :init
+  (require 'mg-bib)
   :custom
   (org-src-tab-acts-natively t)
   (org-agenda-files (list mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))
@@ -46,7 +48,16 @@
   (org-outline-path-complete-in-steps nil)
   (org-clock-sources '(agenda))
   (org-capture-templates
-   '(("i" "Inbox")
+   '(("b" "Bibliography")
+     ("bp" "Bibliography (paper)" entry (file mg-references-file)
+      #'mg-bib-denote-org-capture-paper-biblio
+      :kill-buffer t
+      :jump-to-captured nil)
+     ("bw" "Bibliography (website)" entry (file mg-references-file)
+	       #'mg-bib-denote-org-capture-website-biblio
+	       :kill-buffer t
+	       :jump-to-captured nil)
+     ("i" "Inbox")
      ("it" "Todo entry" entry (file mg-inbox-file)
 	"* TODO %? :inbox:\n:PROPERTIES:\n:CATEGORY: INBOX\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:")
      ("im" "Mail entry" entry (file mg-inbox-file)
