@@ -5,8 +5,9 @@
 
 (defun mg-init-linux-theme ()
   "Enable the theme enviroment of choice for linux."
-  (set-frame-font "Iosevka Comfy 14" nil t)
-  (load-theme 'modus-vivendi t))
+  (set-frame-font "Liberation Mono 14" nil t)
+  (use-package standard-themes :straight t :config
+    (load-theme 'standard-dark t)))
 
 (if (display-graphic-p)
     (progn

@@ -162,7 +162,7 @@ file with the time-blocking and then it adds it to the
     (compile
      (format "%s && %s && %s && %s"
 	     (format "lualatex %s" file-name)
-	     (format "biber %s" (s-replace-regexp ".tex" "" file-name))
+	     (format "biber %s" (replace-regexp-in-string ".tex" "" file-name))
 	     (format "lualatex %s" file-name)
 	     "rm -f *.nav *.log *.bcf *.snm *.aux *.blg *.out *.toc *.bbl *.xml"))))
 

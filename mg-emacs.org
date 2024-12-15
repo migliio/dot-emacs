@@ -19,21 +19,20 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 #+RESULTS:
 #+begin_example
 | ./  |                    |                                |       |
-| ├── | LICENSE.md         |                                |       |
 | ├── | init.el            |                                |       |
+| ├── | LICENSE.md         |                                |       |
 | ├── | mg-custom-modules/ |                                |       |
 | │   | ├──                | mg-bib.el                      |       |
 | │   | ├──                | mg-citar-denote.el             |       |
 | │   | ├──                | mg-defaults-extensions.el      |       |
 | │   | ├──                | mg-denote.el                   |       |
 | │   | ├──                | mg-emacs.el                    |       |
-| │   | ├──                | mg-exwm.el                     |       |
 | │   | ├──                | mg-kernel.el                   |       |
 | │   | ├──                | mg-macos.el                    |       |
 | │   | ├──                | mg-modeline.el                 |       |
 | │   | ├──                | mg-notmuch.el                  |       |
-| │   | ├──                | mg-org-gtd.el                  |       |
 | │   | ├──                | mg-org.el                      |       |
+| │   | ├──                | mg-org-gtd.el                  |       |
 | │   | ├──                | mg-pkm-utils.el                |       |
 | │   | └──                | mg-utils.el                    |       |
 | ├── | mg-emacs-modules/  |                                |       |
@@ -45,7 +44,6 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | ├──                | mg-emacs-coding.el             |       |
 | │   | ├──                | mg-emacs-defaults.el           |       |
 | │   | ├──                | mg-emacs-denote.el             |       |
-| │   | ├──                | mg-emacs-exwm.el               |       |
 | │   | ├──                | mg-emacs-files.el              |       |
 | │   | ├──                | mg-emacs-flashcards.el         |       |
 | │   | ├──                | mg-emacs-git.el                |       |
@@ -59,7 +57,7 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | └──                | mg-emacs-themes.el             |       |
 | └── | mg-emacs.org       |                                |       |
 |     |                    |                                |       |
-| 3   | directories,       | 37                             | files |
+| 3   | directories,       | 35                             | files |
 #+end_example
 
 In general, this configuration is organized using modules, each designed to introduce a set of packages for a specific purpose. The objective is to minimize the number of packages introduced within a single module to ensure a clear separation of concerns. Introducing too many packages at once reduces clarity.
@@ -92,8 +90,6 @@ Just to mention it, I want a single instance of Emacs running in the background.
 
   (require 'mg-emacs-package-managers)
   (require 'mg-emacs-defaults)
-  (when (eq system-type 'gnu/linux)
-    (require 'mg-emacs-exwm))
   (require 'mg-emacs-themes)
   (require 'mg-emacs-layouts)
   (require 'mg-emacs-buffers-completion)
@@ -247,8 +243,6 @@ Historically, this module enclosed a bunch of other customizations for variables
     :after (mg-utils)
     :bind (("C-c p s" . mg-take-screenshot)
   	 ("C-c u f" . mg-add-current-file-name-to-killring)
-  	 ("C-c u s i" . mg-show-machine-info)
-  	 ("C-c u s s" . mg-shutdown-machine-with-confirmation)
   	 ("C-c u t" . mg-insert-today-timestamp-formatted)))
 
   (use-package mg-defaults-extensions
@@ -296,8 +290,9 @@ I typically prefer simple and highly legible themes. I continuously change betwe
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (set-frame-font "Iosevka Comfy 14" nil t)
-    (load-theme 'modus-vivendi t))
+    (set-frame-font "Liberation Mono 14" nil t)
+    (use-package standard-themes :straight t :config
+      (load-theme 'standard-dark t)))
 
   (if (display-graphic-p)
       (progn
@@ -669,7 +664,7 @@ Those questions are all answered by just looking at the agenda, fired up with ju
     (org-stuck-projects '("+project/" ("NEXT" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
     (org-log-done 'time)
     (org-agenda-hide-tags-regexp ".")
-    (org-id-link-to-org-use-id t)
+    (org-id-link-to-org-use-id nil)
     (org-refile-use-outline-path 'file)
     (org-outline-path-complete-in-steps nil)
     (org-clock-sources '(agenda))
@@ -1633,92 +1628,6 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
         (kill-new filename)
         (message "Added file name '%s' to the killring." filename))))
 
-  (defconst mg-get-battery-percentage-cmd "acpi -b | grep -E -o '[0-9][0-9][0-9]?%'"
-    "This is a string representing a shell command to get the current battery percentage.")
-
-  (defconst mg-get-battery-status-cmd "acpi -b | grep -Eo 'Charging|Not charging|Discharging' | head -n 1"
-    "This is a string representing a shell command to get the current battery status.")
-
-  (defconst mg-get-battery-remaining-time-cmd "acpi -b | grep -Eo '[0-9][0-9]:[0-9][0-9]:[0-9][0-9] %?'"
-    "This is a string representing a shell command to get the current battery remaning time.")
-
-  (defconst mg-get-cpu-temp-cmd "sensors | grep 'Package id 0:\\|Tdie' | grep ':[ ]*+[0-9]*.[0-9]*°C' -o | grep '+[0-9]*.[0-9]*°C' -o"
-    "This is a string representing a shell command to get the current CPU temperature.")
-
-  (defconst mg-get-cpu-usage-cmd "mpstat 1 1 | awk '/Average:/ {printf(\"%s\", $(NF-9))}'"
-    "This is a string representing a shell command to get the current CPU usage.")
-
-  (defconst mg-get-total-ram-cmd "free -h | awk '/^Mem:/ {print $2}'"
-    "This is a string representing a shell command to get the current total RAM capacity.")
-
-  (defconst mg-get-used-ram-cmd "free -h | awk '/^Mem:/ {print $3}'"
-    "This is a string representing a shell command to get the current used RAM.")
-
-  (defconst mg-get-disk-usage-cmd "df -h / | awk '/\\//{ printf(\"%4s/%s\", $4, $2) }'"
-    "This is a string representing a shell command to get the current usage of disk.")
-
-  (defconst mg-get-volume-percentage-cmd "amixer get Master | grep -oE '[0-9]{1,3}%' | head -n1"
-    "This is a string representing a shell command to get the current volume level as percentage.")
-
-  (defconst mg-get-keyboard-layout-cmd "setxkbmap -query | grep layout | sed -e 's/layout:\s*//' -e 's/\s*$//'"
-    "This is a string representing a shell command to get the current keyboard layout.")
-
-  (defconst mg-shutdown-system-cmd "/usr/sbin/shutdown now"
-    "This is a string representing a shell command to shutdown the machine.")
-
-  (defun mg--get-formatted-cpu-infos ()
-    "Get all the battery-related information and format them."
-    (format "%s @ %s"
-  	  (string-trim (shell-command-to-string mg-get-cpu-usage-cmd))
-  	  (string-trim (shell-command-to-string mg-get-cpu-temp-cmd))))
-
-  (defun mg--get-formatted-battery-infos ()
-    "Get all the battery-related information and format them."
-    (format "%s (%s) : %s"
-  	  (string-trim (shell-command-to-string mg-get-battery-percentage-cmd))
-  	  (string-trim (shell-command-to-string mg-get-battery-status-cmd))
-  	  (string-trim (shell-command-to-string mg-get-battery-remaining-time-cmd))))
-
-  (defun mg--get-formatted-ram-infos ()
-    "Get all the battery-related information and format them."
-    (format "%s @ %s"
-  	  (string-trim (shell-command-to-string mg-get-cpu-usage-cmd))
-  	  (string-trim (shell-command-to-string mg-get-cpu-temp-cmd))))
-
-  (defun mg--get-formatted-disk-infos ()
-    "Get all the disk-related information and format them."
-    (format "%s"
-  	  (string-trim (shell-command-to-string mg-get-disk-usage-cmd))))
-
-  (defun mg--get-formatted-volume-infos ()
-    "Get all the volume-related information and format them."
-    (format "%s"
-  	  (string-trim (shell-command-to-string mg-get-volume-percentage-cmd))))
-
-  (defun mg--get-formatted-keyboard-infos ()
-    "Get all the keyboard-related information and format them."
-    (format "%s"
-  	  (string-trim (shell-command-to-string mg-get-keyboard-layout-cmd))))
-
-  (defun mg-show-machine-info ()
-    "Show the some system information for the current machine.
-
-    This function basically substitutes a full-fledged system-tray with additional information such as remaning battery time, memory and disk usage, etc. It better works in conjuction with a simple modeline and EXWM, and makes no sense when Emacs runs in a complete DE."
-    (interactive)
-    (let* ((battery-info (mg--get-formatted-battery-infos))
-  	 (cpu-info (mg--get-formatted-cpu-infos))
-  	 (ram-info (mg--get-formatted-ram-infos))
-  	 (disk-info (mg--get-formatted-disk-infos))
-  	 (volume-info (mg--get-formatted-volume-infos))
-  	 (keyboard-layout-info (mg--get-formatted-keyboard-infos)))
-      (message "System-level info => BAT: %s - CPU: %s - MEM: %s - DSK: %s - VOL: %s - KBD: %s"
-  	     battery-info cpu-info ram-info disk-info volume-info keyboard-layout-info)))
-
-  (defun mg-shutdown-machine-with-confirmation ()
-      "Ask for confirmation and shut down the system if confirmed."
-    (when (yes-or-no-p "Are you sure you want to shut down the system? ")
-      (shell-command mg-shutdown-system-cmd)))
-
   (provide 'mg-emacs)
   ;;; mg-emacs.el ends here
 #+end_src
@@ -2114,7 +2023,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
       (compile
        (format "%s && %s && %s && %s"
   	     (format "lualatex %s" file-name)
-  	     (format "biber %s" (s-replace-regexp ".tex" "" file-name))
+  	     (format "biber %s" (replace-regexp-in-string ".tex" "" file-name))
   	     (format "lualatex %s" file-name)
   	     "rm -f *.nav *.log *.bcf *.snm *.aux *.blg *.out *.toc *.bbl *.xml"))))
 
@@ -2167,34 +2076,35 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   (defun mg-bib-denote-org-capture-paper-biblio ()
     "Custom org-capture template to add a paper reference."
-    (let* ((old-bibtex (mg-bib--denote-bibtex-prompt))
-  	 (old-key (mg-bib--denote-bibtex-key old-bibtex))
-  	 (key (mg-bib--reformat-bib-key old-bibtex))
-  	 (title (mg-bib--denote-bibtex-title old-bibtex))
-  	 (bibtex (s-replace-regexp old-key key old-bibtex))
-  	 (heading (format "* %s [cite:@%s]\n" title key))
-  	 (new-file-name (mg-bib--denote-pull-resource-for-entry key)))
-      (concat heading (mg-bib--add-bibtex-file-field
-  		     (mg-bib--denote-bibtex-org-block bibtex) new-file-name))))
+    (let* ((old-bibtex (mg-bib--denote-bibtex-early-sanitize
+      		      (mg-bib--denote-bibtex-prompt)))
+      	 (old-key (mg-bib--denote-bibtex-key old-bibtex))
+      	 (key (mg-bib--reformat-bib-key old-bibtex))
+      	 (title (mg-bib--denote-bibtex-title old-bibtex))
+      	 (bibtex (replace-regexp-in-string old-key key old-bibtex))
+      	 (heading (format "* %s [cite:@%s]\n" title key)))
+      (concat heading
+      	    (mg-bib--denote-bibtex-org-block (mg-bib--add-bibtex-file-field bibtex)
+  					     (mg-bib--denote-pull-resource-for-entry key)))))
 
   (defun mg-bib-denote-org-capture-website-biblio ()
     "Custom `org-capture` template to add a website reference."
     (let* ((url (read-string "URL: "))
-  	 (title (mg-bib--www-get-page-title url))
-  	 (authors (read-string "Insert author(s) (name, surname + \"and\"): "))
-  	 (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
-  	 (old-bibtex
-  	  (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
-  		  "0000"
-  		  authors
-  		  title
-  		  url
-  		  date
-  		  (format-time-string "%Y-%m-%d")))
-  	 (key (mg-bib--reformat-bib-key old-bibtex))
-  	 (bibtex (s-replace-regexp "0000" key old-bibtex))
-  	 (heading (format "* %s [cite:@%s]\n" title key))
-  	 (keywords (mg-bib--keywords-prompt)))
+      	 (title (mg-bib--www-get-page-title url))
+      	 (authors (read-string "Insert author(s) (name, surname + \"and\"): "))
+      	 (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
+      	 (old-bibtex
+      	  (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
+      		  "0000"
+      		  authors
+      		  title
+      		  url
+      		  date
+      		  (format-time-string "%Y-%m-%d")))
+      	 (key (mg-bib--reformat-bib-key old-bibtex))
+      	 (bibtex (replace-regexp-in-string "0000" key old-bibtex))
+      	 (heading (format "* %s [cite:@%s]\n" title key))
+      	 (keywords (mg-bib--keywords-prompt)))
       (concat heading (mg-bib--denote-bibtex-org-block bibtex))))
 
   (defun mg-bib-search-add-to-reading-list ()
@@ -2203,17 +2113,21 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     (let ((key (citar-select-ref)))
       (save-excursion
         (with-current-buffer (find-file-noselect mg-reading-list-file)
-      	(goto-char (point-max))
-      	(beginning-of-line)
-      	(insert (format "* TODO %s [cite:@%s]\n"
-      			(citar-get-value "title" key)
-      			key))))))
+          (goto-char (point-max))
+          (beginning-of-line)
+          (insert (format "* TODO %s [cite:@%s]\n"
+          		(citar-get-value "title" key)
+          		key))))))
+
+  (defun mg-bib--denote-bibtex-early-sanitize (bibtex)
+    "Perform early sanitization on BIBTEX."
+    (replace-regexp-in-string "\nand " " and " (replace-regexp-in-string "[ \t]+=" " =" (replace-regexp-in-string "\n[ \t]+" "\n" bibtex))))
 
   (defun mg-bib-count-references ()
     "Return the number of references in `mg-references-file'."
     (interactive)
     (let ((count 
-  	 (mg-org-get-number-headings-in-file mg-references-file)))
+      	 (mg-org-get-number-headings-in-file mg-references-file)))
       (message "The bibliography org file contains %s entries" count)))
 
   ;; TODO
@@ -2221,9 +2135,9 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     "Prompt the user for a series of keywords."
     (while-let
         ((keywords (completing-read "Insert keywords: "
-    				  (find-file-noselect mg-bibliography-path
-    						      (org-map-entries (lambda (entry)
-    									 (org-get-tags)))))))))
+        				  (find-file-noselect mg-bibliography-path
+        						      (org-map-entries (lambda (entry)
+        									 (org-get-tags)))))))))
 
   (defun mg-bib--normalize-bibtex-title (title)
     "Normalize a BibTeX title by removing line breaks and extra whitespaces."
@@ -2241,65 +2155,56 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   (defun mg-bib--add-bibtex-file-field (bibtex-entry file-path)
     "Add a file field with path FILE-PATH to the end of
-   BIBTEX-ENTRY."
+       BIBTEX-ENTRY."
     (mg-bib--add-bibtex-field bibtex-entry
-  			    (concat "file = {%s:../pkm/assets/%s:application/pdf}" file-path)))
+      			    (format "file = {%s:../pkm/assets/%s:application/pdf}" file-path file-path)))
 
   (defun mg-bib--normalize-bibtex-entry (bibtex)
-    "Remove all occurrences of \\n, from the BIBTEX and normalize spacing."
-    (replace-regexp-in-string ",file" "file"
-  			    (replace-regexp-in-string "\n[ \t]*," ",\\&" bibtex)))
+    "Normalize BIBTEX entry by downcasing the type, removing
+   newlines, and fixing spacing."
+    (replace-regexp-in-string "\n[ \t]*," "," (replace-regexp-in-string "\n+" " " (replace-regexp-in-string ",file" "file" bibtex))))
 
   (defun mg-bib--add-bibtex-field (bibtex-entry field)
     "Add FIELD to the end of BIBTEX-ENTRY."
     (let* ((entry-without-closing (replace-regexp-in-string "}\s*$" "" bibtex-entry))
-  	 (file-field field))
+      	 (file-field field))
       (mg-bib--normalize-bibtex-entry
        (concat entry-without-closing "," file-field "\n}"))))
+
   (defun mg-bib--denote-bibtex-key (bibtex)
     "Returns the bibtex key from BIBTEX."
     (when (string-match "@.*{\\(.*\\)," bibtex)
       (match-string-no-properties 1 bibtex)))
 
   (defun mg-bib--denote-bibtex-year (bibtex)
-    "Returns the year from BIBTEX."
-    (cond
-     ((string-match "\\s *year\\s *=\\s *{\\(.*\\)}," bibtex) (match-string-no-properties 1 bibtex))
-     ((string-match "\\s *date\\s *=\\s *{\\(.*\\)}," bibtex) (substring (match-string-no-properties 1 bibtex) 0 4))
-     (t (user-error "Can't find a year or date field in the bibtex entry"))))
-
-  (defun mg-bib--denote-bibtex-year (bibtex)
     "Returns the year from BIBTEX, handling various possible formats."
     (let ((year-match-1 (string-match "\\s *year\\s *=\\s *\\([0-9]+\\)" bibtex))
           (date-match-1 (string-match "\\s *date\\s *=\\s *{?\\([0-9]+\\)" bibtex)))
       (cond
-       ;; first, try to match year directly as a number
        (year-match-1 (match-string-no-properties 1 bibtex))
-       ;; then, try to match date and extract first 4 digits
        (date-match-1 (match-string-no-properties 1 bibtex))
-       ;; fallback to more complex regex for year in {} or ""
        ((string-match "\\s *year\\s *=\\s *[\"'{]\\([0-9]+\\)" bibtex)
         (match-string-no-properties 1 bibtex))
-       ;; final fallback
        (t (user-error "Can't find a year or date field in the bibtex entry")))))
 
   (defun mg-bib--denote-bibtex-author (bibtex)
-    "Returns the author field from BIBTEX.
-    Most of the BibTeX objects have the author field organized as
-    \"<name> <surname> and ...\". Therefore, first <surname> is
-    isolated afterwards to create the entry ID."
-    (when (string-match "\\s *author\\s *=\\s *{\\(.*\\)}," bibtex)
-      (match-string-no-properties 1 bibtex)))
+    "Extracts the author field from a BibTeX entry, handling multiline formatting and different delimiters."
+    (when (string-match "author\\s *=\\s *[{\"]\\([^}\"]*\\)[}\"]" bibtex)
+      (let ((authors (match-string-no-properties 1 bibtex)))
+        (when (string-match "\\\"{\\([^}]+\\)}" authors)
+  	(let ((char (match-string 1)))
+      (replace-match char))))
+        (replace-regexp-in-string "\\s-+" " " authors)))
 
   (defun mg-bib--denote-bibtex-get-author-surname (authors)
     "Get the first author's surname starting from the string of
-     authors AUTHORS."
+         authors AUTHORS."
     ;; NOTE: When the authors string has a ",", it means that the format
     ;; is <surname>,<name>. Therefore, we must take it into account."
     (let ((surname 
-  	 (if (string-match-p "\\," authors)
-  	     (nth 0 (string-split authors))
-  	   (nth 1 (string-split authors)))))
+      	 (if (string-match-p "\\," authors)
+      	     (nth 0 (string-split authors))
+      	   (nth 1 (string-split authors)))))
       (mg-bib--denote-reformat-entry surname)))
 
   (defun mg-bib--denote-reformat-entry (entry)
@@ -2312,85 +2217,95 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defun mg-bib--reformat-bib-key (bibtex)
     "Reformat the bibtex key for entry BIBTEX."
     (let* ((title (mg-bib--denote-reformat-entry (mg-bib--denote-bibtex-title bibtex)))
-      	 (author (mg-bib--denote-bibtex-get-author-surname (mg-bib--denote-bibtex-author bibtex)))
-      	 (year (mg-bib--denote-bibtex-year bibtex))
-      	 (new-key (format "%s_%s_%s" author title year)))
+           (author (mg-bib--denote-bibtex-get-author-surname (mg-bib--denote-bibtex-author bibtex)))
+           (year (mg-bib--denote-bibtex-year bibtex))
+           (new-key (format "%s_%s_%s" author title year)))
       new-key))
+
+  (defun mg-bib--denote-identifier-from-attrs (file)
+    "Get the creation date of FILE from its attributes.
+    Returns the creation date timestamp, otherwise nil."
+    (let ((file-attrs (file-attributes file)))
+      (if file-attrs
+          (let ((creation-time (nth 6 file-attrs)))
+            (if creation-time
+                (format-time-string denote-id-format creation-time)
+    	    nil)))))
 
   (defun mg-bib--denote-pull-resource-for-entry (key)
     "Prompt the user for file path of paper having key KEY, format
-     the file name and move it in the `denote-directory'."
+         the file name and move it in the `denote-directory'."
     (let* ((file-path (read-file-name "Select a PDF file: "))
-  	 (file-exists (file-exists-p file-path))
-  	 (is-pdf (string-match-p "\\.pdf$" file-path)))
+      	 (file-exists (file-exists-p file-path))
+      	 (is-pdf (string-match-p "\\.pdf$" file-path)))
       (cond
        ((not file-exists)
         (user-error "Error: File does not exist."))
        ((not is-pdf)
         (user-error "Error: Selected file is not a PDF.")))
       (let* ((keywords (denote-keywords-prompt))
-    	   (identifier (denote-create-unique-file-identifier file-path)) 
-    	   (new-file-name (format "%s--%s__%s" identifier key
-    				  (mapconcat #'identity 
-    					     (delete-dups (copy-sequence keywords))
-    					     "_")))
-    	   (new-file-path (format "%s/assets/%s.pdf" (denote-directory) new-file-name)))
+        	   (identifier (mg-bib--denote-identifier-from-attrs file-path))
+        	   (new-file-name (format "%s--%s__%s" identifier key
+        				  (mapconcat #'identity 
+        					     (delete-dups (copy-sequence keywords))
+        					     "_")))
+        	   (new-file-path (format "%s/assets/%s.pdf" (denote-directory) new-file-name)))
         (rename-file file-path new-file-path)
         new-file-path)))
 
   (defun mg-bib--denote-bibtex-org-block (bibtex &optional file)
     "Returns a string representing an org `bibtex' source block
-      encompassing BIBTEX, a string of a bibtex entry."
+          encompassing BIBTEX, a string of a bibtex entry."
     (let* ((src
-      	  (format "#+begin_src bibtex :tangle \"%s\"\n%s\n#+end_src" mg-bibliography-path bibtex))
-      	 (entries
-      	  ":PROPERTIES:\n:FILE:\n:NOTES:\n:END:\n"))
+            (format "#+begin_src bibtex :tangle \"%s\"\n%s\n#+end_src" mg-bibliography-path bibtex))
+           (entries (format
+          	   ":PROPERTIES:\n:FILE: [[%s]]\n:NOTES:\n:END:\n" file)))
       (format "%s\n%s\n" entries src)))
 
   (defun mg-bib--denote-bibtex-prompt (&optional default-bibtex)
     "Ask the user for a bibtex entry. Returns the sanitised
-      version. See `mg-bib--denote-sanitise-bibtex' for details."
+          version. See `mg-bib--denote-sanitise-bibtex' for details."
     (let* ((def default-bibtex)
-  	 (format (if (and def (not (string-empty-p def)))
-  		     (format "Bibtex [%s]: " def)
-  		   "Bibtex: "))
-  	 (sanitised-bibtex (mg-bib--denote-bibtex-sanitise (read-string format nil nil def))))
+      	 (format (if (and def (not (string-empty-p def)))
+      		     (format "Bibtex [%s]: " def)
+      		   "Bibtex: "))
+      	 (sanitised-bibtex (mg-bib--denote-bibtex-sanitise (read-string format nil nil def))))
       (if sanitised-bibtex
-  	sanitised-bibtex
+      	sanitised-bibtex
         (user-error "Invalid BiBTeX entry provided to `mg-bib--denote-bibtex-prompt'"))))
 
   (defun mg-bib--denote-bibtex-sanitise (bibtex)
     "Returns a santised version of BIBTEX. Sanitisation entails remove
-      all non alpha-numeric characters from the bibtex key, and
-       returning this updated bibtex entry. If BIBTEX is not a valid
-       bibtex entry, returns nil."
+          all non alpha-numeric characters from the bibtex key, and
+           returning this updated bibtex entry. If BIBTEX is not a valid
+           bibtex entry, returns nil."
     (when (string-match "@.*{\\(.*\\)," bibtex)
       (let* ((key (match-string-no-properties 1 bibtex))
-  	   (sanitised-key (replace-regexp-in-string "[^A-Za-z0-9]" "" key)))
+      	   (sanitised-key (replace-regexp-in-string "[^A-Za-z0-9]" "" key)))
         (replace-regexp-in-string key sanitised-key bibtex))))
 
   ;; TODO and to double check (may be buggy)
   (defun mg-bib--retrieve-keywords-from-bib-file (&optional file)
     "Retrieve keywords from my bibliography file, or, if specified, from FILE."
     (let* ((entries 
-    	  (org-map-entries (lambda ()
-    			     (when-let
-    				 ((keywords (org-get-tags)))
-    			       (list
-    				:keywords keywords
-    				:title (nth 4 (org-heading-components))
-    				:line (line-number-at-pos))))))
-    	 (user-choice
-    	  (completing-read "Choose a keyword you want to filter: "
-    			   (delete-dups (flatten-list
-    					 (mapcar (lambda (entry)
-    						   (string-split
-    						    (string-trim (plist-get entry :keywords)) ", "))
-    						 entries)))))
-    	 (filtered-entries
-    	  (seq-filter (lambda (entry)
-    			(string-match-p user-choice (plist-get entry :keywords)))
-    		      entries)))
+        	  (org-map-entries (lambda ()
+        			     (when-let
+        				 ((keywords (org-get-tags)))
+        			       (list
+        				:keywords keywords
+        				:title (nth 4 (org-heading-components))
+        				:line (line-number-at-pos))))))
+        	 (user-choice
+        	  (completing-read "Choose a keyword you want to filter: "
+        			   (delete-dups (flatten-list
+        					 (mapcar (lambda (entry)
+        						   (string-split
+        						    (string-trim (plist-get entry :keywords)) ", "))
+        						 entries)))))
+        	 (filtered-entries
+        	  (seq-filter (lambda (entry)
+        			(string-match-p user-choice (plist-get entry :keywords)))
+        		      entries)))
       ))
 
   (defun mg-bib--www-get-page-title (url)

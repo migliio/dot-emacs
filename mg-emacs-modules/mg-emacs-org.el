@@ -47,7 +47,7 @@
   (org-stuck-projects '("+project/" ("NEXT" "TODO") ("course") "\\(Details\\|Artifacts\\|Resources\\)\\>"))
   (org-log-done 'time)
   (org-agenda-hide-tags-regexp ".")
-  (org-id-link-to-org-use-id t)
+  (org-id-link-to-org-use-id nil)
   (org-refile-use-outline-path 'file)
   (org-outline-path-complete-in-steps nil)
   (org-clock-sources '(agenda))

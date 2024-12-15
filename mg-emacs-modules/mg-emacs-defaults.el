@@ -84,8 +84,6 @@
   :after (mg-utils)
   :bind (("C-c p s" . mg-take-screenshot)
 	 ("C-c u f" . mg-add-current-file-name-to-killring)
-	 ("C-c u s i" . mg-show-machine-info)
-	 ("C-c u s s" . mg-shutdown-machine-with-confirmation)
 	 ("C-c u t" . mg-insert-today-timestamp-formatted)))
 
 (use-package mg-defaults-extensions
