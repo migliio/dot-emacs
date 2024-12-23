@@ -43,17 +43,15 @@
   (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
   (denote-templates
    '((plain . "")
-     (course . "#+include: \"/home/claudio/Repositories/knock-files/org-headers/header_notes_document_small.org\"\n* Course details\n- Lecturer ::\n- University ::\n- Academic year ::\n- Resources ::\n- Description ::\n* Lecture notes\n* COMMENT Flashcards\n")
+     (course . "#+include: \"~/.emacs.d/headers/header_notes_document_small.org\"\n* Course details\n- Lecturer ::\n- University ::\n- Academic year ::\n- Resources ::\n- Description ::\n* Lecture notes\n")
      (zettel . "#+references: \n\n\n-----\n")
      (place . "* Details\n- Link ::\n- Visited ::\n- Description ::\n* Notes\n")
      (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- Additional information ::\n* Notes")))
   (denote-date-prompt-use-org-read-date t)
   :config
-  (denote-rename-buffer-mode 1)
+  (denote-rename-buffer-mode 0)
   ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
-  (require 'denote-org-extras)
-  ;; (custom-set-variables '(org-link-parameters (quote (("store" . denote-link-ol-store)))))
-  )
+  (require 'denote-org-extras))
 
 (use-package mg-denote
   :ensure nil
