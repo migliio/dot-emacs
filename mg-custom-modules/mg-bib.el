@@ -39,7 +39,8 @@
 	((key (mg-bib--bibtex-generate-key bibtex-input))
 	 (bibtex-list (mg-bib--bibtex-refactor-entry-header bibtex-input key))
     	 (title (mg-bib--bibtex-get-field-content bibtex-list "title"))
-    	 (heading (format "* %s\n" title key))
+    	 (heading (format "* %s %s\n" title 
+			  (mg-bib--denote-format-tags-as-org (mg-bib--denote-cycle-through-tags))))
 	 (file-path (mg-bib--denote-pull-resource-for-entry key)))
       (concat heading
     	      (mg-bib--denote-bibtex-org-block
@@ -184,6 +185,16 @@ Each entry is a bibtex field with a value."
                  entry)
               entry))
           bibtex-list))
+
+(defun mg-bib--denote-cycle-through-tags ()
+  "Cycle through tags in the references file prompting the user for an input."
+  (let* ((tags (mg-org-get-tags-from-file mg-references-file))
+	(selected-tags (completing-read-multiple "Select tags: " tags)))
+    (sort selected-tags #'string<)))
+
+(defun mg-bib--denote-format-tags-as-org (tags-list)
+  "Format TAGS-LIST as a series of org tags."
+  (concat ":" (mapconcat #'identity tags-list ":") ":"))
 
 (provide 'mg-bib)
 ;;; mg-bib.el ends here
