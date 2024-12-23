@@ -271,7 +271,6 @@ Next, I enable ~which-key~ to remind me what keybinds to use to perform some act
 Starting from [2024-04-14 Sun], I decided to implement my own mode-line to keep things simple and under control. I thought there was so much wasted space in the default one, and most of the information were not completely clear. Now, I can immediately see whether I'm editing a local or remote file (i.e., by looking at either ~"@"~ or ~"^"~ characters on the left-hand side of the modeline), which derived mode I'm in, and whether the current buffer is in read-only mode. Those are all information already specified by the default modeline, but their arrangement and syntax was unclear to me. The below snippet flows into the ~mg-custom-modeline.el~ module.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-defaults.el"
-
   (use-package mg-modeline
     :ensure nil)
 
@@ -285,14 +284,15 @@ I typically prefer simple and highly legible themes. I continuously change betwe
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (defun mg-init-macos-theme ()
     "Enable the theme environment of choice for darwin."
-    (set-frame-font "Iosevka Comfy Light 18" nil t)
-    (load-theme 'modus-vivendi t))
+    (set-frame-font "JetBrains Mono 18" nil t)
+    (use-package zenburn-theme :straight t :config
+      (load-theme 'zenburn t)))
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (set-frame-font "Liberation Mono 14" nil t)
-    (use-package standard-themes :straight t :config
-      (load-theme 'standard-dark t)))
+    (set-frame-font "JetBrains Mono 14" nil t)
+    (use-package zenburn-theme :straight t :config
+      (load-theme 'zenburn t)))
 
   (if (display-graphic-p)
       (progn
@@ -2048,7 +2048,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
   ;; URL: https://crawlingaway.org/emacs/dot-emacs
-  ;; Version: 0.0.1
+  ;; Version: 0.0.5
   ;; Package-Requires: ((emacs "29.1"))
 
   ;; This file is NOT part of GNU Emacs.
@@ -2073,249 +2073,161 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   ;;; Code:
 
   (require 'mg-org)
+  (require 'mg-denote)
 
   (defun mg-bib-denote-org-capture-paper-biblio ()
     "Custom org-capture template to add a paper reference."
-    (let* ((old-bibtex (mg-bib--denote-bibtex-early-sanitize
-      		      (mg-bib--denote-bibtex-prompt)))
-      	 (old-key (mg-bib--denote-bibtex-key old-bibtex))
-      	 (key (mg-bib--reformat-bib-key old-bibtex))
-      	 (title (mg-bib--denote-bibtex-title old-bibtex))
-      	 (bibtex (replace-regexp-in-string old-key key old-bibtex))
-      	 (heading (format "* %s [cite:@%s]\n" title key)))
-      (concat heading
-      	    (mg-bib--denote-bibtex-org-block (mg-bib--add-bibtex-file-field bibtex)
-  					     (mg-bib--denote-pull-resource-for-entry key)))))
+    (let ((bibtex-input (mg-bib--bibtex-parse-entry
+  		       (mg-bib--denote-bibtex-prompt))))
+      (when-let*
+  	((key (mg-bib--bibtex-generate-key bibtex-input))
+  	 (bibtex-list (mg-bib--bibtex-refactor-entry-header bibtex-input key))
+      	 (title (mg-bib--bibtex-get-field-content bibtex-list "title"))
+      	 (heading (format "* %s\n" title key))
+  	 (file-path (mg-bib--denote-pull-resource-for-entry key)))
+        (concat heading
+      	      (mg-bib--denote-bibtex-org-block
+  	       (mg-bib--bibtex-list-to-string
+  		(mg-bib--bibtex-append-field bibtex-list "file" (mg-bib--bibtex-format-file-for-field file-path)))
+  	       file-path)))))
 
-  (defun mg-bib-denote-org-capture-website-biblio ()
-    "Custom `org-capture` template to add a website reference."
-    (let* ((url (read-string "URL: "))
-      	 (title (mg-bib--www-get-page-title url))
-      	 (authors (read-string "Insert author(s) (name, surname + \"and\"): "))
-      	 (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
-      	 (old-bibtex
-      	  (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
-      		  "0000"
-      		  authors
-      		  title
-      		  url
-      		  date
-      		  (format-time-string "%Y-%m-%d")))
-      	 (key (mg-bib--reformat-bib-key old-bibtex))
-      	 (bibtex (replace-regexp-in-string "0000" key old-bibtex))
-      	 (heading (format "* %s [cite:@%s]\n" title key))
-      	 (keywords (mg-bib--keywords-prompt)))
-      (concat heading (mg-bib--denote-bibtex-org-block bibtex))))
+  (defun mg-bib--bibtex-format-file-for-field (file-path)
+    "Format FILE-PATH to be inserted as file field in the bibtex entry."
+    (let ((file-name (car (last (split-string file-path "/")))))
+      (format "%s:../pkm/assets/%s:application/pdf" file-name file-name)))
 
-  (defun mg-bib-search-add-to-reading-list ()
-    "Search for a bibliography entry in the minibuffer, and add it to `mg-reading-list-file'."
-    (interactive)
-    (let ((key (citar-select-ref)))
-      (save-excursion
-        (with-current-buffer (find-file-noselect mg-reading-list-file)
-          (goto-char (point-max))
-          (beginning-of-line)
-          (insert (format "* TODO %s [cite:@%s]\n"
-          		(citar-get-value "title" key)
-          		key))))))
+  (defun mg-bib--bibtex-generate-key (bibtex-list)
+    "Generate a bibtex key for BIBTEX-LIST.
+  The key format is author-title-year."
+    (let ((author (mg-bib--bibtex-get-author-for-key bibtex-list))
+  	(title (mg-bib--bibtex-get-title-for-key bibtex-list))
+  	(year (mg-bib--bibtex-get-year-for-key bibtex-list)))
+      (format "%s_%s_%s" author title year)))
 
-  (defun mg-bib--denote-bibtex-early-sanitize (bibtex)
-    "Perform early sanitization on BIBTEX."
-    (replace-regexp-in-string "\nand " " and " (replace-regexp-in-string "[ \t]+=" " =" (replace-regexp-in-string "\n[ \t]+" "\n" bibtex))))
+  (defun mg-bib--bibtex-get-author-for-key (bibtex-list)
+    "Get the author from BIBTEX-LIST, formatted and ready to be used
+  in the bibtex key."
+    (let ((first-author (string-trim 
+  		       (car (string-split
+  			     (downcase (mg-bib--bibtex-get-field-content bibtex-list "author")) "and")))))
+      (if (string-match "," first-author)
+  	(mg-bib--bibtex-sanitize-author-surname-for-key
+  	 (car (string-split first-author ",")))
+        (mg-bib--bibtex-sanitize-author-surname-for-key
+         (car (cdr (string-split first-author " ")))))))
 
-  (defun mg-bib-count-references ()
-    "Return the number of references in `mg-references-file'."
-    (interactive)
-    (let ((count 
-      	 (mg-org-get-number-headings-in-file mg-references-file)))
-      (message "The bibliography org file contains %s entries" count)))
+  (defun mg-bib--bibtex-sanitize-author-surname-for-key (surname)
+    "Perform a sanitization over the author's surname to generate
+   the bibtex key."
+    ;; This is required because sometimes we have "John Jr., Doe". Then,
+    ;; producing "john jr." as surname for the key to be generated is
+    ;; WRONG."
+    (let ((sanitized-surname (car (split-string surname " "))))
+      sanitized-surname))
 
-  ;; TODO
-  (defun mg-bib--keywords-prompt ()
-    "Prompt the user for a series of keywords."
-    (while-let
-        ((keywords (completing-read "Insert keywords: "
-        				  (find-file-noselect mg-bibliography-path
-        						      (org-map-entries (lambda (entry)
-        									 (org-get-tags)))))))))
-
-  (defun mg-bib--normalize-bibtex-title (title)
-    "Normalize a BibTeX title by removing line breaks and extra whitespaces."
-    (when title
-      (replace-regexp-in-string 
-       "\\s-+" " "  ; Replace multiple whitespace characters with a single space
-       (replace-regexp-in-string 
-        "\n" " "   ; Replace newlines with spaces
-        (string-trim title)))))
-
-  (defun mg-bib--denote-bibtex-title (bibtex)
-    "Returns the bibtex title from BIBTEX."
-    (when (string-match "\\s *title\\s *=\\s *{\\(\\(?:.\\|\n\\)*?\\)}," bibtex)
-      (mg-bib--normalize-bibtex-title (match-string-no-properties 1 bibtex))))
-
-  (defun mg-bib--add-bibtex-file-field (bibtex-entry file-path)
-    "Add a file field with path FILE-PATH to the end of
-       BIBTEX-ENTRY."
-    (mg-bib--add-bibtex-field bibtex-entry
-      			    (format "file = {%s:../pkm/assets/%s:application/pdf}" file-path file-path)))
-
-  (defun mg-bib--normalize-bibtex-entry (bibtex)
-    "Normalize BIBTEX entry by downcasing the type, removing
-   newlines, and fixing spacing."
-    (replace-regexp-in-string "\n[ \t]*," "," (replace-regexp-in-string "\n+" " " (replace-regexp-in-string ",file" "file" bibtex))))
-
-  (defun mg-bib--add-bibtex-field (bibtex-entry field)
-    "Add FIELD to the end of BIBTEX-ENTRY."
-    (let* ((entry-without-closing (replace-regexp-in-string "}\s*$" "" bibtex-entry))
-      	 (file-field field))
-      (mg-bib--normalize-bibtex-entry
-       (concat entry-without-closing "," file-field "\n}"))))
-
-  (defun mg-bib--denote-bibtex-key (bibtex)
-    "Returns the bibtex key from BIBTEX."
-    (when (string-match "@.*{\\(.*\\)," bibtex)
-      (match-string-no-properties 1 bibtex)))
-
-  (defun mg-bib--denote-bibtex-year (bibtex)
-    "Returns the year from BIBTEX, handling various possible formats."
-    (let ((year-match-1 (string-match "\\s *year\\s *=\\s *\\([0-9]+\\)" bibtex))
-          (date-match-1 (string-match "\\s *date\\s *=\\s *{?\\([0-9]+\\)" bibtex)))
+  (defun mg-bib--bibtex-get-year-for-key (bibtex-list)
+    "Get the author from BIBTEX-LIST, formatted and ready to be used
+  in the bibtex key."
+    (let ((year (mg-bib--bibtex-get-field-content bibtex-list "year"))
+  	(date (mg-bib--bibtex-get-field-content bibtex-list "date")))
       (cond
-       (year-match-1 (match-string-no-properties 1 bibtex))
-       (date-match-1 (match-string-no-properties 1 bibtex))
-       ((string-match "\\s *year\\s *=\\s *[\"'{]\\([0-9]+\\)" bibtex)
-        (match-string-no-properties 1 bibtex))
-       (t (user-error "Can't find a year or date field in the bibtex entry")))))
+       (year year)
+       (date (substring date 0 4))
+       (t (user-error "Can't retrieve a suitable field for date")))))
 
-  (defun mg-bib--denote-bibtex-author (bibtex)
-    "Extracts the author field from a BibTeX entry, handling multiline formatting and different delimiters."
-    (when (string-match "author\\s *=\\s *[{\"]\\([^}\"]*\\)[}\"]" bibtex)
-      (let ((authors (match-string-no-properties 1 bibtex)))
-        (when (string-match "\\\"{\\([^}]+\\)}" authors)
-  	(let ((char (match-string 1)))
-      (replace-match char))))
-        (replace-regexp-in-string "\\s-+" " " authors)))
+  (defun mg-bib--bibtex-get-type (bibtex-list)
+    "Get the entry type for BIBTEX-LIST."
+    (let ((field (car bibtex-list)))
+      (when (string-match "^@\\(\\w+\\){\\([^,]+\\)" field)
+        (let ((type (downcase (match-string 1 field))))
+  	type))))
 
-  (defun mg-bib--denote-bibtex-get-author-surname (authors)
-    "Get the first author's surname starting from the string of
-         authors AUTHORS."
-    ;; NOTE: When the authors string has a ",", it means that the format
-    ;; is <surname>,<name>. Therefore, we must take it into account."
-    (let ((surname 
-      	 (if (string-match-p "\\," authors)
-      	     (nth 0 (string-split authors))
-      	   (nth 1 (string-split authors)))))
-      (mg-bib--denote-reformat-entry surname)))
+  (defun mg-bib--bibtex-refactor-entry-header (bibtex-list key)
+    "Refactor BIBTEX-LIST's header to be downcase and with custom
+   KEY."
+    (let ((type (mg-bib--bibtex-get-type bibtex-list)))
+      (push (format "@%s{%s" type key) (cdr bibtex-list))))
 
-  (defun mg-bib--denote-reformat-entry (entry)
-    "Reformat BibTeX entry ENTRY to later generate a key from it."
-    (let ((case-fold-search t))
-      (replace-regexp-in-string
-       "[^a-z0-9]" ""
-       (downcase (car (string-split entry))))))
-
-  (defun mg-bib--reformat-bib-key (bibtex)
-    "Reformat the bibtex key for entry BIBTEX."
-    (let* ((title (mg-bib--denote-reformat-entry (mg-bib--denote-bibtex-title bibtex)))
-           (author (mg-bib--denote-bibtex-get-author-surname (mg-bib--denote-bibtex-author bibtex)))
-           (year (mg-bib--denote-bibtex-year bibtex))
-           (new-key (format "%s_%s_%s" author title year)))
-      new-key))
-
-  (defun mg-bib--denote-identifier-from-attrs (file)
-    "Get the creation date of FILE from its attributes.
-    Returns the creation date timestamp, otherwise nil."
-    (let ((file-attrs (file-attributes file)))
-      (if file-attrs
-          (let ((creation-time (nth 6 file-attrs)))
-            (if creation-time
-                (format-time-string denote-id-format creation-time)
-    	    nil)))))
-
-  (defun mg-bib--denote-pull-resource-for-entry (key)
-    "Prompt the user for file path of paper having key KEY, format
-         the file name and move it in the `denote-directory'."
-    (let* ((file-path (read-file-name "Select a PDF file: "))
-      	 (file-exists (file-exists-p file-path))
-      	 (is-pdf (string-match-p "\\.pdf$" file-path)))
-      (cond
-       ((not file-exists)
-        (user-error "Error: File does not exist."))
-       ((not is-pdf)
-        (user-error "Error: Selected file is not a PDF.")))
-      (let* ((keywords (denote-keywords-prompt))
-        	   (identifier (mg-bib--denote-identifier-from-attrs file-path))
-        	   (new-file-name (format "%s--%s__%s" identifier key
-        				  (mapconcat #'identity 
-        					     (delete-dups (copy-sequence keywords))
-        					     "_")))
-        	   (new-file-path (format "%s/assets/%s.pdf" (denote-directory) new-file-name)))
-        (rename-file file-path new-file-path)
-        new-file-path)))
-
-  (defun mg-bib--denote-bibtex-org-block (bibtex &optional file)
-    "Returns a string representing an org `bibtex' source block
-          encompassing BIBTEX, a string of a bibtex entry."
-    (let* ((src
-            (format "#+begin_src bibtex :tangle \"%s\"\n%s\n#+end_src" mg-bibliography-path bibtex))
-           (entries (format
-          	   ":PROPERTIES:\n:FILE: [[%s]]\n:NOTES:\n:END:\n" file)))
-      (format "%s\n%s\n" entries src)))
+  (defun mg-bib--bibtex-get-title-for-key (bibtex-list)
+    "Get the title from BIBTEX-LIST, formatted and ready to be used
+  in the bibtex key."
+    (when-let* ((title-early (mg-bib--bibtex-get-field-content bibtex-list "title"))
+  	      ;; NOTE: Sometimes titles have `'`, `:`, etc. signs in
+  	      ;; them. Let's rule those diacritics out.
+  	      (title (replace-regexp-in-string "'" "" (replace-regexp-in-string ":" "" title-early))))
+      (downcase (car (split-string title " ")))))
 
   (defun mg-bib--denote-bibtex-prompt (&optional default-bibtex)
     "Ask the user for a bibtex entry. Returns the sanitised
-          version. See `mg-bib--denote-sanitise-bibtex' for details."
+            version. See `mg-bib--denote-sanitise-bibtex' for details."
     (let* ((def default-bibtex)
-      	 (format (if (and def (not (string-empty-p def)))
-      		     (format "Bibtex [%s]: " def)
-      		   "Bibtex: "))
-      	 (sanitised-bibtex (mg-bib--denote-bibtex-sanitise (read-string format nil nil def))))
+        	 (format (if (and def (not (string-empty-p def)))
+        		     (format "Bibtex [%s]: " def)
+        		   "Bibtex: "))
+        	 (sanitised-bibtex (mg-bib--denote-bibtex-sanitise (read-string format nil nil def))))
       (if sanitised-bibtex
-      	sanitised-bibtex
+        	sanitised-bibtex
         (user-error "Invalid BiBTeX entry provided to `mg-bib--denote-bibtex-prompt'"))))
 
-  (defun mg-bib--denote-bibtex-sanitise (bibtex)
-    "Returns a santised version of BIBTEX. Sanitisation entails remove
-          all non alpha-numeric characters from the bibtex key, and
-           returning this updated bibtex entry. If BIBTEX is not a valid
-           bibtex entry, returns nil."
-    (when (string-match "@.*{\\(.*\\)," bibtex)
-      (let* ((key (match-string-no-properties 1 bibtex))
-      	   (sanitised-key (replace-regexp-in-string "[^A-Za-z0-9]" "" key)))
-        (replace-regexp-in-string key sanitised-key bibtex))))
+  (defun mg-bib--denote-bibtex-org-block (bibtex &optional file)
+    "Returns a string representing an org `bibtex' source block
+            encompassing BIBTEX, a string of a bibtex entry."
+    (let* ((src
+            (format "#+begin_src bibtex :tangle \"%s\"\n%s\n#+end_src" mg-bibliography-path bibtex))
+           (entries (format
+            	   ":PROPERTIES:\n:FILE: %s\n:NOTES:\n:END:\n" (mg-denote-generate-link-from-file-path file))))
+      (format "%s\n%s\n" entries src)))
 
-  ;; TODO and to double check (may be buggy)
-  (defun mg-bib--retrieve-keywords-from-bib-file (&optional file)
-    "Retrieve keywords from my bibliography file, or, if specified, from FILE."
-    (let* ((entries 
-        	  (org-map-entries (lambda ()
-        			     (when-let
-        				 ((keywords (org-get-tags)))
-        			       (list
-        				:keywords keywords
-        				:title (nth 4 (org-heading-components))
-        				:line (line-number-at-pos))))))
-        	 (user-choice
-        	  (completing-read "Choose a keyword you want to filter: "
-        			   (delete-dups (flatten-list
-        					 (mapcar (lambda (entry)
-        						   (string-split
-        						    (string-trim (plist-get entry :keywords)) ", "))
-        						 entries)))))
-        	 (filtered-entries
-        	  (seq-filter (lambda (entry)
-        			(string-match-p user-choice (plist-get entry :keywords)))
-        		      entries)))
-      ))
+  (defun mg-bib--bibtex-early-sanitize (bibtex)
+    "Perform some early initialization on BIBTEX."
+    (replace-regexp-in-string "[ \t]+=" " =" (replace-regexp-in-string "\n[ \t]+" "\n" (replace-regexp-in-string "[ \t]+\n" "\n" bibtex))))
 
-  (defun mg-bib--www-get-page-title (url)
-    "Get the page title from URL."
-    (let ((title))
-      (with-current-buffer (url-retrieve-synchronously url)
-        (goto-char (point-min))
-        (re-search-forward "<title>\\([^<]*\\)</title>" nil t 1)
-        (setq title (match-string 1)))
-      title))
+  (defun mg-bib--bibtex-parse-entry (bibtex)
+    "Parse BIBTEX to make a list.
+  Each entry is a bibtex field with a value."
+    (let* ((bibtex-fields
+  	  (string-split (mg-bib--bibtex-early-sanitize bibtex) ",$"))
+  	 (bibtex-list
+  	  (mapcar (lambda (string)
+  		    (string-trim (replace-regexp-in-string "\n" " " string)))
+  		  bibtex-fields))
+  	 (bibtex-final (reverse bibtex-list))
+  	 (before-check (nreverse
+  			(append (list (setcar bibtex-final (replace-regexp-in-string "}.*?}" "}" (car (last bibtex-list)))))
+  				(cdr bibtex-final)))))
+      (if (and before-check (string= "}" (car (last before-check))))
+  	(butlast before-check)
+        before-check)))
+
+  (defun mg-bib--bibtex-get-field (bibtex-list field)
+    (seq-find (lambda (string)
+  	      (string-match-p (format "%s.*?=" field) string)) bibtex-list))
+
+  (defun mg-bib--bibtex-get-field-content (bibtex-list field)
+    (when-let ((raw-field (mg-bib--bibtex-get-field bibtex-list field)))
+      (when (string-match (format "%s\\s-*=[[:space:]]*{\\([^}]*\\)}" field) raw-field)
+        (match-string 1 raw-field))))
+
+  (defun mg-bib--bibtex-list-to-string (bibtex-list)
+    "Reformat BIBTEX-LIST as a bibtex entry (string)."
+    (mapconcat #'identity bibtex-list ",\n"))
+
+  (defun mg-bib--bibtex-append-field (bibtex-list field value)
+    "Append FIELD with value VALUE to BIBTEX-LIST."
+    (let ((field-formatted (format "%s = {%s}}" field value)))
+      (nreverse
+       (append (list field-formatted) (nreverse bibtex-list)))))
+
+  (defun mg-bib--bibtex-list-find-field-and-replace (bibtex-list field replace)
+    "Find and replace a specific field in a BibTeX entry list."
+    (mapcar (lambda (entry)
+              (if (string-match (format "%s.*?=" field) entry)
+                  (replace-regexp-in-string 
+                   (format "%s.*?= {[^}]*}" field)
+                   (format "%s = {%s}" field replace)
+                   entry)
+                entry))
+            bibtex-list))
 
   (provide 'mg-bib)
   ;;; mg-bib.el ends here
@@ -2523,9 +2435,14 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
       (format "[[file:%s]]" name)))
 
   (defun mg-denote--insert-link-from-file-path (file-path)
-    "Insert a denote link provided a file path"
+    "Insert a denote link provided FILE-PATH."
     (let ((file-description (denote--link-get-description file-path)))
       (denote-link file-path (denote-filetype-heuristics file-path) file-description)))
+
+  (defun mg-denote-generate-link-from-file-path (file-path)
+    "Generate a denote link provided FILE-PATH."
+    (let ((file-description (denote--link-get-description file-path)))
+      (denote-format-link file-path file-description (denote-filetype-heuristics file-path) nil)))
 
   (defun mg-denote-insert-zettel-link ()
     "Select a zettel from `denote-directory` and insert its link at current point."
@@ -2541,20 +2458,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   	 (denote-directory-files denote-signature-regexp)))
       (consult-grep zettels)))
 
-  (defun mg-denote-get-references-in-dired ()
-      "Get the reference notes from the `denote-directory' listed in `dired'.
-  Although this functionality is not only related to `denote', rather on 'dired', it's still relevant in this library: all notes I have are `denote' entries."
-      (interactive)
-      (dired (denote-directory))
-      (revert-buffer)
-      (dired-mark-files-regexp "_bib")
-      (dired-toggle-marks)
-      (dired-do-kill-lines)
-      ;; NOTE: We don't want zettels to appear, this function just shows
-      ;; reference entries
-      (dired-mark-files-regexp denote-signature-regexp)
-      (dired-do-kill-lines))
-
+  (provide 'mg-denote)
   ;;; mg-denote.el ends here
 #+end_src
 

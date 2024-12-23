@@ -69,9 +69,14 @@
     (format "[[file:%s]]" name)))
 
 (defun mg-denote--insert-link-from-file-path (file-path)
-  "Insert a denote link provided a file path"
+  "Insert a denote link provided FILE-PATH."
   (let ((file-description (denote--link-get-description file-path)))
     (denote-link file-path (denote-filetype-heuristics file-path) file-description)))
+
+(defun mg-denote-generate-link-from-file-path (file-path)
+  "Generate a denote link provided FILE-PATH."
+  (let ((file-description (denote--link-get-description file-path)))
+    (denote-format-link file-path file-description (denote-filetype-heuristics file-path) nil)))
 
 (defun mg-denote-insert-zettel-link ()
   "Select a zettel from `denote-directory` and insert its link at current point."
@@ -87,18 +92,5 @@
 	 (denote-directory-files denote-signature-regexp)))
     (consult-grep zettels)))
 
-(defun mg-denote-get-references-in-dired ()
-    "Get the reference notes from the `denote-directory' listed in `dired'.
-Although this functionality is not only related to `denote', rather on 'dired', it's still relevant in this library: all notes I have are `denote' entries."
-    (interactive)
-    (dired (denote-directory))
-    (revert-buffer)
-    (dired-mark-files-regexp "_bib")
-    (dired-toggle-marks)
-    (dired-do-kill-lines)
-    ;; NOTE: We don't want zettels to appear, this function just shows
-    ;; reference entries
-    (dired-mark-files-regexp denote-signature-regexp)
-    (dired-do-kill-lines))
-
+(provide 'mg-denote)
 ;;; mg-denote.el ends here
