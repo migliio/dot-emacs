@@ -48,6 +48,37 @@
 		(mg-bib--bibtex-append-field bibtex-list "file" (mg-bib--bibtex-format-file-for-field file-path)))
 	       file-path)))))
 
+(defun mg-bib--denote-identifier-from-attrs (file)
+  "Get the creation date of FILE from its attributes.
+  Returns the creation date timestamp, otherwise nil."
+  (let ((file-attrs (file-attributes file)))
+    (if file-attrs
+        (let ((creation-time (nth 6 file-attrs)))
+          (if creation-time
+              (format-time-string denote-id-format creation-time)
+  	    nil)))))
+
+(defun mg-bib--denote-pull-resource-for-entry (key)
+  "Prompt the user for file path of paper having key KEY, format
+       the file name and move it in the `denote-directory'."
+  (let* ((file-path (read-file-name "Select a PDF file: "))
+    	 (file-exists (file-exists-p file-path))
+    	 (is-pdf (string-match-p "\\.pdf$" file-path)))
+    (cond
+     ((not file-exists)
+      (user-error "Error: File does not exist."))
+     ((not is-pdf)
+      (user-error "Error: Selected file is not a PDF.")))
+    (let* ((keywords (denote-keywords-prompt))
+      	   (identifier (mg-bib--denote-identifier-from-attrs file-path))
+      	   (new-file-name (format "%s--%s__%s" identifier key
+      				  (mapconcat #'identity 
+      					     (delete-dups (copy-sequence keywords))
+      					     "_")))
+      	   (new-file-path (format "%s/assets/%s.pdf" (denote-directory) new-file-name)))
+      (rename-file file-path new-file-path)
+      new-file-path)))
+
 (defun mg-bib--bibtex-format-file-for-field (file-path)
   "Format FILE-PATH to be inserted as file field in the bibtex entry."
   (let ((file-name (car (last (split-string file-path "/")))))
@@ -121,7 +152,7 @@ in the bibtex key."
       	 (format (if (and def (not (string-empty-p def)))
       		     (format "Bibtex [%s]: " def)
       		   "Bibtex: "))
-      	 (sanitised-bibtex (mg-bib--denote-bibtex-sanitise (read-string format nil nil def))))
+      	 (sanitised-bibtex (read-string format nil nil def)))
     (if sanitised-bibtex
       	sanitised-bibtex
       (user-error "Invalid BiBTeX entry provided to `mg-bib--denote-bibtex-prompt'"))))
@@ -189,7 +220,7 @@ Each entry is a bibtex field with a value."
 (defun mg-bib--denote-cycle-through-tags ()
   "Cycle through tags in the references file prompting the user for an input."
   (let* ((tags (mg-org-get-tags-from-file mg-references-file))
-	(selected-tags (completing-read-multiple "Select tags: " tags)))
+	 (selected-tags (completing-read-multiple "Select tags: " tags)))
     (sort selected-tags #'string<)))
 
 (defun mg-bib--denote-format-tags-as-org (tags-list)
