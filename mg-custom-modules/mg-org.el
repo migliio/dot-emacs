@@ -149,10 +149,18 @@ file with the time-blocking and then it adds it to the
       (org-map-entries (lambda () (setq count (+ count 1))) nil 'file))
     count))
 
+(defun mg-org--shorten-file-path (path)
+  "Replace user's home directory in PATH with ~"
+  (let ((home (expand-file-name "~/")))
+    (if (string-prefix-p home path)
+        (concat "~" (substring path (1- (length home))))
+      path)))
+
 (defun mg-org-capture-generate-flash-header ()
   "Generate the header to use in flaschards."
   (let ((link (mg-org--capture-get-last-file-link)))
-    (format "%s @ %s" (mg-org--capture-get-last-file-link) (denote-get-identifier))))
+    (format "%s @ %s" (mg-org--shorten-file-path
+		       (mg-org--capture-get-last-file-link) (denote-get-identifier)))));; doesn't work
 
 (defun mg-org-compile-tex-from-assets ()
   "Compile a tex file from pkm's assets, clean intermediary files and open the resulting PDF."
@@ -179,9 +187,9 @@ file with the time-blocking and then it adds it to the
        (lambda ()
 	 (let ((current-tags (org-get-tags)))
 	   (setq tags (append tags (seq-remove (lambda (tag)
-                                         (get-text-property 0 'inherited tag))
+						 (get-text-property 0 'inherited tag))
 					       current-tags)))))))
     (delete-dups tags)))
-	 
+
 (provide 'mg-org)
 ;;; mg-org.el ends here

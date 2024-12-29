@@ -284,15 +284,16 @@ I typically prefer simple and highly legible themes. I continuously change betwe
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (defun mg-init-macos-theme ()
     "Enable the theme environment of choice for darwin."
-    (set-frame-font "JetBrains Mono 18" nil t)
-    (use-package zenburn-theme :straight t :config
-      (load-theme 'zenburn t)))
+    (set-frame-font "Iosevka Comfy Motion 18" nil t)
+    (use-package modus-themes
+      :straight (modus-themes :type git :host github :repo "protesilaos/modus-themes")
+      :config
+      (load-theme 'modus-vivendi t)))
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (set-frame-font "JetBrains Mono 14" nil t)
-    (use-package zenburn-theme :straight t :config
-      (load-theme 'zenburn t)))
+    (set-frame-font "Iosevka Comfy Motion 15" nil t)
+    (load-theme 'modus-vivendi t))
 
   (if (display-graphic-p)
       (progn
@@ -670,11 +671,15 @@ Those questions are all answered by just looking at the agenda, fired up with ju
     (org-clock-sources '(agenda))
     (org-capture-templates
      '(("b" "Bibliography")
-       ("bp" "Bibliography (paper/book)" entry (file mg-references-file)
+       ("bp" "Paper/book" entry (file mg-references-file)
         #'mg-bib-denote-org-capture-paper-biblio
         :kill-buffer t
         :jump-to-captured nil)
-       ("bw" "Bibliography (website)" entry (file mg-references-file)
+       ("bi" "ISBN" entry (file mg-references-file)
+        #'mg-bib-denote-org-capture-book-isbn-biblio
+        :kill-buffer t
+        :jump-to-captured nil)
+       ("bw" "Website" entry (file mg-references-file)
         #'mg-bib-denote-org-capture-website-biblio
         :kill-buffer t
         :jump-to-captured nil)
@@ -2008,10 +2013,18 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
         (org-map-entries (lambda () (setq count (+ count 1))) nil 'file))
       count))
 
+  (defun mg-org--shorten-file-path (path)
+    "Replace user's home directory in PATH with ~"
+    (let ((home (expand-file-name "~/")))
+      (if (string-prefix-p home path)
+          (concat "~" (substring path (1- (length home))))
+        path)))
+
   (defun mg-org-capture-generate-flash-header ()
     "Generate the header to use in flaschards."
     (let ((link (mg-org--capture-get-last-file-link)))
-      (format "%s @ %s" (mg-org--capture-get-last-file-link) (denote-get-identifier))))
+      (format "%s @ %s" (mg-org--shorten-file-path
+  		       (mg-org--capture-get-last-file-link) (denote-get-identifier)))));; doesn't work
 
   (defun mg-org-compile-tex-from-assets ()
     "Compile a tex file from pkm's assets, clean intermediary files and open the resulting PDF."
@@ -2038,10 +2051,10 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
          (lambda ()
   	 (let ((current-tags (org-get-tags)))
   	   (setq tags (append tags (seq-remove (lambda (tag)
-                                           (get-text-property 0 'inherited tag))
+  						 (get-text-property 0 'inherited tag))
   					       current-tags)))))))
       (delete-dups tags)))
-  	 
+
   (provide 'mg-org)
   ;;; mg-org.el ends here
 #+end_src
@@ -2085,10 +2098,19 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (require 'mg-org)
   (require 'mg-denote)
 
-  (defun mg-bib-denote-org-capture-paper-biblio ()
-    "Custom org-capture template to add a paper reference."
-    (let ((bibtex-input (mg-bib--bibtex-parse-entry
-  		       (mg-bib--denote-bibtex-prompt))))
+  (defun mg-bib-denote-org-capture-book-isbn-biblio ()
+    "Custom `org-capture' template to add a book reference from a isbn code."
+    (let ((isbn (mg-bib--denote-isbn-prompt)))
+      (mg-bib-denote-org-capture-paper-biblio isbn)))
+
+  (defun mg-bib-denote-org-capture-paper-biblio (&optional isbn)
+    "Custom `org-capture' template to add a paper/book reference."
+    (let ((bibtex-input
+           (if isbn
+               (mg-bib--bibtex-parse-entry
+  	      (mg-bib--isbn-to-bibtex isbn))
+             (mg-bib--bibtex-parse-entry
+              (mg-bib--denote-bibtex-prompt)))))
       (when-let*
   	((key (mg-bib--bibtex-generate-key bibtex-input))
   	 (bibtex-list (mg-bib--bibtex-refactor-entry-header bibtex-input key))
@@ -2168,14 +2190,21 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
       sanitized-surname))
 
   (defun mg-bib--bibtex-get-year-for-key (bibtex-list)
-    "Get the author from BIBTEX-LIST, formatted and ready to be used
-  in the bibtex key."
-    (let ((year (mg-bib--bibtex-get-field-content bibtex-list "year"))
-  	(date (mg-bib--bibtex-get-field-content bibtex-list "date")))
+    "Extract year from BIBTEX-LIST entry for use in BibTeX key.
+  Looks first in the 'year' field, then in the 'date' field.
+  Returns the first 4-digit year (between 1000-2999) found or signals an error."
+    (let* ((year (mg-bib--bibtex-get-field-content bibtex-list "year"))
+           (date (mg-bib--bibtex-get-field-content bibtex-list "date"))
+           (year-regexp "\\b\\(1[0-9][0-9][0-9]\\|2[0-9][0-9][0-9]\\)\\b"))
       (cond
-       (year year)
-       (date (substring date 0 4))
-       (t (user-error "Can't retrieve a suitable field for date")))))
+       ((and year
+             (string-match year-regexp year))
+        (match-string 1 year))
+       ((and date
+             (string-match year-regexp date))
+        (match-string 1 date))
+       (t
+        (user-error "No valid year found in 'year' or 'date' fields")))))
 
   (defun mg-bib--bibtex-get-type (bibtex-list)
     "Get the entry type for BIBTEX-LIST."
@@ -2210,6 +2239,11 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
       (if sanitised-bibtex
         	sanitised-bibtex
         (user-error "Invalid BiBTeX entry provided to `mg-bib--denote-bibtex-prompt'"))))
+
+  (defun mg-bib--denote-isbn-prompt ()
+    "Ask the user for a isbn entry."
+    (let ((isbn (read-string "ISBN: ")))
+      isbn))
 
   (defun mg-bib--denote-bibtex-org-block (bibtex &optional file)
     "Returns a string representing an org `bibtex' source block
@@ -2280,6 +2314,43 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defun mg-bib--denote-format-tags-as-org (tags-list)
     "Format TAGS-LIST as a series of org tags."
     (concat ":" (mapconcat #'identity tags-list ":") ":"))
+
+  (defun mg-bib--isbn-to-bibtex (isbn)
+    "Given ISBN for a book, generate a BibTeX entry.
+  This code is adapted from the one developed by John Kitchin for org-ref."
+    (let* ((url (format "https://openlibrary.org/isbn/%s.json" isbn))
+           (json (with-current-buffer (url-retrieve-synchronously url)
+                   (json-read-from-string (string-trim (buffer-substring url-http-end-of-headers (point-max))))))
+  	 (title (cdr (assoc 'title json)))
+  	 (publishers-list (cdr (assoc 'publishers json)))
+  	 (publisher (mapconcat #'identity publishers-list ", "))
+  	 (date (cdr (assoc 'publish_date json)))
+  	 (author-urls (cdr (assoc 'authors json)))
+  	 (authors (mapconcat
+  		   #'identity
+  		   (cl-loop for aurl across author-urls
+  			    collect
+  			    (with-current-buffer (url-retrieve-synchronously
+  						  (format "https://openlibrary.org%s.json"
+  							  (cdr (assoc 'key aurl))))
+  			      (cdr (assoc 'personal_name
+  					  (json-read-from-string
+  					   (string-trim (buffer-substring url-http-end-of-headers (point-max))))))))
+  		   " and "))
+  	 (burl (format "https://openlibrary.org/%s" (cdr (assoc 'key json))))
+  	 (bibtex (format "@book{,
+    author = {%s},
+    title = {%s},
+    publisher = {%s},
+    date = {%s},
+    url = {%s}
+  }"
+  			 authors
+  			 title
+  			 publisher
+  			 date
+  			 burl)))
+      bibtex))
 
   (provide 'mg-bib)
   ;;; mg-bib.el ends here

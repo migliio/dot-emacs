@@ -53,11 +53,15 @@
   (org-clock-sources '(agenda))
   (org-capture-templates
    '(("b" "Bibliography")
-     ("bp" "Bibliography (paper/book)" entry (file mg-references-file)
+     ("bp" "Paper/book" entry (file mg-references-file)
       #'mg-bib-denote-org-capture-paper-biblio
       :kill-buffer t
       :jump-to-captured nil)
-     ("bw" "Bibliography (website)" entry (file mg-references-file)
+     ("bi" "ISBN" entry (file mg-references-file)
+      #'mg-bib-denote-org-capture-book-isbn-biblio
+      :kill-buffer t
+      :jump-to-captured nil)
+     ("bw" "Website" entry (file mg-references-file)
       #'mg-bib-denote-org-capture-website-biblio
       :kill-buffer t
       :jump-to-captured nil)

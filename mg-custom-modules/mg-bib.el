@@ -31,10 +31,19 @@
 (require 'mg-org)
 (require 'mg-denote)
 
-(defun mg-bib-denote-org-capture-paper-biblio ()
-  "Custom org-capture template to add a paper reference."
-  (let ((bibtex-input (mg-bib--bibtex-parse-entry
-		       (mg-bib--denote-bibtex-prompt))))
+(defun mg-bib-denote-org-capture-book-isbn-biblio ()
+  "Custom `org-capture' template to add a book reference from a isbn code."
+  (let ((isbn (mg-bib--denote-isbn-prompt)))
+    (mg-bib-denote-org-capture-paper-biblio isbn)))
+
+(defun mg-bib-denote-org-capture-paper-biblio (&optional isbn)
+  "Custom `org-capture' template to add a paper/book reference."
+  (let ((bibtex-input
+         (if isbn
+             (mg-bib--bibtex-parse-entry
+	      (mg-bib--isbn-to-bibtex isbn))
+           (mg-bib--bibtex-parse-entry
+            (mg-bib--denote-bibtex-prompt)))))
     (when-let*
 	((key (mg-bib--bibtex-generate-key bibtex-input))
 	 (bibtex-list (mg-bib--bibtex-refactor-entry-header bibtex-input key))
@@ -114,14 +123,21 @@ in the bibtex key."
     sanitized-surname))
 
 (defun mg-bib--bibtex-get-year-for-key (bibtex-list)
-  "Get the author from BIBTEX-LIST, formatted and ready to be used
-in the bibtex key."
-  (let ((year (mg-bib--bibtex-get-field-content bibtex-list "year"))
-	(date (mg-bib--bibtex-get-field-content bibtex-list "date")))
+  "Extract year from BIBTEX-LIST entry for use in BibTeX key.
+Looks first in the 'year' field, then in the 'date' field.
+Returns the first 4-digit year (between 1000-2999) found or signals an error."
+  (let* ((year (mg-bib--bibtex-get-field-content bibtex-list "year"))
+         (date (mg-bib--bibtex-get-field-content bibtex-list "date"))
+         (year-regexp "\\b\\(1[0-9][0-9][0-9]\\|2[0-9][0-9][0-9]\\)\\b"))
     (cond
-     (year year)
-     (date (substring date 0 4))
-     (t (user-error "Can't retrieve a suitable field for date")))))
+     ((and year
+           (string-match year-regexp year))
+      (match-string 1 year))
+     ((and date
+           (string-match year-regexp date))
+      (match-string 1 date))
+     (t
+      (user-error "No valid year found in 'year' or 'date' fields")))))
 
 (defun mg-bib--bibtex-get-type (bibtex-list)
   "Get the entry type for BIBTEX-LIST."
@@ -156,6 +172,11 @@ in the bibtex key."
     (if sanitised-bibtex
       	sanitised-bibtex
       (user-error "Invalid BiBTeX entry provided to `mg-bib--denote-bibtex-prompt'"))))
+
+(defun mg-bib--denote-isbn-prompt ()
+  "Ask the user for a isbn entry."
+  (let ((isbn (read-string "ISBN: ")))
+    isbn))
 
 (defun mg-bib--denote-bibtex-org-block (bibtex &optional file)
   "Returns a string representing an org `bibtex' source block
@@ -226,6 +247,43 @@ Each entry is a bibtex field with a value."
 (defun mg-bib--denote-format-tags-as-org (tags-list)
   "Format TAGS-LIST as a series of org tags."
   (concat ":" (mapconcat #'identity tags-list ":") ":"))
+
+(defun mg-bib--isbn-to-bibtex (isbn)
+  "Given ISBN for a book, generate a BibTeX entry.
+This code is adapted from the one developed by John Kitchin for org-ref."
+  (let* ((url (format "https://openlibrary.org/isbn/%s.json" isbn))
+         (json (with-current-buffer (url-retrieve-synchronously url)
+                 (json-read-from-string (string-trim (buffer-substring url-http-end-of-headers (point-max))))))
+	 (title (cdr (assoc 'title json)))
+	 (publishers-list (cdr (assoc 'publishers json)))
+	 (publisher (mapconcat #'identity publishers-list ", "))
+	 (date (cdr (assoc 'publish_date json)))
+	 (author-urls (cdr (assoc 'authors json)))
+	 (authors (mapconcat
+		   #'identity
+		   (cl-loop for aurl across author-urls
+			    collect
+			    (with-current-buffer (url-retrieve-synchronously
+						  (format "https://openlibrary.org%s.json"
+							  (cdr (assoc 'key aurl))))
+			      (cdr (assoc 'personal_name
+					  (json-read-from-string
+					   (string-trim (buffer-substring url-http-end-of-headers (point-max))))))))
+		   " and "))
+	 (burl (format "https://openlibrary.org/%s" (cdr (assoc 'key json))))
+	 (bibtex (format "@book{,
+  author = {%s},
+  title = {%s},
+  publisher = {%s},
+  date = {%s},
+  url = {%s}
+}"
+			 authors
+			 title
+			 publisher
+			 date
+			 burl)))
+    bibtex))
 
 (provide 'mg-bib)
 ;;; mg-bib.el ends here

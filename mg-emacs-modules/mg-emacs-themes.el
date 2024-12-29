@@ -1,14 +1,15 @@
 (defun mg-init-macos-theme ()
   "Enable the theme environment of choice for darwin."
-  (set-frame-font "JetBrains Mono 18" nil t)
-  (use-package zenburn-theme :straight t :config
-    (load-theme 'zenburn t)))
+  (set-frame-font "Iosevka Comfy Motion 18" nil t)
+  (use-package modus-themes
+    :straight (modus-themes :type git :host github :repo "protesilaos/modus-themes")
+    :config
+    (load-theme 'modus-vivendi t)))
 
 (defun mg-init-linux-theme ()
   "Enable the theme enviroment of choice for linux."
-  (set-frame-font "JetBrains Mono 14" nil t)
-  (use-package zenburn-theme :straight t :config
-    (load-theme 'zenburn t)))
+  (set-frame-font "Iosevka Comfy Motion 15" nil t)
+  (load-theme 'modus-vivendi t))
 
 (if (display-graphic-p)
     (progn
