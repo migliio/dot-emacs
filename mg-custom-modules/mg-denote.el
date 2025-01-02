@@ -114,5 +114,14 @@ The renaming convention is the `denote' one."
       (mg-denote--rename-file-helper new-path)))
     (user-error "Not in a dired buffer."))
 
+(defun mg-denote-add-entry-on-journal ()
+  "Add a timestamped entry for today's journal file."
+  (interactive)
+  (let ((today-entry-buffer
+	 (denote-journal-extras-new-or-existing-entry)))
+    (with-current-buffer today-entry-buffer
+      (goto-char (point-max))
+      (insert (format "\n- %s :: \n  - References :: " (format-time-string "[%Y-%m-%d %a %H:%M]"))))))
+
 (provide 'mg-denote)
 ;;; mg-denote.el ends here

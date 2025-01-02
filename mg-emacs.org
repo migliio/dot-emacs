@@ -2201,23 +2201,28 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defun mg-bib--bibtex-get-author-for-key (bibtex-list)
     "Get the author from BIBTEX-LIST, formatted and ready to be used
   in the bibtex key."
-    (let ((first-author (string-trim 
-  		       (car (string-split
-  			     (downcase (mg-bib--bibtex-get-field-content bibtex-list "author")) "and")))))
-      (if (string-match "," first-author)
-  	(mg-bib--bibtex-sanitize-author-surname-for-key
-  	 (car (string-split first-author ",")))
-        (mg-bib--bibtex-sanitize-author-surname-for-key
-         (car (cdr (string-split first-author " ")))))))
+    (let* ((first-author (string-trim
+  			(car (string-split
+  			      (downcase (mg-bib--bibtex-get-field-content bibtex-list "author")) "and"))))
+  	 (author-tag
+  	  (if (string-match "," first-author)
+  	      (car (string-split first-author ","))
+  	    (car (cdr (string-split first-author " "))))))
+      ;; NOTE: In case there was no way of getting the surname, just
+      ;; grab the whole author string.
+      (if author-tag
+  	(mg-bib--bibtex-sanitize-author-for-key author-tag)
+        (mg-bib--bibtex-sanitize-author-for-key first-author))))
 
-  (defun mg-bib--bibtex-sanitize-author-surname-for-key (surname)
+  (defun mg-bib--bibtex-sanitize-author-for-key (surname)
     "Perform a sanitization over the author's surname to generate
    the bibtex key."
     ;; This is required because sometimes we have "John Jr., Doe". Then,
     ;; producing "john jr." as surname for the key to be generated is
-    ;; WRONG."
+    ;; WRONG. Moreover, sometimes there are "-" signs in author keys,
+    ;; e.g., Anthropic-AI. Therefore, remove those.
     (let ((sanitized-surname (car (split-string surname " "))))
-      sanitized-surname))
+      (replace-regexp-in-string "-" "" sanitized-surname)))
 
   (defun mg-bib--bibtex-get-year-for-key (bibtex-list)
     "Extract year from BIBTEX-LIST entry for use in BibTeX key.
@@ -2249,13 +2254,17 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     (let ((type (mg-bib--bibtex-get-type bibtex-list)))
       (push (format "@%s{%s" type key) (cdr bibtex-list))))
 
+  (defun mg-bib--bibtex-sanitize-title-for-key (title)
+    "Perform a sanitization over the title to generate the bibtex key."
+    (replace-regexp-in-string "'" "" (replace-regexp-in-string ":" "" (replace-regexp-in-string "-" "" title))))
+
   (defun mg-bib--bibtex-get-title-for-key (bibtex-list)
     "Get the title from BIBTEX-LIST, formatted and ready to be used
   in the bibtex key."
     (when-let* ((title-early (mg-bib--bibtex-get-field-content bibtex-list "title"))
   	      ;; NOTE: Sometimes titles have `'`, `:`, etc. signs in
   	      ;; them. Let's rule those diacritics out.
-  	      (title (replace-regexp-in-string "'" "" (replace-regexp-in-string ":" "" title-early))))
+  	      (title (mg-bib--bibtex-sanitize-title-for-key title-early)))
       (downcase (car (split-string title " ")))))
 
   (defun mg-bib--denote-bibtex-prompt (&optional default-bibtex)
@@ -2319,11 +2328,18 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   (defun mg-bib--bibtex-list-to-string (bibtex-list)
     "Reformat BIBTEX-LIST as a bibtex entry (string)."
-    (mapconcat #'identity bibtex-list ",\n"))
+    (let ((closed-list
+  	 (mg-bib--bibtex-close-entry bibtex-list)))
+      (mapconcat #'identity closed-list ",\n")))
+
+  (defun mg-bib--bibtex-close-entry (bibtex-list)
+    "Close the bibtex entry represented by BIBTEX-LIST."
+    (nreverse
+       (append (list "}") (nreverse bibtex-list))))
 
   (defun mg-bib--bibtex-append-field (bibtex-list field value)
     "Append FIELD with value VALUE to BIBTEX-LIST."
-    (let ((field-formatted (format "%s = {%s}}" field value)))
+    (let ((field-formatted (format "%s = {%s}" field value)))
       (nreverse
        (append (list field-formatted) (nreverse bibtex-list)))))
 
@@ -2662,6 +2678,15 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
         (copy-file file-path new-path)
         (mg-denote--rename-file-helper new-path)))
       (user-error "Not in a dired buffer."))
+
+  (defun mg-denote-add-entry-on-journal ()
+    "Add a timestamped entry for today's journal file."
+    (interactive)
+    (let ((today-entry-buffer
+  	 (denote-journal-extras-new-or-existing-entry)))
+      (with-current-buffer today-entry-buffer
+        (goto-char (point-max))
+        (insert (format "\n- %s :: \n  - References :: " (format-time-string "[%Y-%m-%d %a %H:%M]"))))))
 
   (provide 'mg-denote)
   ;;; mg-denote.el ends here
