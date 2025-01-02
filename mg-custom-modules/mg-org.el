@@ -160,12 +160,13 @@ file with the time-blocking and then it adds it to the
   "Generate the header to use in flaschards."
   (let ((link (mg-org--capture-get-last-file-link)))
     (format "%s @ %s" (mg-org--shorten-file-path
-		       (mg-org--capture-get-last-file-link) (denote-get-identifier)))));; doesn't work
+		       (mg-org--capture-get-last-file-link))
+	      (format-time-string denote-id-format))))
 
 (defun mg-org-compile-tex-from-assets ()
   "Compile a tex file from pkm's assets, clean intermediary files and open the resulting PDF."
   (interactive)
-  (let* ((default-directory (expand-file-name "assets/" denote-directory))
+  (let* ((default-directory mg-pkm-assets-directory)
 	 (file-name (read-file-name "Insert the tex file path: ")))
     (compile
      (format "%s && %s && %s && %s"

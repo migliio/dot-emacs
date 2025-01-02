@@ -4,7 +4,7 @@
 
 ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
 ;; URL: https://crawlingaway.org/emacs/dot-emacs
-;; Version: 0.0.1
+;; Version: 0.0.3
 ;; Package-Requires: ((emacs "29.3"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -33,7 +33,7 @@
 (defun mg-denote-copy-timestamp-to-killring ()
   "Helper function to get a convenient denote-style timestamp."
   (interactive)
-  (kill-new (denote-get-identifier)))
+  (kill-new (format-time-string denote-id-format)))
 
 (defun mg-denote--get-item (filter-regex)
   "Get a file path interactively starting from the denote-directory."
@@ -91,6 +91,28 @@
   (let ((zettels
 	 (denote-directory-files denote-signature-regexp)))
     (consult-grep zettels)))
+
+(defun mg-denote--rename-file-helper (file-path)
+  "Rename FILE-PATH using `denote-rename-file' in a temporary `dired' buffer.
+The buffer is not shown to the user and is killed after the operation."
+  (let ((temp-buffer (generate-new-buffer "*temp-dired*")))
+    (with-current-buffer temp-buffer
+      (dired (file-name-directory file-path))
+      (dired-goto-file file-path)
+      (call-interactively #'denote-rename-file)
+      (kill-buffer))))
+
+(defun mg-denote-copy-to-assets-and-rename ()
+  "Copy the current `dired' entry to the assets folder and rename it.
+The renaming convention is the `denote' one."
+  (interactive)
+  (if (derived-mode-p 'dired-mode)
+    (let* ((file-path (dired-get-filename))
+	   (file-name (car (last (string-split file-path "/" nil nil))))
+	   (new-path (expand-file-name file-name mg-pkm-assets-directory)))
+      (copy-file file-path new-path)
+      (mg-denote--rename-file-helper new-path)))
+    (user-error "Not in a dired buffer."))
 
 (provide 'mg-denote)
 ;;; mg-denote.el ends here

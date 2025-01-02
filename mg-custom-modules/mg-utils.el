@@ -39,6 +39,9 @@
 (defconst denote-directory (expand-file-name mg-pkm-base-directory)
   "This constant keeps track of the denote directory for my entire knowledge base.")
 
+(defconst mg-pkm-assets-directory (expand-file-name "assets/" denote-directory)
+  "This constant keeps track of the assets directory for my entire knowledge base.")
+
 (defconst mg-work-projects-file (format "%s/%s" denote-directory "20231210T220334--work-and-study-projects__project_work.org")
   "This constant keeps track of the work and project file within my knowledge base.")
 (defconst mg-inbox-file (format "%s/%s" denote-directory "20231211T145832--inbox__gtd_personal.org")
