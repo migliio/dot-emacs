@@ -2108,22 +2108,28 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     (let ((isbn (mg-bib--denote-isbn-prompt)))
       (mg-bib-denote-org-capture-paper-biblio isbn)))
 
-  ;; TODO: Finish to implement this function
   (defun mg-bib-denote-org-capture-website-biblio ()
     "Custom `org-capture' template to add a website reference."
     (let* ((url (read-string "URL: "))
       	 (title (mg-bib--www-get-page-title url))
       	 (authors (read-string "Insert author(s) (name, surname + \"and\"): "))
       	 (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
-  	 (bibtex "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
-      		  "0000"
-      		  authors
-      		  title
-      		  url
-      		  date
-      		  (format-time-string "%Y-%m-%d"))
+  	 (bibtex (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
+      			 "0000"
+      			 authors
+      			 title
+      			 url
+      			 date
+      			 (format-time-string "%Y-%m-%d")))
   	 (bibtex-list (mg-bib--bibtex-parse-entry bibtex)))
-      bibtex-list))
+      (setq bibtex-list (push (format "@misc{%s"
+  				    (mg-bib--bibtex-generate-key bibtex-list))
+  			    (cdr bibtex-list)))
+      (when-let* ((title (mg-bib--bibtex-get-field-content bibtex-list "title"))
+      		(heading (format "* %s %s\n" title (mg-bib--denote-format-tags-as-org (mg-bib--denote-cycle-through-tags)))))
+      (concat heading
+      	    (mg-bib--denote-bibtex-org-block
+  	     (mg-bib--bibtex-list-to-string bibtex-list))))))
 
   (defun mg-bib-denote-org-capture-paper-biblio (&optional isbn)
     "Custom `org-capture' template to add a paper/book reference."
@@ -2275,7 +2281,10 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     (let* ((src
             (format "#+begin_src bibtex :tangle \"%s\"\n%s\n#+end_src" mg-bibliography-path bibtex))
            (entries (format
-            	   ":PROPERTIES:\n:FILE: %s\n:NOTES:\n:END:\n" (mg-denote-generate-link-from-file-path file))))
+            	   ":PROPERTIES:\n:FILE: %s\n:NOTES:\n:END:\n"
+  		   (if file
+  		       (mg-denote-generate-link-from-file-path file)
+  		     ""))))
       (format "%s\n%s\n" entries src)))
 
   (defun mg-bib--bibtex-early-sanitize (bibtex)
