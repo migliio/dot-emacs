@@ -21,6 +21,7 @@
 	 ("C-c n h" . denote-org-extras-backlinks-for-heading)
 	 ("C-c n g f" . denote-find-link)
 	 ("C-c n g b" . denote-find-backlink)
+	 ("C-c n y s s" . denote-sequence)
 	 ("C-c n r" . denote-rename-file)
 	 ("C-c n R" . denote-rename-file-using-front-matter))
   :init
@@ -51,7 +52,8 @@
   :config
   (denote-rename-buffer-mode 0)
   ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
-  (require 'denote-org-extras))
+  (require 'denote-org-extras)
+  (require 'denote-sequence))
 
 (use-package mg-denote
   :ensure nil
@@ -61,6 +63,7 @@
    ("C-c n z g" . mg-denote-grep-on-zettels)
    ("C-c n u" . mg-denote-copy-timestamp-to-killring)
    ("C-c n o r" . mg-denote-copy-to-assets-and-rename)
+   ("C-c n j e" . mg-denote-add-entry-on-journal)
    ("C-c n z i" . mg-denote-insert-zettel-link)))
 
 (use-package denote-explore

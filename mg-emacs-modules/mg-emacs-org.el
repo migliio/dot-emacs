@@ -20,6 +20,7 @@
   :init
   (require 'mg-bib)
   :custom
+  (org-bookmark-names-plist nil)
   (org-src-tab-acts-natively t)
   (org-agenda-files (list mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))
   (org-archive-location "~/Vault/pkm/.archive/archive.org::* From %s")

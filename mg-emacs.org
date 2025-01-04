@@ -62,7 +62,7 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 
 In general, this configuration is organized using modules, each designed to introduce a set of packages for a specific purpose. The objective is to minimize the number of packages introduced within a single module to ensure a clear separation of concerns. Introducing too many packages at once reduces clarity.
 
-I started using GNU Emacs at ~ [2020-04-30 Thu], and I've been tweaking and extensively using it since then. This will become quite evident when you go through this configuration file. Since I even use it as a window manager for X, it's not an exaggeration to say that I /very rarely/ exit Emacs. Each section of this document serves as introduction to a single module, and subsections focus on different core packages/configurations inside that module. Hope this becomes pretty self-explanatory throughout the document.
+I started using GNU Emacs at ~ [2020-04-30 Thu], and I've been tweaking and extensively using it since then. This will become quite evident when you go through this configuration file. Since I even used it as a window manager for X (until I switched to Wayland), it's not an exaggeration to say that I've been heavily working with Emacs in the last ~ 5 years. Each section of this document serves as introduction to a single module, and subsections focus on different core packages/configurations inside that module. Hope this becomes pretty self-explanatory throughout this artifact.
 
 Therefore, the structure of this configuration file can be summarized as follows:
 - The ~init.el~ source file :: This is the main point of entry for the entire configuration, and it is the source file read when Emacs is starting up. This file then loads the Emacs modules, which enable packages and functionalities for the editor;
@@ -74,9 +74,7 @@ Therefore, the structure of this configuration file can be summarized as follows
 
 * The ~init.el~ source file
 
-This file deals with the early initialization of the GNU Emacs editor. It is, indeed, the main source file that is loaded by Emacs when performing the startup. What it does is to activate ~emacs-server~ and then load all the other modules. There is a ~require~ statement for each module to load into the editor. There are several conditions to discriminate whether a module should be loaded based on which system Emacs is executing.
-
-Just to mention it, I want a single instance of Emacs running in the background. This is even more important when I run it as the window manager for X [fn:1].
+This file deals with the early initialization of the GNU Emacs editor. It is, indeed, the main source file that is loaded by Emacs when performing the startup. What it does is to simply load all the other modules. There is a ~require~ statement for each module to load into the editor. There are several conditions to discriminate whether a module should be loaded based on which system Emacs is executing.
 
 #+begin_src emacs-lisp :tangle "init.el"
   (require 'server)
@@ -613,7 +611,7 @@ Anyway, the important aspects of my ~org-mode~ configuration can be summarized w
 - How is next week going to be like?
 
 
-Those questions are all answered by just looking at the agenda, fired up with just a simple keystroke. That's how effective ~org-mode~ is to me. The other huge use-case for ~org-mode~ is note-taking, which I'll be addressing in the ~denote~ section (see [[id:64ce0bed-fefc-4603-91ef-24b4fd102795][The ~mg-emacs-denote.el~ module]]).
+Those questions are all answered by just looking at the agenda, fired up with just a simple keystroke. That's how effective ~org-mode~ is to me. The other huge use-case for ~org-mode~ is note-taking, which I'll be addressing in the ~denote~ section (see [[id:64ce0bed-fefc-4603-91ef-24b4fd102795][The ~mg-emacs-denote.el~ module]]). Alongside ~org~, I use several packages which are directly related to the latter. For instance, I find ~org-transclusion~ pretty neat when it comes to artifact writing (e.g., papers, blog posts) and I use it for that matter. The ~org~ package is the backbone for my whole note-taking system.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-org.el"
   (use-package mg-org
@@ -638,6 +636,7 @@ Those questions are all answered by just looking at the agenda, fired up with ju
     :init
     (require 'mg-bib)
     :custom
+    (org-bookmark-names-plist nil)
     (org-src-tab-acts-natively t)
     (org-agenda-files (list mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))
     (org-archive-location "~/Vault/pkm/.archive/archive.org::* From %s")
@@ -965,6 +964,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
   	 ("C-c n h" . denote-org-extras-backlinks-for-heading)
   	 ("C-c n g f" . denote-find-link)
   	 ("C-c n g b" . denote-find-backlink)
+  	 ("C-c n y s s" . denote-sequence)
   	 ("C-c n r" . denote-rename-file)
   	 ("C-c n R" . denote-rename-file-using-front-matter))
     :init
@@ -995,7 +995,8 @@ The second fundamental package that I use for (networked) note-taking is ~denote
     :config
     (denote-rename-buffer-mode 0)
     ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
-    (require 'denote-org-extras))
+    (require 'denote-org-extras)
+    (require 'denote-sequence))
 
   (use-package mg-denote
     :ensure nil
@@ -1005,6 +1006,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
      ("C-c n z g" . mg-denote-grep-on-zettels)
      ("C-c n u" . mg-denote-copy-timestamp-to-killring)
      ("C-c n o r" . mg-denote-copy-to-assets-and-rename)
+     ("C-c n j e" . mg-denote-add-entry-on-journal)
      ("C-c n z i" . mg-denote-insert-zettel-link)))
 
   (use-package denote-explore
@@ -2340,8 +2342,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defun mg-bib--bibtex-append-field (bibtex-list field value)
     "Append FIELD with value VALUE to BIBTEX-LIST."
     (let ((field-formatted (format "%s = {%s}" field value)))
-      (nreverse
-       (append (list field-formatted) (nreverse bibtex-list)))))
+      (add-to-list 'bibtex-list field-formatted :append nil)))
 
   (defun mg-bib--bibtex-list-find-field-and-replace (bibtex-list field replace)
     "Find and replace a specific field in a BibTeX entry list."
@@ -2780,7 +2781,3 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   ;;; mg-kernel.el ends here
 #+end_src
-
-* Footnotes
-
-[fn:1] I don't know whether it is mandatory in this case, and I've never tried to disable it. It is more efficient to have it running as a single instance anyhow, so that's why I'm doing it.

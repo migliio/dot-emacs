@@ -268,8 +268,7 @@ Each entry is a bibtex field with a value."
 (defun mg-bib--bibtex-append-field (bibtex-list field value)
   "Append FIELD with value VALUE to BIBTEX-LIST."
   (let ((field-formatted (format "%s = {%s}" field value)))
-    (nreverse
-     (append (list field-formatted) (nreverse bibtex-list)))))
+    (add-to-list 'bibtex-list field-formatted :append nil)))
 
 (defun mg-bib--bibtex-list-find-field-and-replace (bibtex-list field replace)
   "Find and replace a specific field in a BibTeX entry list."
