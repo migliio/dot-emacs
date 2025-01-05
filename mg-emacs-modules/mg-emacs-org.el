@@ -314,4 +314,8 @@
   :bind (("C-c p c d" . mg-org-compute-deep-work-minutes))
   ("C-c p p" . mg-toggle-pdf-presentation-mode))
 
+(use-package org-transclusion
+  :after org
+  :straight t)
+
 (provide 'mg-emacs-org)

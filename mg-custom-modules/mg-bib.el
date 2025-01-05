@@ -4,8 +4,8 @@
 
 ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
 ;; URL: https://crawlingaway.org/emacs/dot-emacs
-;; Version: 0.0.5
-;; Package-Requires: ((emacs "29.1"))
+;; Version: 0.0.7
+;; Package-Requires: ((emacs "29.4"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -23,8 +23,9 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; This library introduces some extensions for packages I use to
-;; manage bibliography files.
+;; This library introduces some extensions that I use to manage
+;; bibliography files. The idea of this whole library is to leverage
+;; org-mode to organize my bibliography.
 
 ;;; Code:
 
@@ -40,7 +41,7 @@
   "Custom `org-capture' template to add a website reference."
   (let* ((url (read-string "URL: "))
     	 (title (mg-bib--www-get-page-title url))
-    	 (authors (read-string "Insert author(s) (name, surname + \"and\"): "))
+    	 (authors (read-string "Insert authors: "))
     	 (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
 	 (bibtex (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
     			 "0000"
@@ -354,6 +355,40 @@ This code is adapted from the one developed by John Kitchin for org-ref."
       (re-search-forward "<title>\\([^<]*\\)</title>" nil t 1)
       (setq title (match-string 1)))
     title))
+
+(defun mg-bib--denote-prompt-and-return-point ()
+  "Prompt the user for org headings in `mg-references-file' and return the point related to the notes part of the selected heading."
+  (save-excursion
+    (with-current-buffer (find-file-noselect mg-references-file)
+      (let* ((current-pos (point))
+	     (headings (org-map-entries
+			(lambda ()
+			  (cons (org-get-heading t t t t)
+				(point)))
+			t 'file))
+	     (headings-names (mapcar #'car headings))
+	     (selected (completing-read "Select heading: " headings-names nil t))
+	     (heading-pos (cdr (assoc selected headings))))
+	(if (not heading-pos)
+	    (error "Heading not found")
+	  (goto-char heading-pos)
+	  (let ((end-of-subtree (save-excursion
+				  (org-end-of-subtree t t))))
+            (if (re-search-forward "^[ \t]*#\\+end_src" end-of-subtree t)
+		(progn
+                  (end-of-line)
+                  (let ((target-pos (point)))
+		    target-pos))
+	      (error "No source block found in the selected heading"))))))))
+
+(defun mg-bib-denote-goto-notes-interactively ()
+  "Prompt the user for headings in `mg-references-file' and go to the notes section of the selected heading. The subtree is then narrowed for convenience."
+  (interactive)
+  (let ((point (mg-bib--denote-prompt-and-return-point)))
+    (with-current-buffer (find-file mg-references-file)
+      (goto-char point)
+      (org-reveal)
+      (org-narrow-to-subtree))))
 
 (provide 'mg-bib)
 ;;; mg-bib.el ends here

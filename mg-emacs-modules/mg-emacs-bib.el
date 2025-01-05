@@ -49,6 +49,7 @@
   :after (org)
   :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)
 	 ("C-c p b c" . mg-bib-count-references)
+	 ("C-c p b n" . mg-bib-denote-goto-notes-interactively)
 	 ("C-c p b i" . mg-bib-kill-bibtex-from-isbn)))
 
 (provide 'mg-emacs-bib)

@@ -26,6 +26,7 @@
 	 ("C-c n R" . denote-rename-file-using-front-matter))
   :init
   (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
+  (require 'denote-sequence)
   :custom
   (denote-known-keywords '("emacs" "security" "kernel" "mathematics" "algorithms"))
   (denote-infer-keywords t)
@@ -52,8 +53,7 @@
   :config
   (denote-rename-buffer-mode 0)
   ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
-  (require 'denote-org-extras)
-  (require 'denote-sequence))
+  (require 'denote-org-extras))
 
 (use-package mg-denote
   :ensure nil
