@@ -35,6 +35,9 @@
   (notmuch-message-headers '("To" "Cc" "Subject" "Date"))
   (notmuch-message-headers-visible t)
   :config
+  (defun pop-from-message-completion()
+    (pop message--old-style-completion-functions))
+  (advice-add 'message-completion-function :after #'pop-from-message-completion)
   (let ((count most-positive-fixnum)) ; I don't like the buttonisation of long quotes
     (setq notmuch-wash-citation-lines-prefix count
 	  notmuch-wash-citation-lines-suffix count)))
@@ -51,3 +54,4 @@
   (setq notmuch-hello-refresh-hook #'mg-notmuch-update-mail))
 
 (provide 'mg-emacs-notmuch)
+;;; mg-emacs-notmuch.el ends here

@@ -104,7 +104,7 @@ This file deals with the early initialization of the GNU Emacs editor. It is, in
   (require 'mg-emacs-browsing)
   (require 'mg-emacs-git)
   (require 'mg-emacs-coding)
-  (require 'mg-emacs-ai))
+  (require 'mg-emacs-ai)
 #+end_src
 
 * The ~mg-emacs-modules~
@@ -1176,7 +1176,10 @@ I started using ~notmuch~ not so long ago. During a conversation with [[https://
     (notmuch-message-headers '("To" "Cc" "Subject" "Date"))
     (notmuch-message-headers-visible t)
     :config
-    (let ((count most-positive-fixnum)) ; I don't like the buttonisation of long quotes
+    (defun pop-from-message-completion()
+      (pop message--old-style-completion-functions))
+    (advice-add 'message-completion-function :after #'pop-from-message-completion)
+    (let ((count most-positive-fixnum))
       (setq notmuch-wash-citation-lines-prefix count
   	  notmuch-wash-citation-lines-suffix count)))
 
@@ -1192,6 +1195,7 @@ I started using ~notmuch~ not so long ago. During a conversation with [[https://
     (setq notmuch-hello-refresh-hook #'mg-notmuch-update-mail))
 
   (provide 'mg-emacs-notmuch)
+  ;;; mg-emacs-notmuch.el ends here
 #+end_src
 
 ** The ~mg-emacs-languages.el~ module
