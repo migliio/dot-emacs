@@ -122,9 +122,9 @@
 (defun mg-bib--bibtex-generate-key (bibtex-list)
   "Generate a bibtex key for BIBTEX-LIST.
 The key format is author-title-year."
-  (let ((author (mg-bib--bibtex-get-author-for-key bibtex-list))
-	(title (mg-bib--bibtex-get-title-for-key bibtex-list))
-	(year (mg-bib--bibtex-get-year-for-key bibtex-list)))
+  (let ((author (or (mg-bib--bibtex-get-author-for-key bibtex-list) "noauthor"))
+	(title (or (mg-bib--bibtex-get-title-for-key bibtex-list) ""))
+	(year (or (mg-bib--bibtex-get-year-for-key bibtex-list) "nodate")))
     (format "%s_%s_%s" author title year)))
 
 (defun mg-bib--bibtex-get-author-for-key (bibtex-list)
@@ -185,7 +185,13 @@ Returns the first 4-digit year (between 1000-2999) found or signals an error."
 
 (defun mg-bib--bibtex-sanitize-title-for-key (title)
   "Perform a sanitization over the title to generate the bibtex key."
-  (replace-regexp-in-string "'" "" (replace-regexp-in-string ":" "" (replace-regexp-in-string "-" "" title))))
+  (let ((formatted-title nil))
+    (setq formatted-title (replace-regexp-in-string "-" "" title))
+    (setq formatted-title (replace-regexp-in-string "'" "" formatted-title))
+    (setq formatted-title (replace-regexp-in-string "." "" formatted-title))
+    (setq formatted-title (replace-regexp-in-string ":" "" formatted-title))
+    (setq formatted-title (replace-regexp-in-string "/" "" formatted-title))
+    formatted-title))
 
 (defun mg-bib--bibtex-get-title-for-key (bibtex-list)
   "Get the title from BIBTEX-LIST, formatted and ready to be used

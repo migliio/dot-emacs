@@ -184,6 +184,7 @@ Historically, this module enclosed a bunch of other customizations for variables
   	tab-always-indent 'complete
   	create-lockfiles nil
   	user-emacs-directory (expand-file-name "~/.cache/emacs/")
+  	bookmarks-file (expand-file-name ".bookmarks/bookmarks" mg-emacs-root)
   	url-history-file (expand-file-name "url/history" user-emacs-directory)
   	custom-file (if (boundp 'server-socket-dir)
   			(expand-file-name "custom.el" server-socket-dir)
@@ -725,6 +726,8 @@ Those questions are all answered by just looking at the agenda, fired up with ju
   	"** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("pw" "Work project" plain (file+headline mg-work-projects-file "Work")
   	"** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+       ("pr" "Research project" plain (file+headline mg-research-file "Active research projects")
+  	"** %? [/]\n:PROPERTIES:\n:RESEARCH_AREAS: %^{Research areas: }\n:COLLABORATORS:\n:CONTEXT:\n:START_DATE: %U\n:END_DATE:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("pb" "Blogging project" plain (file+headline mg-personal-projects-file "Blogging")
   	"** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
        ("ps" "Study project" plain (file+headline mg-work-projects-file "Study")
@@ -1538,6 +1541,8 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     "This constant keeps track of the agenda file within my knowledge base.")
   (defconst mg-archive-file (format "%s/%s" denote-directory ".archive/archive.org")
     "This constant keeps track of the archive file within my knowledge base.")
+  (defconst mg-research-file (format "%s/%s" denote-directory "20231213T175339--research__metanote_planning.org")
+    "This constant keeps track of the research metanote file within my knowledge base.")
   (defconst mg-capture-notes-file (format "%s/%s" denote-directory "20231213T172757--capture-notes__gtd_personal.org")
     "This constant keeps track of the capture notes file within my knowledge base.")
   (defconst mg-conferences-file (format "%s/%s" denote-directory "20231210T222135--conferences__personal_research.org")
@@ -2200,9 +2205,9 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defun mg-bib--bibtex-generate-key (bibtex-list)
     "Generate a bibtex key for BIBTEX-LIST.
   The key format is author-title-year."
-    (let ((author (mg-bib--bibtex-get-author-for-key bibtex-list))
-  	(title (mg-bib--bibtex-get-title-for-key bibtex-list))
-  	(year (mg-bib--bibtex-get-year-for-key bibtex-list)))
+    (let ((author (or (mg-bib--bibtex-get-author-for-key bibtex-list) "noauthor"))
+  	(title (or (mg-bib--bibtex-get-title-for-key bibtex-list) ""))
+  	(year (or (mg-bib--bibtex-get-year-for-key bibtex-list) "nodate")))
       (format "%s_%s_%s" author title year)))
 
   (defun mg-bib--bibtex-get-author-for-key (bibtex-list)
@@ -2263,7 +2268,13 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   (defun mg-bib--bibtex-sanitize-title-for-key (title)
     "Perform a sanitization over the title to generate the bibtex key."
-    (replace-regexp-in-string "'" "" (replace-regexp-in-string ":" "" (replace-regexp-in-string "-" "" title))))
+    (let ((formatted-title nil))
+      (setq formatted-title (replace-regexp-in-string "-" "" title))
+      (setq formatted-title (replace-regexp-in-string "'" "" formatted-title))
+      (setq formatted-title (replace-regexp-in-string "." "" formatted-title))
+      (setq formatted-title (replace-regexp-in-string ":" "" formatted-title))
+      (setq formatted-title (replace-regexp-in-string "/" "" formatted-title))
+      formatted-title))
 
   (defun mg-bib--bibtex-get-title-for-key (bibtex-list)
     "Get the title from BIBTEX-LIST, formatted and ready to be used
@@ -2820,3 +2831,51 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   ;;; mg-kernel.el ends here
 #+end_src
+** The ~mg-personal.el~ library
+
+#+begin_src emacs-lisp :tangle "mg-custom-modules/mg-personal.el"
+  ;;; mg-personal.el --- Personal environment customization -*- lexical-binding: t -*-
+
+  ;; Copyright (C) 2024  Claudio Migliorelli
+
+  ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
+  ;; URL: https://crawlingaway.org/emacs/dot-emacs
+  ;; Version: 0.0.1
+  ;; Package-Requires: ((emacs "29.1"))
+
+  ;; This file is NOT part of GNU Emacs.
+
+  ;; This program is free software; you can redistribute it and/or modify
+  ;; it under the terms of the GNU General Public License as published by
+  ;; the Free Software Foundation, either version 3 of the License, or
+  ;; (at your option) any later version.
+  ;;
+  ;; This program is distributed in the hope that it will be useful,
+  ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ;; GNU General Public License for more details.
+  ;;
+  ;; You should have received a copy of the GNU General Public License
+  ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+  ;;; Commentary:
+  ;; This library introduces some personal information I use to then
+  ;; build documents, files, and knowledge-base related artifacts,
+  ;; dynamically. Some of these utilities are related to my research
+  ;; work.
+
+  ;;; Code:
+
+  (defconst mg-personal-research-start-year 2023
+    "A variable used to record the year I began conducting research.")
+
+  (defun mg-personal-get-research-areas ()
+    "Get research areas I worked on, as a list of strings, based on produced artifacts."
+    ;; NOTE: preliminary implementation. It is currently a
+    ;; work-in-progress
+    (mapcar (lambda (area)
+  	    (capitalize area))
+  	  '("kernel allocators" "memory corruption" "kernel exploitation" "kernel development" "compartmentalization")))
+  ;;; mg-personal.el ends here
+#+end_src
+

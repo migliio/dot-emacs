@@ -50,6 +50,8 @@
   "This constant keeps track of the agenda file within my knowledge base.")
 (defconst mg-archive-file (format "%s/%s" denote-directory ".archive/archive.org")
   "This constant keeps track of the archive file within my knowledge base.")
+(defconst mg-research-file (format "%s/%s" denote-directory "20231213T175339--research__metanote_planning.org")
+  "This constant keeps track of the research metanote file within my knowledge base.")
 (defconst mg-capture-notes-file (format "%s/%s" denote-directory "20231213T172757--capture-notes__gtd_personal.org")
   "This constant keeps track of the capture notes file within my knowledge base.")
 (defconst mg-conferences-file (format "%s/%s" denote-directory "20231210T222135--conferences__personal_research.org")

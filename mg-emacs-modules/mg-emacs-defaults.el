@@ -28,6 +28,7 @@
 	tab-always-indent 'complete
 	create-lockfiles nil
 	user-emacs-directory (expand-file-name "~/.cache/emacs/")
+	bookmarks-file (expand-file-name ".bookmarks/bookmarks" mg-emacs-root)
 	url-history-file (expand-file-name "url/history" user-emacs-directory)
 	custom-file (if (boundp 'server-socket-dir)
 			(expand-file-name "custom.el" server-socket-dir)

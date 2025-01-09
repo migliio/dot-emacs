@@ -110,6 +110,8 @@
 	"** %^{Project name} [/]\n:PROPERTIES:\n:WHAT: %?\n:REPOSITORY:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
      ("pw" "Work project" plain (file+headline mg-work-projects-file "Work")
 	"** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
+     ("pr" "Research project" plain (file+headline mg-research-file "Active research projects")
+	"** %? [/]\n:PROPERTIES:\n:RESEARCH_AREAS: %^{Research areas: }\n:COLLABORATORS:\n:CONTEXT:\n:START_DATE: %U\n:END_DATE:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
      ("pb" "Blogging project" plain (file+headline mg-personal-projects-file "Blogging")
 	"** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")
      ("ps" "Study project" plain (file+headline mg-work-projects-file "Study")
