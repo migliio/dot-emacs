@@ -66,6 +66,11 @@
    ("C-c n j e" . mg-denote-add-entry-on-journal)
    ("C-c n z i" . mg-denote-insert-zettel-link)))
 
+(use-package denote-search
+  :straight (denote-search :type git :host github :repo "lmq-10/denote-search" :branch "main")
+  :bind
+  (("C-c n f s" . denote-search)))
+
 (use-package denote-explore
   :straight t
   :custom
