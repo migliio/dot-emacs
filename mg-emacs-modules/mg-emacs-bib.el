@@ -52,4 +52,7 @@
 	 ("C-c p b n" . mg-bib-denote-goto-notes-interactively)
 	 ("C-c p b i" . mg-bib-kill-bibtex-from-isbn)))
 
+(use-package mg-personal
+  :ensure nil)
+
 (provide 'mg-emacs-bib)

@@ -33,11 +33,36 @@
 (defconst mg-personal-research-start-year 2023
   "A variable used to record the year I began conducting research.")
 
+(defun mg-personal--get-raw-keywords-from-metanote ()
+  "Get research areas I worked on from `mg-research-file'."
+  (let ((research-areas '()))
+    (save-excursion
+      (goto-char (point-min))
+      (when (re-search-forward "^\\* Active research projects" nil t)
+        (org-map-entries
+         (lambda ()
+           (let ((areas (org-entry-get (point) "RESEARCH_AREAS")))
+             (when areas
+               (push areas research-areas))))
+         nil
+         'tree))
+      (nreverse research-areas))))
+
 (defun mg-personal-get-research-areas ()
   "Get research areas I worked on, as a list of strings, based on produced artifacts."
-  ;; NOTE: preliminary implementation. It is currently a
-  ;; work-in-progress
-  (mapcar (lambda (area)
-	    (capitalize area))
-	  '("kernel allocators" "memory corruption" "kernel exploitation" "kernel development" "compartmentalization")))
+  (let* ((raw-keywords
+	 (mg-personal--get-raw-keywords-from-metanote))
+	(formatted-keywords (delete-dups
+			     (flatten-list
+			      (mapcar
+			       (lambda (keywords)
+				 (let ((formatted-keywords
+					(replace-regexp-in-string "_" " " keywords)))
+				   (string-split formatted-keywords ";" t nil)))
+			       raw-keywords)))))
+    (mapcar (lambda (keyword)
+	      (capitalize keyword))
+	    formatted-keywords)))
+
+(provide 'mg-personal)
 ;;; mg-personal.el ends here
