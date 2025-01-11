@@ -32,6 +32,13 @@
 (require 'mg-org)
 (require 'mg-denote)
 
+(defun mg-bib-count-references ()
+  "Return the number of references in `mg-references-file'."
+  (interactive)
+  (let ((count
+    	 (mg-org-get-number-headings-in-file mg-references-file)))
+    (message "The bibliography org file contains %s entries" count)))
+
 (defun mg-bib-denote-org-capture-book-isbn-biblio ()
   "Custom `org-capture' template to add a book reference from a isbn code."
   (let ((isbn (mg-bib--denote-isbn-prompt)))
