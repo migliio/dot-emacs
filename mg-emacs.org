@@ -2220,8 +2220,9 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   The key format is author-title-year."
     (let ((author (or (mg-bib--bibtex-get-author-for-key bibtex-list) "noauthor"))
   	(title (or (mg-bib--bibtex-get-title-for-key bibtex-list) ""))
-  	(year (or (mg-bib--bibtex-get-year-for-key bibtex-list) "nodate")))
-      (format "%s_%s_%s" author title year)))
+  	(year (or (mg-bib--bibtex-get-year-for-key bibtex-list) "nodate"))
+  	(timestamp (format-time-string denote-id-format)))
+      (format "%s_%s_%s_%s" timestamp author title year)))
 
   (defun mg-bib--bibtex-get-author-for-key (bibtex-list)
     "Get the author from BIBTEX-LIST, formatted and ready to be used
