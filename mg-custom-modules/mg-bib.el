@@ -100,9 +100,19 @@
               (format-time-string denote-id-format creation-time)
   	    nil)))))
 
+(defun mg-bib--denote-remove-identifier-from-key (key)
+  "Remove the identifier part from KEY, as its structure is timestamp_author_title_year."
+  (let ((parsed-key (string-split key "_" t nil)))
+    (string-join (delq (car parsed-key) parsed-key) "_")))
+
 (defun mg-bib--denote-pull-resource-for-entry (key)
-  "Prompt the user for file path of paper having key KEY, format
-       the file name and move it in the `denote-directory'."
+  "Prompt the user for file path of paper having key KEY, format the
+file name and move it in the `denote-directory'.
+
+KEY has the form timestamp_author_title_year, therefore this
+function rules out the timestamp, which is not needed to create
+the unique filename, as it's inserted by `denote', and uses the
+author, title and year only to rename the resource file."
   (let* ((file-path (read-file-name "Select a PDF file: "))
     	 (file-exists (file-exists-p file-path))
     	 (is-pdf (string-match-p "\\.pdf$" file-path)))
@@ -111,6 +121,7 @@
       (user-error "Error: File does not exist."))
      ((not is-pdf)
       (user-error "Error: Selected file is not a PDF.")))
+    (setq key (mg-bib--denote-remove-identifier-from-key key))
     (let* ((keywords (denote-keywords-prompt))
       	   (identifier (mg-bib--denote-identifier-from-attrs file-path))
       	   (new-file-name (format "%s--%s__%s" identifier key
@@ -128,7 +139,7 @@
 
 (defun mg-bib--bibtex-generate-key (bibtex-list)
   "Generate a bibtex key for BIBTEX-LIST.
-The key format is author-title-year."
+The key format is timestamp-author-title-year."
   (let ((author (or (mg-bib--bibtex-get-author-for-key bibtex-list) "noauthor"))
 	(title (or (mg-bib--bibtex-get-title-for-key bibtex-list) ""))
 	(year (or (mg-bib--bibtex-get-year-for-key bibtex-list) "nodate"))
@@ -192,14 +203,17 @@ Returns the first 4-digit year (between 1000-2999) found or signals an error."
     (push (format "@%s{%s" type key) (cdr bibtex-list))))
 
 (defun mg-bib--bibtex-sanitize-title-for-key (title)
-  "Perform a sanitization over the title to generate the bibtex key."
-  (let ((formatted-title nil))
-    (setq formatted-title (replace-regexp-in-string "-" "" title))
-    (setq formatted-title (replace-regexp-in-string "'" "" formatted-title))
-    (setq formatted-title (replace-regexp-in-string "." "" formatted-title))
-    (setq formatted-title (replace-regexp-in-string ":" "" formatted-title))
-    (setq formatted-title (replace-regexp-in-string "/" "" formatted-title))
-    formatted-title))
+  "Sanitize TITLE string for use in a BibTeX citation key.
+Removes common punctuation marks and special characters."
+  (let* ((chars-to-remove '(":" "/" "." "'" "-" "," "?" "!" ";" "&" "(" ")" "[" "]"))
+         (case-fold-search nil)
+         (sanitized title))
+    (dolist (char chars-to-remove)
+      (setq sanitized (replace-regexp-in-string (regexp-quote char) " " sanitized)))
+    sanitized))
+
+(defconst mg-bib--title-keys-to-rule-out '("a" "the" "an" "for")
+  "List of some title keys I'd prefer not to use.")
 
 (defun mg-bib--bibtex-get-title-for-key (bibtex-list)
   "Get the title from BIBTEX-LIST, formatted and ready to be used
@@ -207,8 +221,13 @@ in the bibtex key."
   (when-let* ((title-early (mg-bib--bibtex-get-field-content bibtex-list "title"))
 	      ;; NOTE: Sometimes titles have `'`, `:`, etc. signs in
 	      ;; them. Let's rule those diacritics out.
-	      (title (mg-bib--bibtex-sanitize-title-for-key title-early)))
-    (downcase (car (split-string title " ")))))
+	      (title (mg-bib--bibtex-sanitize-title-for-key title-early))
+	      (first (downcase (car (split-string title " ")))))
+    ;; NOTE: titles have articles, clauses, etc. I'd like to rule them
+    ;; out and have more meaningful keys.
+    (when (member first mg-bib--title-keys-to-rule-out)
+      (setq first (downcase (car (cdr (split-string title " "))))))
+    first))
 
 (defun mg-bib--denote-bibtex-prompt (&optional default-bibtex)
   "Ask the user for a bibtex entry. Returns the sanitised
@@ -233,7 +252,7 @@ in the bibtex key."
   (let* ((src
           (format "#+begin_src bibtex :tangle \"%s\"\n%s\n#+end_src" mg-bibliography-path bibtex))
          (entries (format
-          	   ":PROPERTIES:\n:FILE: %s\n:NOTES:\n:END:\n"
+          	   ":PROPERTIES:\n:FILE: %s\n:NOTES:\n:KEYWORDS:\n:END:\n"
 		   (if file
 		       (mg-denote-generate-link-from-file-path file)
 		     ""))))
@@ -265,8 +284,15 @@ Each entry is a bibtex field with a value."
 	      (string-match-p (format "%s.*?=" field) string)) bibtex-list))
 
 (defun mg-bib--bibtex-get-field-content (bibtex-list field)
+  "Get the content for FIELD in parsed BibTeX entry BIBTEX-LIST.
+
+This function rules out all { and } signs from the field and gets
+the string after the equal sign. This is the less convoluted way
+of correctly parsing a BibTeX field's content."
   (when-let ((raw-field (mg-bib--bibtex-get-field bibtex-list field)))
-    (when (string-match (format "%s\\s-*=[[:space:]]*{\\([^}]*\\)}" field) raw-field)
+    (setq raw-field (replace-regexp-in-string "{" "" raw-field))
+    (setq raw-field (replace-regexp-in-string "}" "" raw-field))
+    (when (string-match (format "%s\\s-*=[[:space:]]*\\([^}]*\\)" field) raw-field)
       (match-string 1 raw-field))))
 
 (defun mg-bib--bibtex-list-to-string (bibtex-list)
