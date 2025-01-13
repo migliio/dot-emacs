@@ -8,8 +8,8 @@
 
 (defun mg-init-linux-theme ()
   "Enable the theme enviroment of choice for linux."
-  (set-frame-font "Iosevka Comfy Motion 15" nil t)
-  (load-theme 'modus-vivendi t))
+  (set-frame-font "Iosevka Comfy Motion Light 16" nil t)
+  (load-theme 'modus-operandi t))
 
 (if (display-graphic-p)
     (progn
