@@ -60,9 +60,10 @@
 					(replace-regexp-in-string "_" " " keywords)))
 				   (string-split formatted-keywords ";" t nil)))
 			       raw-keywords)))))
-    (mapcar (lambda (keyword)
+    (sort (mapcar (lambda (keyword)
 	      (capitalize keyword))
-	    formatted-keywords)))
+	    formatted-keywords)
+	  #'string<)))
 
 (provide 'mg-personal)
 ;;; mg-personal.el ends here

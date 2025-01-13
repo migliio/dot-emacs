@@ -180,17 +180,5 @@ file with the time-blocking and then it adds it to the
   (let ((link (format "[[file:%s]]" (plist-get org-capture-plist :original-file))))
     link))
 
-(defun mg-org-get-tags-from-file (file-path)
-  "Return a list with all org tags in FILE-PATH."
-  (let ((tags ()))
-    (with-current-buffer (find-file-noselect file-path)
-      (org-map-entries
-       (lambda ()
-	 (let ((current-tags (org-get-tags)))
-	   (setq tags (append tags (seq-remove (lambda (tag)
-						 (get-text-property 0 'inherited tag))
-					       current-tags)))))))
-    (delete-dups tags)))
-
 (provide 'mg-org)
 ;;; mg-org.el ends here

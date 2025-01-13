@@ -81,8 +81,7 @@
 	((key (mg-bib--bibtex-generate-key bibtex-input))
 	 (bibtex-list (mg-bib--bibtex-refactor-entry-header bibtex-input key))
     	 (title (mg-bib--bibtex-get-field-content bibtex-list "title"))
-    	 (heading (format "* %s %s\n" title 
-			  (mg-bib--denote-format-tags-as-org (mg-bib--denote-cycle-through-tags))))
+    	 (heading (format "* %s\n" title))
 	 (file-path (mg-bib--denote-pull-resource-for-entry key)))
       (concat heading
     	      (mg-bib--denote-bibtex-org-block
@@ -251,11 +250,12 @@ in the bibtex key."
           encompassing BIBTEX, a string of a bibtex entry."
   (let* ((src
           (format "#+begin_src bibtex :tangle \"%s\"\n%s\n#+end_src" mg-bibliography-path bibtex))
+	 (keywords (mg-bib--denote-cycle-through-tags))
          (entries (format
-          	   ":PROPERTIES:\n:FILE: %s\n:NOTES:\n:KEYWORDS:\n:END:\n"
-		   (if file
-		       (mg-denote-generate-link-from-file-path file)
-		     ""))))
+          	   ":PROPERTIES:\n:FILE: %s\n:NOTES:\n:KEYWORDS: %s\n:END:\n"
+		   (if file (mg-denote-generate-link-from-file-path file) "")
+		   (if keywords (mg-bib--denote-format-keywords-from-properties keywords) "")
+		   )))
     (format "%s\n%s\n" entries src)))
 
 (defun mg-bib--bibtex-early-sanitize (bibtex)
@@ -322,11 +322,13 @@ of correctly parsing a BibTeX field's content."
               entry))
           bibtex-list))
 
-(defun mg-bib--denote-cycle-through-tags ()
-  "Cycle through tags in the references file prompting the user for an input."
-  (let* ((tags (mg-org-get-tags-from-file mg-references-file))
-	 (selected-tags (completing-read-multiple "Select tags: " tags)))
-    (sort selected-tags #'string<)))
+(defun mg-bib--denote-cycle-through-keywords ()
+  "Cycle through keywords in the references file prompting the user for an input."
+  (let* ((tags 
+	  (delete-dups (flatten-list (mapcar (lambda (entry) (string-split (cdr entry) ";" t nil))
+					     (mg-bib--get-keywords-from-file mg-references-file)))))
+	 (selected-keywords (completing-read-multiple "Select tags: " tags)))
+    (sort selected-keywords #'string<)))
 
 (defun mg-bib--denote-format-tags-as-org (tags-list)
   "Format TAGS-LIST as a series of org tags."
@@ -429,6 +431,29 @@ This code is adapted from the one developed by John Kitchin for org-ref."
       (goto-char point)
       (org-reveal)
       (org-narrow-to-subtree))))
+
+(defun mg-bib--get-keywords-from-file (file-path)
+  "Return a list with all keywords in the KEYWORDS field of the
+ properties drawer found in FILE-PATH.
+
+Tags are returned as a single string, where each tag is separated
+ by a ';' sign from the other tag."
+    (with-current-buffer (find-file-noselect file-path)
+      (org-element-map (org-element-parse-buffer) 'headline
+	(lambda (headline)
+          (save-excursion
+            (goto-char (org-element-property :begin headline))
+            (let ((keywords (org-entry-get (point) "KEYWORDS")))
+              (when keywords
+		(cons (org-element-property :raw-value headline)
+                      keywords))))))))
+
+(defun mg-bib--denote-format-keywords-from-properties (keywords)
+  "Format KEYWORDS to be ready to be inserted in the properties
+ drawer."
+  (string-join (mapcar (lambda (keyword)
+			 (replace-regexp-in-string " " "_" (downcase keyword)))
+		       keywords) ";"))
 
 (provide 'mg-bib)
 ;;; mg-bib.el ends here
