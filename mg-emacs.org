@@ -1511,7 +1511,7 @@ This module introduces some packages (for now, simply ~projectile~) I use to man
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-projects.el"
   (use-package projectile
     :straight t
-    :init (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+    :config (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 #+end_src
 
 * The ~mg-custom-modules~ libraries
