@@ -1504,6 +1504,16 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (provide 'mg-emacs-ai)
 #+end_src
 
+** The ~mg-emacs-projects.el~ module
+
+This module introduces some packages (for now, simply ~projectile~) I use to manage projects within Emacs. When working with large projects, like my personal knowledge management system, the Linux kernel and the like, having a way to quickly search and manage file within those projects is pretty handy. For now, this module is extremely simple, but may grow in complexity in the future.
+
+#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-projects.el"
+  (use-package projectile
+    :straight t
+    :init (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+#+end_src
+
 * The ~mg-custom-modules~ libraries
 ** The ~mg-utils.el~ library
 
