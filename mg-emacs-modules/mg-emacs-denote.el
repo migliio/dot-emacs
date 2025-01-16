@@ -22,11 +22,14 @@
 	 ("C-c n g f" . denote-find-link)
 	 ("C-c n g b" . denote-find-backlink)
 	 ("C-c n y s s" . denote-sequence)
+	 ("C-c n y s r" . denote-sequence-reparent)
+	 ("C-c n y s d" . denote-sequence-dired)
+	 ("C-c n y s c s" . denote-sequence-new-sibling-of-current)
+	 ("C-c n y s c c" . denote-sequence-new-child-of-current)
 	 ("C-c n r" . denote-rename-file)
 	 ("C-c n R" . denote-rename-file-using-front-matter))
   :init
   (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
-  (require 'denote-sequence)
   :custom
   (denote-known-keywords '("emacs" "security" "kernel" "mathematics" "algorithms"))
   (denote-infer-keywords t)
@@ -50,6 +53,7 @@
      (place . "* Details\n- Link ::\n- Visited ::\n- Description ::\n* Notes\n")
      (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- Additional information ::\n* Notes")))
   (denote-date-prompt-use-org-read-date t)
+  (denote-sequence-scheme 'alphanumeric)
   :config
   (denote-rename-buffer-mode 0)
   ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically

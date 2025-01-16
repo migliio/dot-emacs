@@ -978,11 +978,14 @@ The second fundamental package that I use for (networked) note-taking is ~denote
   	 ("C-c n g f" . denote-find-link)
   	 ("C-c n g b" . denote-find-backlink)
   	 ("C-c n y s s" . denote-sequence)
+  	 ("C-c n y s r" . denote-sequence-reparent)
+  	 ("C-c n y s d" . denote-sequence-dired)
+  	 ("C-c n y s c s" . denote-sequence-new-sibling-of-current)
+  	 ("C-c n y s c c" . denote-sequence-new-child-of-current)
   	 ("C-c n r" . denote-rename-file)
   	 ("C-c n R" . denote-rename-file-using-front-matter))
     :init
     (add-hook 'dired-mode-hook #'denote-dired-mode-in-directories)
-    (require 'denote-sequence)
     :custom
     (denote-known-keywords '("emacs" "security" "kernel" "mathematics" "algorithms"))
     (denote-infer-keywords t)
@@ -1006,6 +1009,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
        (place . "* Details\n- Link ::\n- Visited ::\n- Description ::\n* Notes\n")
        (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- Additional information ::\n* Notes")))
     (denote-date-prompt-use-org-read-date t)
+    (denote-sequence-scheme 'alphanumeric)
     :config
     (denote-rename-buffer-mode 0)
     ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
@@ -2122,6 +2126,17 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (require 'mg-org)
   (require 'mg-denote)
 
+  (defun mg-bib-search-add-to-reading-list ()
+    "Search for a bibliography entry in the minibuffer, and add it to `mg-reading-list-file'."
+    (interactive)
+    (when-let* ((key (citar-select-ref))
+  	      (title (citar-get-value "title" key)))
+      (save-excursion
+        (with-current-buffer (find-file-noselect mg-reading-list-file)
+    	(goto-char (point-max))
+    	(beginning-of-line)
+    	(insert (format "* TODO %s [cite:@%s]\n" title key))))))
+
   (defun mg-bib-count-references ()
     "Return the number of references in `mg-references-file'."
     (interactive)
@@ -2152,7 +2167,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   				    (mg-bib--bibtex-generate-key bibtex-list))
   			    (cdr bibtex-list)))
       (when-let* ((title (mg-bib--bibtex-get-field-content bibtex-list "title"))
-      		(heading (format "* %s %s\n" title (mg-bib--denote-format-tags-as-org (mg-bib--denote-cycle-through-tags)))))
+      		(heading (format "* %s %s\n" title (mg-bib--denote-format-tags-as-org (mg-bib--denote-cycle-through-keywords)))))
       (concat heading
       	    (mg-bib--denote-bibtex-org-block
   	     (mg-bib--bibtex-list-to-string bibtex-list))))))
@@ -2340,7 +2355,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
             encompassing BIBTEX, a string of a bibtex entry."
     (let* ((src
             (format "#+begin_src bibtex :tangle \"%s\"\n%s\n#+end_src" mg-bibliography-path bibtex))
-  	 (keywords (mg-bib--denote-cycle-through-tags))
+  	 (keywords (mg-bib--denote-cycle-through-keywords))
            (entries (format
             	   ":PROPERTIES:\n:FILE: %s\n:NOTES:\n:KEYWORDS: %s\n:END:\n"
   		   (if file (mg-denote-generate-link-from-file-path file) "")

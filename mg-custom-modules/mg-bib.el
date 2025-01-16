@@ -32,6 +32,17 @@
 (require 'mg-org)
 (require 'mg-denote)
 
+(defun mg-bib-search-add-to-reading-list ()
+  "Search for a bibliography entry in the minibuffer, and add it to `mg-reading-list-file'."
+  (interactive)
+  (when-let* ((key (citar-select-ref))
+	      (title (citar-get-value "title" key)))
+    (save-excursion
+      (with-current-buffer (find-file-noselect mg-reading-list-file)
+  	(goto-char (point-max))
+  	(beginning-of-line)
+  	(insert (format "* TODO %s [cite:@%s]\n" title key))))))
+
 (defun mg-bib-count-references ()
   "Return the number of references in `mg-references-file'."
   (interactive)
@@ -62,7 +73,7 @@
 				    (mg-bib--bibtex-generate-key bibtex-list))
 			    (cdr bibtex-list)))
     (when-let* ((title (mg-bib--bibtex-get-field-content bibtex-list "title"))
-    		(heading (format "* %s %s\n" title (mg-bib--denote-format-tags-as-org (mg-bib--denote-cycle-through-tags)))))
+    		(heading (format "* %s %s\n" title (mg-bib--denote-format-tags-as-org (mg-bib--denote-cycle-through-keywords)))))
     (concat heading
     	    (mg-bib--denote-bibtex-org-block
 	     (mg-bib--bibtex-list-to-string bibtex-list))))))
@@ -250,7 +261,7 @@ in the bibtex key."
           encompassing BIBTEX, a string of a bibtex entry."
   (let* ((src
           (format "#+begin_src bibtex :tangle \"%s\"\n%s\n#+end_src" mg-bibliography-path bibtex))
-	 (keywords (mg-bib--denote-cycle-through-tags))
+	 (keywords (mg-bib--denote-cycle-through-keywords))
          (entries (format
           	   ":PROPERTIES:\n:FILE: %s\n:NOTES:\n:KEYWORDS: %s\n:END:\n"
 		   (if file (mg-denote-generate-link-from-file-path file) "")
