@@ -286,16 +286,16 @@ I typically prefer simple and highly legible themes. I continuously change betwe
     (use-package modus-themes
       :straight (modus-themes :type git :host github :repo "protesilaos/modus-themes")
       :config
-      (load-theme 'modus-operandi t))
-    (set-frame-font "Iosevka Comfy Motion Light 18" nil t))
+      (load-theme 'modus-vivendi t))
+    (set-frame-font "Iosevka Comfy 18" nil t))
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (set-frame-font "Iosevka Comfy Motion Light 16" nil t)
     (use-package modus-themes
       :straight (modus-themes :type git :host github :repo "protesilaos/modus-themes")
       :config
-      (load-theme 'modus-operandi t)))
+      (load-theme 'modus-vivendi t))
+    (set-frame-font "Iosevka Comfy 16" nil t))
 
   (if (display-graphic-p)
       (progn
@@ -649,6 +649,7 @@ Those questions are all answered by just looking at the agenda, fired up with ju
     :custom
     (org-bookmark-names-plist nil)
     (org-src-tab-acts-natively t)
+    (org-M-RET-may-split-line '((default . nil)))
     (org-agenda-files (list mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))
     (org-archive-location "~/Vault/pkm/.archive/archive.org::* From %s")
     (org-export-backends '(beamer html latex icalendar ascii))
@@ -955,7 +956,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-denote.el"
   (use-package denote
-    :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main")
+    :straight (denote :type git :host github :repo "migliio/denote" :branch "master")
     :bind (("C-c n n" . denote)
   	 ("C-c n x" . denote-region)
   	 ("C-c n N" . denote-type)
@@ -1091,6 +1092,7 @@ This module introduces several packages that I use to manage bibliographic entri
     (citar-denote-title-format "title")
     (citar-denote-title-format-authors 1)
     (citar-denote-title-format-andstr "and")
+    (citar-denote-template "- Research question ::\n- Sketch solution ::\n")
     :init
     (citar-denote-mode)
     :bind (("C-c n c c" . citar-create-note)
@@ -2167,7 +2169,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   				    (mg-bib--bibtex-generate-key bibtex-list))
   			    (cdr bibtex-list)))
       (when-let* ((title (mg-bib--bibtex-get-field-content bibtex-list "title"))
-      		(heading (format "* %s %s\n" title (mg-bib--denote-format-tags-as-org (mg-bib--denote-cycle-through-keywords)))))
+      		(heading (format "* %s\n" title (mg-bib--denote-format-tags-as-org))))
       (concat heading
       	    (mg-bib--denote-bibtex-org-block
   	     (mg-bib--bibtex-list-to-string bibtex-list))))))
@@ -2429,15 +2431,11 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   (defun mg-bib--denote-cycle-through-keywords ()
     "Cycle through keywords in the references file prompting the user for an input."
-    (let* ((tags 
+    (let* ((keywords 
   	  (delete-dups (flatten-list (mapcar (lambda (entry) (string-split (cdr entry) ";" t nil))
   					     (mg-bib--get-keywords-from-file mg-references-file)))))
-  	 (selected-keywords (completing-read-multiple "Select tags: " tags)))
+  	 (selected-keywords (completing-read-multiple "Select keywords: " keywords)))
       (sort selected-keywords #'string<)))
-
-  (defun mg-bib--denote-format-tags-as-org (tags-list)
-    "Format TAGS-LIST as a series of org tags."
-    (concat ":" (mapconcat #'identity tags-list ":") ":"))
 
   (defun mg-bib--field-empty-p (entry)
     "Return t if ENTRY contains only empty braces (i.e. '{}'), nil otherwise.

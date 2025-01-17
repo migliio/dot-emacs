@@ -73,7 +73,7 @@
 				    (mg-bib--bibtex-generate-key bibtex-list))
 			    (cdr bibtex-list)))
     (when-let* ((title (mg-bib--bibtex-get-field-content bibtex-list "title"))
-    		(heading (format "* %s %s\n" title (mg-bib--denote-format-tags-as-org (mg-bib--denote-cycle-through-keywords)))))
+    		(heading (format "* %s\n" title (mg-bib--denote-format-tags-as-org))))
     (concat heading
     	    (mg-bib--denote-bibtex-org-block
 	     (mg-bib--bibtex-list-to-string bibtex-list))))))
@@ -335,15 +335,11 @@ of correctly parsing a BibTeX field's content."
 
 (defun mg-bib--denote-cycle-through-keywords ()
   "Cycle through keywords in the references file prompting the user for an input."
-  (let* ((tags 
+  (let* ((keywords 
 	  (delete-dups (flatten-list (mapcar (lambda (entry) (string-split (cdr entry) ";" t nil))
 					     (mg-bib--get-keywords-from-file mg-references-file)))))
-	 (selected-keywords (completing-read-multiple "Select tags: " tags)))
+	 (selected-keywords (completing-read-multiple "Select keywords: " keywords)))
     (sort selected-keywords #'string<)))
-
-(defun mg-bib--denote-format-tags-as-org (tags-list)
-  "Format TAGS-LIST as a series of org tags."
-  (concat ":" (mapconcat #'identity tags-list ":") ":"))
 
 (defun mg-bib--field-empty-p (entry)
   "Return t if ENTRY contains only empty braces (i.e. '{}'), nil otherwise.

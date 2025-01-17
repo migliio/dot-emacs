@@ -28,6 +28,7 @@
   (citar-denote-title-format "title")
   (citar-denote-title-format-authors 1)
   (citar-denote-title-format-andstr "and")
+  (citar-denote-template "- Research question ::\n- Sketch solution ::\n")
   :init
   (citar-denote-mode)
   :bind (("C-c n c c" . citar-create-note)

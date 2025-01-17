@@ -3,16 +3,16 @@
   (use-package modus-themes
     :straight (modus-themes :type git :host github :repo "protesilaos/modus-themes")
     :config
-    (load-theme 'modus-operandi t))
-  (set-frame-font "Iosevka Comfy Motion Light 18" nil t))
+    (load-theme 'modus-vivendi t))
+  (set-frame-font "Iosevka Comfy 18" nil t))
 
 (defun mg-init-linux-theme ()
   "Enable the theme enviroment of choice for linux."
-  (set-frame-font "Iosevka Comfy Motion Light 16" nil t)
   (use-package modus-themes
     :straight (modus-themes :type git :host github :repo "protesilaos/modus-themes")
     :config
-    (load-theme 'modus-operandi t)))
+    (load-theme 'modus-vivendi t))
+  (set-frame-font "Iosevka Comfy 16" nil t))
 
 (if (display-graphic-p)
     (progn

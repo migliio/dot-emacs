@@ -22,6 +22,7 @@
   :custom
   (org-bookmark-names-plist nil)
   (org-src-tab-acts-natively t)
+  (org-M-RET-may-split-line '((default . nil)))
   (org-agenda-files (list mg-work-projects-file mg-personal-projects-file mg-agenda-file mg-inbox-file mg-capture-notes-file))
   (org-archive-location "~/Vault/pkm/.archive/archive.org::* From %s")
   (org-export-backends '(beamer html latex icalendar ascii))
