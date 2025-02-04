@@ -283,19 +283,19 @@ I typically prefer simple and highly legible themes. I continuously change betwe
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (defun mg-init-macos-theme ()
     "Enable the theme environment of choice for darwin."
-    (use-package modus-themes
-      :straight (modus-themes :type git :host github :repo "protesilaos/modus-themes")
+    (use-package zenburn-theme
+      :straight (zenburn-theme :type git :host github :repo "bbatsov/zenburn-emacs" :branch "master")
       :config
-      (load-theme 'modus-operandi t))
-    (set-frame-font "Iosevka Comfy Motion Light 18" nil t))
+      (load-theme 'zenburn t))
+    (set-frame-font "Liberation Mono 18" nil t))
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (set-frame-font "Iosevka Comfy Motion Light 16" nil t)
-    (use-package modus-themes
-      :straight (modus-themes :type git :host github :repo "protesilaos/modus-themes")
+    (set-frame-font "Iosevka Comfy 16" nil t)
+    (use-package zenburn-theme
+      :straight (zenburn-theme :type git :host github :repo "bbatsov/zenburn-emacs" :branch "master")
       :config
-      (load-theme 'modus-operandi t)))
+      (load-theme 'zenburn t)))
 
   (if (display-graphic-p)
       (progn
@@ -703,6 +703,8 @@ Those questions are all answered by just looking at the agenda, fired up with ju
        ("a" "Agenda")
        ("am" "Meeting entry" entry (file+headline mg-agenda-file "Future")
   	"* Meeting with %? :meeting:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
+       ("as" "Schedule entry" entry (file+headline mg-agenda-file "Schedule")
+  	"* TODO %? :schedule:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n- Project :: \n- Description :: \n- Outcome :: \n")
        ("ae" "Event entry" entry (file+headline mg-agenda-file "Future")
   	"* %? :event:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
        ("ac" "Call entry" entry (file+headline mg-agenda-file "Future")
@@ -980,6 +982,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
   	 ("C-c n y s s" . denote-sequence)
   	 ("C-c n y s r" . denote-sequence-reparent)
   	 ("C-c n y s d" . denote-sequence-dired)
+  	 ("C-c n y s f" . denote-sequence-find)
   	 ("C-c n y s c s" . denote-sequence-new-sibling-of-current)
   	 ("C-c n y s c c" . denote-sequence-new-child-of-current)
   	 ("C-c n r" . denote-rename-file)
@@ -1081,7 +1084,7 @@ This module introduces several packages that I use to manage bibliographic entri
     (setq citar-bibliography (list mg-bibliography-path)))
 
   (use-package citar-denote
-    :straight t
+    :straight (citar-denote :type git :host github :repo "pprevos/citar-denote" :branch "main")
     :custom
     (citar-open-always-create-notes nil)
     (citar-denote-file-type 'org)
@@ -1317,6 +1320,13 @@ The following is a series of packages to enable LSP and major-modes for some pro
     (add-hook 'erlang-mode-hook 'eglot-ensure)
     (add-hook 'python-mode-hook 'eglot-ensure))
 
+  (use-package eglot-booster
+    :straight (eglot-booster :type git :host github :repo "jdtsmith/eglot-booster")
+    :after eglot
+    :config
+    (add-to-list 'exec-path "/Users/gli/.cargo/bin/")
+    (eglot-booster-mode))
+
   (provide 'mg-emacs-languages)
 #+end_src
 
@@ -1501,9 +1511,13 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     (ellama-language "English")
     :config
     (require 'llm-ollama)
-    (setq ellama-provider
-  	(make-llm-ollama
-  	 :chat-model "llama3.2:latest")))
+    (if (eq system-type 'darwin)
+        (setq ellama-provider
+  	    (make-llm-ollama
+  	     :chat-model "llama3.3:70b"))
+      (setq ellama-provider
+  	  (make-llm-ollama
+  	   :chat-model "llama3.2:latest"))))
 
   (provide 'mg-emacs-ai)
 #+end_src
@@ -1888,7 +1902,8 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
       (setq ns-use-proxy-icon nil
   	  mac-option-modifier 'meta
   	  frame-title-format nil
-  	  mac-frame-tabbing nil)))
+  	  mac-frame-tabbing nil)
+      (menu-bar-mode t)))
 
   (provide 'mg-macos)
   ;;; mg-macos.el ends here
@@ -2094,11 +2109,11 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 #+begin_src emacs-lisp :tangle "mg-custom-modules/mg-bib.el"
   ;;; mg-bib.el --- Extensions for bibliographic packages -*- lexical-binding: t -*-
 
-  ;; Copyright (C) 2024  Claudio Migliorelli
+  ;; Copyright (C) 2025  Claudio Migliorelli
 
   ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
   ;; URL: https://crawlingaway.org/emacs/dot-emacs
-  ;; Version: 0.0.7
+  ;; Version: 0.1.0
   ;; Package-Requires: ((emacs "29.4"))
 
   ;; This file is NOT part of GNU Emacs.
@@ -2167,10 +2182,11 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   				    (mg-bib--bibtex-generate-key bibtex-list))
   			    (cdr bibtex-list)))
       (when-let* ((title (mg-bib--bibtex-get-field-content bibtex-list "title"))
-      		(heading (format "* %s %s\n" title (mg-bib--denote-format-tags-as-org (mg-bib--denote-cycle-through-keywords)))))
-      (concat heading
-      	    (mg-bib--denote-bibtex-org-block
-  	     (mg-bib--bibtex-list-to-string bibtex-list))))))
+      		(heading (format "* %s\n" title)))
+        (format "%s%s%s" heading
+      	      (mg-bib--denote-bibtex-org-block
+  	       (mg-bib--bibtex-list-to-string bibtex-list))
+  	      "- Overview :: \n- Findings :: \n- Significance :: \n"))))
 
   (defun mg-bib-denote-org-capture-paper-biblio (&optional isbn)
     "Custom `org-capture' template to add a paper/book reference."
@@ -2188,11 +2204,12 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
       	 (title (mg-bib--bibtex-get-field-content bibtex-list "title"))
       	 (heading (format "* %s\n" title))
   	 (file-path (mg-bib--denote-pull-resource-for-entry key)))
-        (concat heading
+        (format "%s%s%s" heading
       	      (mg-bib--denote-bibtex-org-block
   	       (mg-bib--bibtex-list-to-string
   		(mg-bib--bibtex-append-field bibtex-list "file" (mg-bib--bibtex-format-file-for-field file-path)))
-  	       file-path)))))
+  	       file-path)
+  	      "- Overview :: \n- Findings :: \n- Significance :: \n"))))
 
   (defun mg-bib--denote-identifier-from-attrs (file)
     "Get the creation date of FILE from its attributes.

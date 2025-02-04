@@ -18,7 +18,7 @@
   (setq citar-bibliography (list mg-bibliography-path)))
 
 (use-package citar-denote
-  :straight t
+  :straight (citar-denote :type git :host github :repo "pprevos/citar-denote" :branch "main")
   :custom
   (citar-open-always-create-notes nil)
   (citar-denote-file-type 'org)

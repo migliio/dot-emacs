@@ -24,6 +24,7 @@
 	 ("C-c n y s s" . denote-sequence)
 	 ("C-c n y s r" . denote-sequence-reparent)
 	 ("C-c n y s d" . denote-sequence-dired)
+	 ("C-c n y s f" . denote-sequence-find)
 	 ("C-c n y s c s" . denote-sequence-new-sibling-of-current)
 	 ("C-c n y s c c" . denote-sequence-new-child-of-current)
 	 ("C-c n r" . denote-rename-file)

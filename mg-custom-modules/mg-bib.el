@@ -1,10 +1,10 @@
 ;;; mg-bib.el --- Extensions for bibliographic packages -*- lexical-binding: t -*-
 
-;; Copyright (C) 2024  Claudio Migliorelli
+;; Copyright (C) 2025  Claudio Migliorelli
 
 ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
 ;; URL: https://crawlingaway.org/emacs/dot-emacs
-;; Version: 0.0.7
+;; Version: 0.1.0
 ;; Package-Requires: ((emacs "29.4"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -73,10 +73,11 @@
 				    (mg-bib--bibtex-generate-key bibtex-list))
 			    (cdr bibtex-list)))
     (when-let* ((title (mg-bib--bibtex-get-field-content bibtex-list "title"))
-    		(heading (format "* %s %s\n" title (mg-bib--denote-format-tags-as-org (mg-bib--denote-cycle-through-keywords)))))
-    (concat heading
-    	    (mg-bib--denote-bibtex-org-block
-	     (mg-bib--bibtex-list-to-string bibtex-list))))))
+    		(heading (format "* %s\n" title)))
+      (format "%s%s%s" heading
+    	      (mg-bib--denote-bibtex-org-block
+	       (mg-bib--bibtex-list-to-string bibtex-list))
+	      "- Overview :: \n- Findings :: \n- Significance :: \n"))))
 
 (defun mg-bib-denote-org-capture-paper-biblio (&optional isbn)
   "Custom `org-capture' template to add a paper/book reference."
@@ -94,11 +95,12 @@
     	 (title (mg-bib--bibtex-get-field-content bibtex-list "title"))
     	 (heading (format "* %s\n" title))
 	 (file-path (mg-bib--denote-pull-resource-for-entry key)))
-      (concat heading
+      (format "%s%s%s" heading
     	      (mg-bib--denote-bibtex-org-block
 	       (mg-bib--bibtex-list-to-string
 		(mg-bib--bibtex-append-field bibtex-list "file" (mg-bib--bibtex-format-file-for-field file-path)))
-	       file-path)))))
+	       file-path)
+	      "- Overview :: \n- Findings :: \n- Significance :: \n"))))
 
 (defun mg-bib--denote-identifier-from-attrs (file)
   "Get the creation date of FILE from its attributes.
