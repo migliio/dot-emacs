@@ -1,5 +1,5 @@
 (use-package denote
-  :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main")
+  :straight (denote :type git :host github :repo "migliio/denote" :branch "master")
   :bind (("C-c n n" . denote)
 	 ("C-c n x" . denote-region)
 	 ("C-c n N" . denote-type)
