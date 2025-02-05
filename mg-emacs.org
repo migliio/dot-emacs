@@ -88,12 +88,13 @@ This file deals with the early initialization of the GNU Emacs editor. It is, in
   			 "~/.emacs.d/mg-custom-modules/"))
 
   (require 'mg-emacs-package-managers)
+  (require 'mg-utils)
   (require 'mg-emacs-defaults)
   (require 'mg-emacs-themes)
   (require 'mg-emacs-buffers-completion)
   (require 'mg-emacs-files)
   (require 'mg-emacs-buffers)
-  (when (display-graphic-p)
+  (when (not (mg-connected-via-ssh-p))
     (progn
       (require 'mg-emacs-layouts)
       (require 'mg-emacs-org)
@@ -251,9 +252,6 @@ Historically, this module enclosed a bunch of other customizations for variables
     :config
     (add-hook 'prog-mode-hook
   	    #'mg-line-numbers-highlight-line-mode))
-
-  (use-package mg-utils
-    :ensure nil)
 #+end_src
 
 The ~mg-line-numbers-highlight-line-mode~ minor mode is only used when the ~prog-mode~ major mode is enabled. There is no reason for my specific use cases to have line numbers outside of coding. However, I use this feature quite extensively when programming. In text editors like Emacs, relative line numbers add a 10x speed in the way you insert/remove/modify text.
@@ -294,10 +292,7 @@ I typically prefer simple and highly legible themes. I continuously change betwe
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
     (set-frame-font "Liberation Mono 15" nil t)
-    (use-package zenburn-theme
-      :straight (zenburn-theme :type git :host github :repo "bbatsov/zenburn-emacs" :branch "master")
-      :config
-      (load-theme 'zenburn t)))
+    (load-theme 'modus-vivendi t))
 
   (if (display-graphic-p)
       (progn
@@ -1608,6 +1603,11 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defun mg-get-today-timestamp ()
     "Helper function to get today's timestamp with the abbreviated day name."
     (format-time-string "%Y-%m-%d %a"))
+
+  (defun mg-connected-via-ssh-p ()
+    "Return non-nil if connected via `ssh` to a remote machine."
+    (not (string-empty-p
+  	(string-trim (shell-command-to-string "echo $SSH_TTY")))))
 
   (provide 'mg-utils)
   ;;; mg-utils.el ends here

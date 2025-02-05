@@ -93,9 +93,6 @@
   (add-hook 'prog-mode-hook
 	    #'mg-line-numbers-highlight-line-mode))
 
-(use-package mg-utils
-  :ensure nil)
-
 (use-package which-key
   :straight t
   :init (which-key-mode)
