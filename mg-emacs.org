@@ -1497,12 +1497,13 @@ I mostly write and review code for the [[https://kernel.org/][Linux kernel]]. I 
 The following piece of code introduces ~vterm~ as terminal emulator, with ~multi-vterm~ on top of it. I've been using ~vterm~ since the very beginning, and never felt the need to switch to any other terminal emulator (e.g., ~eshell~). The ~multi-vterm~ package, instead, allows to spawn multiple ~vterm~ buffer, that in conjunction with window splitting and multiple buffer basically creates a "terminal multiplexer" inside of Emacs.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-coding.el"
-  (use-package vterm
-    :straight t)
-
-  (use-package multi-vterm
-    :straight t
-    :bind (("C-c v" . multi-vterm)))
+  (when (display-graphic-p)
+    (progn
+      (use-package vterm
+        :straight t)
+      (use-package multi-vterm
+        :straight t
+        :bind (("C-c v" . multi-vterm)))))
 
   (provide 'mg-emacs-coding)
 #+end_src
