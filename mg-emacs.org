@@ -90,22 +90,24 @@ This file deals with the early initialization of the GNU Emacs editor. It is, in
   (require 'mg-emacs-package-managers)
   (require 'mg-emacs-defaults)
   (require 'mg-emacs-themes)
-  (require 'mg-emacs-layouts)
   (require 'mg-emacs-buffers-completion)
   (require 'mg-emacs-files)
   (require 'mg-emacs-buffers)
+  (when (display-graphic-p)
+    (progn
+      (require 'mg-emacs-layouts)
+      (require 'mg-emacs-org)
+      (require 'mg-emacs-denote)
+      (require 'mg-emacs-bib)
+      (require 'mg-emacs-ledger)
+      (require 'mg-emacs-flashcards)
+      (require 'mg-emacs-notmuch)
+      (require 'mg-emacs-browsing)
+      (require 'mg-emacs-ai)))
   (require 'mg-emacs-markup)
-  (require 'mg-emacs-org)
-  (require 'mg-emacs-denote)
-  (require 'mg-emacs-bib)
-  (require 'mg-emacs-ledger)
-  (require 'mg-emacs-flashcards)
-  (require 'mg-emacs-notmuch)
   (require 'mg-emacs-languages)
-  (require 'mg-emacs-browsing)
   (require 'mg-emacs-git)
   (require 'mg-emacs-coding)
-  (require 'mg-emacs-ai)
 #+end_src
 
 * The ~mg-emacs-modules~
@@ -291,7 +293,7 @@ I typically prefer simple and highly legible themes. I continuously change betwe
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (set-frame-font "Iosevka Comfy 16" nil t)
+    (set-frame-font "Liberation Mono 15" nil t)
     (use-package zenburn-theme
       :straight (zenburn-theme :type git :host github :repo "bbatsov/zenburn-emacs" :branch "master")
       :config

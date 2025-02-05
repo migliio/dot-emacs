@@ -8,7 +8,7 @@
 
 (defun mg-init-linux-theme ()
   "Enable the theme enviroment of choice for linux."
-  (set-frame-font "Iosevka Comfy 16" nil t)
+  (set-frame-font "Liberation Mono 15" nil t)
   (use-package zenburn-theme
     :straight (zenburn-theme :type git :host github :repo "bbatsov/zenburn-emacs" :branch "master")
     :config
