@@ -1808,10 +1808,6 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     "This is the propertized variable containing the current buffer's
   name.")
 
-  (defun mg-modeline--git-info ()
-    '(:eval
-      #'magit-get-current-branch))
-
   (defun mg-modeline--major-mode ()
     "Get the current major mode for the opened buffer. The major mode
   is obtained by looking at the `major-mode' variable. In case we
@@ -1865,9 +1861,9 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   		"  "
   		mg-modeline-major-mode
   		"  "
-  		(:eval 
+  		(:eval
   		 (when (mode-line-window-selected-p)
-  		   (propertize mode-line-end-spaces 'face '(:foreground "black")))))
+  		   (propertize mode-line-end-spaces 'face '(:foreground "black"))))))
 
   (dolist (construct
   	 '(mg-modeline-major-mode
