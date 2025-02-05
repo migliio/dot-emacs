@@ -289,18 +289,26 @@ I typically prefer simple and highly legible themes. I continuously change betwe
       (load-theme 'zenburn t))
     (set-frame-font "Liberation Mono 18" nil t))
 
+  (defun mg-init-cli-theme ()
+    "Enable the theme environment of choice when from CLI."
+    (load-theme 'modus-vivendi)
+    (custom-set-faces '(mode-line ((t (:foreground "black" :background "white"
+  						 :box (:line-width -1 :style released-button)))))
+                      '(mode-line-inactive ((t (:foreground "gray20" :background "gray80"
+  							  :box (:line-width -1 :style released-button)))))) 
+    (set-face-background 'default "undefined"))
+
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
     (set-frame-font "Liberation Mono 15" nil t)
     (load-theme 'modus-vivendi t))
 
   (if (display-graphic-p)
-      (progn
-        (if (equal system-type 'darwin)
-    	  (mg-init-macos-theme)
-    	(mg-init-linux-theme))
-        (set-fringe-mode 0))
-    (set-face-background 'default "undefined"))
+      (if (equal system-type 'darwin)
+    	(mg-init-macos-theme)
+        (mg-init-linux-theme))
+    (mg-init-cli-theme))
+  (set-fringe-mode 0)
 #+end_src
 
 The only other feature that needs some clarification for the above code is the conditional statement on the ~display-graphic-p~. When not on the GUI version of Emacs (i.e., from CLI), I prefer not to select any theme and just stick with the one used in the terminal emulator. I find this way to go way less confusing, and surely lowers cognitive overhead for me.
