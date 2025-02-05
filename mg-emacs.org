@@ -295,9 +295,8 @@ I typically prefer simple and highly legible themes. I continuously change betwe
     (custom-set-faces '(mode-line ((t (:background "grey75" :foreground "black"
   						 :box (:line-width -1 :style released-button)))))
   		    '(mode-line-inactive ((t (:background "grey60" :foreground "black"
-  						 :box (:line-width -1 :style released-button))))))
-    (menu-bar-mode -1)
-    (set-face-background 'default "undefined"))
+  							  :box (:line-width -1 :style released-button))))))
+    (menu-bar-mode -1))
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
@@ -1507,6 +1506,11 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
         :straight t
         :bind (("C-c v" . multi-vterm)))))
 
+  (use-package xclip
+    :straight t
+    :config
+    (xclip-mode))
+
   (provide 'mg-emacs-coding)
 #+end_src
 
@@ -1804,12 +1808,16 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     "This is the propertized variable containing the current buffer's
   name.")
 
+  (defun mg-modeline--git-info ()
+    '(:eval
+      #'magit-get-current-branch))
+
   (defun mg-modeline--major-mode ()
-    "This is a function used to get the current major mode for the
-  opened buffer. The major mode is obtained by looking at the
-  `major-mode' variable. In case we are under EXWM, the major mode
-  haas also a `exwm--input-mode' further specification (i.e., Char
-  or Line) that is also useful to specify in the modeline."
+    "Get the current major mode for the opened buffer. The major mode
+  is obtained by looking at the `major-mode' variable. In case we
+  are under EXWM, the major mode haas also a `exwm--input-mode'
+  further specification (i.e., Char or Line) that is also useful to
+  specify in the modeline."
     (let* ((mode
   	  (mapconcat 'capitalize
   		     (butlast (split-string (symbol-name major-mode) "-")) " "))
@@ -1840,6 +1848,10 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     "This is the variable indicating whether the buffer is in
    read-only mode or not." )
 
+  (setq mode-line-end-spaces
+        '(""
+  	mode-line-misc-info))
+
   (setq-default mode-line-format
   	      '("%e"
   		mg-modeline-buffer-status
@@ -1849,8 +1861,13 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   		" "
   		mode-line-position
   		"  "
+  		(:eval (propertize vc-mode 'face '(:foreground "black")))
+  		"  "
   		mg-modeline-major-mode
-  		"  "))
+  		"  "
+  		(:eval 
+  		 (when (mode-line-window-selected-p)
+  		   (propertize mode-line-end-spaces 'face '(:foreground "black")))))
 
   (dolist (construct
   	 '(mg-modeline-major-mode
@@ -3005,4 +3022,3 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (provide 'mg-personal)
   ;;; mg-personal.el ends here
 #+end_src
-

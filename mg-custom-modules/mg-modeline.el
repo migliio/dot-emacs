@@ -48,11 +48,11 @@ remote or local.")
 name.")
 
 (defun mg-modeline--major-mode ()
-  "This is a function used to get the current major mode for the
-opened buffer. The major mode is obtained by looking at the
-`major-mode' variable. In case we are under EXWM, the major mode
-haas also a `exwm--input-mode' further specification (i.e., Char
-or Line) that is also useful to specify in the modeline."
+  "Get the current major mode for the opened buffer. The major mode
+is obtained by looking at the `major-mode' variable. In case we
+are under EXWM, the major mode haas also a `exwm--input-mode'
+further specification (i.e., Char or Line) that is also useful to
+specify in the modeline."
   (let* ((mode
 	  (mapconcat 'capitalize
 		     (butlast (split-string (symbol-name major-mode) "-")) " "))
@@ -83,6 +83,10 @@ or Line) that is also useful to specify in the modeline."
   "This is the variable indicating whether the buffer is in
  read-only mode or not." )
 
+(setq mode-line-end-spaces
+      '(""
+	mode-line-misc-info))
+
 (setq-default mode-line-format
 	      '("%e"
 		mg-modeline-buffer-status
@@ -92,8 +96,13 @@ or Line) that is also useful to specify in the modeline."
 		" "
 		mode-line-position
 		"  "
+		(:eval (propertize vc-mode 'face '(:foreground "black")))
+		"  "
 		mg-modeline-major-mode
-		"  "))
+		"  "
+		(:eval
+		 (when (mode-line-window-selected-p)
+		   (propertize mode-line-end-spaces 'face '(:foreground "black")))))
 
 (dolist (construct
 	 '(mg-modeline-major-mode

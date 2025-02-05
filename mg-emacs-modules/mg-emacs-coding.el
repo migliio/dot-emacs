@@ -63,4 +63,9 @@
       :straight t
       :bind (("C-c v" . multi-vterm)))))
 
+(use-package xclip
+  :straight t
+  :config
+  (xclip-mode))
+
 (provide 'mg-emacs-coding)
