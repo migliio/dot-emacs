@@ -12,7 +12,8 @@
   (custom-set-faces '(mode-line ((t (:foreground "black" :background "white"
 						 :box (:line-width -1 :style released-button)))))
                     '(mode-line-inactive ((t (:foreground "gray20" :background "gray80"
-							  :box (:line-width -1 :style released-button)))))) 
+							  :box (:line-width -1 :style released-button))))))
+  (menu-bar-mode -1)
   (set-face-background 'default "undefined"))
 
 (defun mg-init-linux-theme ()
