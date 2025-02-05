@@ -292,10 +292,10 @@ I typically prefer simple and highly legible themes. I continuously change betwe
   (defun mg-init-cli-theme ()
     "Enable the theme environment of choice when from CLI."
     (load-theme 'modus-vivendi)
-    (custom-set-faces '(mode-line ((t (:foreground "black" :background "white"
+    (custom-set-faces '(mode-line ((t (:background "grey75" :foreground "black"
   						 :box (:line-width -1 :style released-button)))))
-                      '(mode-line-inactive ((t (:foreground "gray20" :background "gray80"
-  							  :box (:line-width -1 :style released-button))))))
+  		    '(mode-line-inactive ((t (:background "grey60" :foreground "black"
+  						 :box (:line-width -1 :style released-button))))))
     (menu-bar-mode -1)
     (set-face-background 'default "undefined"))
 
@@ -1840,10 +1840,6 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     "This is the variable indicating whether the buffer is in
    read-only mode or not." )
 
-  (setq mode-line-end-spaces
-        '(""
-  	mode-line-misc-info))
-
   (setq-default mode-line-format
   	      '("%e"
   		mg-modeline-buffer-status
@@ -1853,13 +1849,8 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   		" "
   		mode-line-position
   		"  "
-  		(vc-mode vc-mode)
-  		"  "
   		mg-modeline-major-mode
-  		"  "
-  		(:eval
-  		 (when (mode-line-window-selected-p)
-  		   mode-line-end-spaces))))
+  		"  "))
 
   (dolist (construct
   	 '(mg-modeline-major-mode

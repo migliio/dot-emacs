@@ -9,10 +9,10 @@
 (defun mg-init-cli-theme ()
   "Enable the theme environment of choice when from CLI."
   (load-theme 'modus-vivendi)
-  (custom-set-faces '(mode-line ((t (:foreground "black" :background "white"
+  (custom-set-faces '(mode-line ((t (:background "grey75" :foreground "black"
 						 :box (:line-width -1 :style released-button)))))
-                    '(mode-line-inactive ((t (:foreground "gray20" :background "gray80"
-							  :box (:line-width -1 :style released-button))))))
+		    '(mode-line-inactive ((t (:background "grey60" :foreground "black"
+						 :box (:line-width -1 :style released-button))))))
   (menu-bar-mode -1)
   (set-face-background 'default "undefined"))
 

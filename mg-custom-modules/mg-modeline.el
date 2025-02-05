@@ -83,10 +83,6 @@ or Line) that is also useful to specify in the modeline."
   "This is the variable indicating whether the buffer is in
  read-only mode or not." )
 
-(setq mode-line-end-spaces
-      '(""
-	mode-line-misc-info))
-
 (setq-default mode-line-format
 	      '("%e"
 		mg-modeline-buffer-status
@@ -96,13 +92,8 @@ or Line) that is also useful to specify in the modeline."
 		" "
 		mode-line-position
 		"  "
-		(vc-mode vc-mode)
-		"  "
 		mg-modeline-major-mode
-		"  "
-		(:eval
-		 (when (mode-line-window-selected-p)
-		   mode-line-end-spaces))))
+		"  "))
 
 (dolist (construct
 	 '(mg-modeline-major-mode
