@@ -1328,12 +1328,14 @@ The following is a series of packages to enable LSP and major-modes for some pro
     (add-hook 'erlang-mode-hook 'eglot-ensure)
     (add-hook 'python-mode-hook 'eglot-ensure))
 
-  (use-package eglot-booster
-    :straight (eglot-booster :type git :host github :repo "jdtsmith/eglot-booster")
-    :after eglot
-    :config
-    (add-to-list 'exec-path "/Users/gli/.cargo/bin/")
-    (eglot-booster-mode))
+
+  (when (not (mg-connected-via-ssh-p))
+    (use-package eglot-booster
+      :straight (eglot-booster :type git :host github :repo "jdtsmith/eglot-booster")
+      :after eglot
+      :config
+      (add-to-list 'exec-path "/Users/gli/.cargo/bin/")
+      (eglot-booster-mode)))
 
   (provide 'mg-emacs-languages)
 #+end_src
