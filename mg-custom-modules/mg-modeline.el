@@ -102,7 +102,7 @@ specify in the modeline."
 		"  "
 		(:eval
 		 (when (mode-line-window-selected-p)
-		   (propertize mode-line-end-spaces 'face '(:foreground "black")))))
+		   (propertize mode-line-end-spaces 'face '(:foreground "black"))))))
 
 (dolist (construct
 	 '(mg-modeline-major-mode
