@@ -1857,7 +1857,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   		" "
   		mode-line-position
   		"  "
-  		(:eval (propertize vc-mode 'face '(:foreground "black")))
+  		(:eval (propertize vc-mode 'face 'mode-line))
   		"  "
   		mg-modeline-major-mode
   		"  "
