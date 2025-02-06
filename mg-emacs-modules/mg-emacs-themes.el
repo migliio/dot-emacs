@@ -1,9 +1,6 @@
 (defun mg-init-macos-theme ()
   "Enable the theme environment of choice for darwin."
-  (use-package zenburn-theme
-    :straight (zenburn-theme :type git :host github :repo "bbatsov/zenburn-emacs" :branch "master")
-    :config
-    (load-theme 'zenburn t))
+  (load-theme 'modus-vivendi t)
   (set-frame-font "Liberation Mono 18" nil t))
 
 (defun mg-init-cli-theme ()
@@ -17,8 +14,8 @@
 
 (defun mg-init-linux-theme ()
   "Enable the theme enviroment of choice for linux."
-  (set-frame-font "Liberation Mono 15" nil t)
-  (load-theme 'modus-vivendi t))
+  (load-theme 'modus-vivendi t)
+  (set-frame-font "Liberation Mono 15" nil t))
 
 (if (display-graphic-p)
     (if (equal system-type 'darwin)
