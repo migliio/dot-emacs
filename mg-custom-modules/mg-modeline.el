@@ -96,7 +96,7 @@ specify in the modeline."
 		" "
 		mode-line-position
 		"  "
-		(:eval (propertize vc-mode 'face 'mode-line))
+		(:eval (propertize vc-mode 'face 'mode-line-buffer-id))
 		"  "
 		mg-modeline-major-mode
 		"  "

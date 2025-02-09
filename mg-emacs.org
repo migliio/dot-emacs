@@ -203,6 +203,7 @@ Historically, this module enclosed a bunch of other customizations for variables
   	auto-save-list-file-prefix emacs-tmp-dir
   	auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
   	backup-directory-alist `((".*" . ,emacs-tmp-dir)))
+    
     (setq-default frame-title-format '("%b")
   		ring-bell-function 'ignore
   		tab-width 8
@@ -517,6 +518,7 @@ There are cases when I need to open a file with an external program (e.g., video
   				("\\.mp4\\'" "mpv" (file))
   				("\\.webm\\'" "mpv" (file))
   				("\\.mkv\\'" "mpv" (file))
+  				("\\.pdf\\'" "sioyek" (file))
   				("\\.m4a\\'" "mpv --force-window" (file))
   				("\\.mov\\'" "mpv" (file))
   				("\\.ppt\\'" "libreoffice" (file))
@@ -960,7 +962,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-denote.el"
   (use-package denote
-    :straight (denote :type git :host github :repo "migliio/denote" :branch "master")
+    :straight t
     :bind (("C-c n n" . denote)
   	 ("C-c n x" . denote-region)
   	 ("C-c n N" . denote-type)
@@ -986,6 +988,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
   	 ("C-c n y s r" . denote-sequence-reparent)
   	 ("C-c n y s d" . denote-sequence-dired)
   	 ("C-c n y s f" . denote-sequence-find)
+  	 ("C-c n y s l" . denote-sequence-link)
   	 ("C-c n y s c s" . denote-sequence-new-sibling-of-current)
   	 ("C-c n y s c c" . denote-sequence-new-child-of-current)
   	 ("C-c n r" . denote-rename-file)
@@ -1019,7 +1022,8 @@ The second fundamental package that I use for (networked) note-taking is ~denote
     :config
     (denote-rename-buffer-mode 0)
     ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
-    (require 'denote-org-extras))
+    (require 'denote-org-extras)
+    (require 'denote-sequence))
 
   (use-package mg-denote
     :ensure nil
@@ -1052,7 +1056,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
   	 ("C-c n m f" . denote-menu-filter-by-keyword)))
 
   (use-package consult-denote
-    :straight (consult-denote :type git :host github :repo "protesilaos/consult-denote" :branch "main")
+    :straight t
     :bind (("C-c n f g" . consult-denote-grep)
   	 ("C-c n f c" . consult-denote-find)))
 
@@ -1087,7 +1091,7 @@ This module introduces several packages that I use to manage bibliographic entri
     (setq citar-bibliography (list mg-bibliography-path)))
 
   (use-package citar-denote
-    :straight (citar-denote :type git :host github :repo "pprevos/citar-denote" :branch "main")
+    :straight t
     :custom
     (citar-open-always-create-notes nil)
     (citar-denote-file-type 'org)
@@ -1101,14 +1105,14 @@ This module introduces several packages that I use to manage bibliographic entri
     :init
     (citar-denote-mode)
     :bind (("C-c n c c" . citar-create-note)
-  	 ("C-c n c n" . citar-denote-open-note)
-  	 ("C-c n c d" . citar-denote-dwim)
-  	 ("C-c n c e" . citar-denote-open-reference-entry)
-  	 ("C-c n c a" . citar-denote-add-citekey)
-  	 ("C-c n c k" . citar-denote-remove-citekey)
-  	 ("C-c n c r" . citar-denote-find-reference)
-  	 ("C-c n c f" . citar-denote-find-citation)
-  	 ("C-c n c l" . citar-denote-link-reference)))
+	 ("C-c n c n" . citar-denote-open-note)
+	 ("C-c n c d" . citar-denote-dwim)
+	 ("C-c n c e" . citar-denote-open-reference-entry)
+	 ("C-c n c a" . citar-denote-add-citekey)
+	 ("C-c n c k" . citar-denote-remove-citekey)
+	 ("C-c n c r" . citar-denote-find-reference)
+	 ("C-c n c f" . citar-denote-find-citation)
+	 ("C-c n c l" . citar-denote-link-reference)))
 
   (use-package biblio
     :straight t
@@ -1118,9 +1122,9 @@ This module introduces several packages that I use to manage bibliographic entri
     :ensure nil
     :after (org)
     :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)
-  	 ("C-c p b c" . mg-bib-count-references)
-  	 ("C-c p b n" . mg-bib-denote-goto-notes-interactively)
-  	 ("C-c p b i" . mg-bib-kill-bibtex-from-isbn)))
+	 ("C-c p b c" . mg-bib-count-references)
+	 ("C-c p b n" . mg-bib-denote-goto-notes-interactively)
+	 ("C-c p b i" . mg-bib-kill-bibtex-from-isbn)))
 
   (use-package mg-personal
     :ensure nil)
@@ -1209,6 +1213,7 @@ I started using ~notmuch~ not so long ago. During a conversation with [[https://
     (notmuch-message-headers '("To" "Cc" "Subject" "Date"))
     (notmuch-message-headers-visible t)
     :config
+    (add-to-list 'notmuch-saved-searches '(:name "mm" :query "tag:mm" :key "m"))
     (defun pop-from-message-completion()
       (pop message--old-style-completion-functions))
     (advice-add 'message-completion-function :after #'pop-from-message-completion)
@@ -1854,7 +1859,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   		" "
   		mode-line-position
   		"  "
-  		(:eval (propertize vc-mode 'face 'mode-line))
+  		(:eval (propertize vc-mode 'face 'mode-line-buffer-id))
   		"  "
   		mg-modeline-major-mode
   		"  "

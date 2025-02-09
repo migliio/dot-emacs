@@ -35,6 +35,7 @@
   (notmuch-message-headers '("To" "Cc" "Subject" "Date"))
   (notmuch-message-headers-visible t)
   :config
+  (add-to-list 'notmuch-saved-searches '(:name "mm" :query "tag:mm" :key "m"))
   (defun pop-from-message-completion()
     (pop message--old-style-completion-functions))
   (advice-add 'message-completion-function :after #'pop-from-message-completion)
