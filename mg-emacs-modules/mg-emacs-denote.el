@@ -1,5 +1,5 @@
 (use-package denote
-  :straight (denote :type git :host github :repo "migliio/denote" :branch "master")
+  :straight t
   :bind (("C-c n n" . denote)
 	 ("C-c n x" . denote-region)
 	 ("C-c n N" . denote-type)
@@ -24,6 +24,8 @@
 	 ("C-c n y s s" . denote-sequence)
 	 ("C-c n y s r" . denote-sequence-reparent)
 	 ("C-c n y s d" . denote-sequence-dired)
+	 ("C-c n y s f" . denote-sequence-find)
+	 ("C-c n y s l" . denote-sequence-link)
 	 ("C-c n y s c s" . denote-sequence-new-sibling-of-current)
 	 ("C-c n y s c c" . denote-sequence-new-child-of-current)
 	 ("C-c n r" . denote-rename-file)
@@ -57,7 +59,8 @@
   :config
   (denote-rename-buffer-mode 0)
   ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
-  (require 'denote-org-extras))
+  (require 'denote-org-extras)
+  (require 'denote-sequence))
 
 (use-package mg-denote
   :ensure nil
@@ -90,7 +93,7 @@
 	 ("C-c n m f" . denote-menu-filter-by-keyword)))
 
 (use-package consult-denote
-  :straight (consult-denote :type git :host github :repo "protesilaos/consult-denote" :branch "main")
+  :straight t
   :bind (("C-c n f g" . consult-denote-grep)
 	 ("C-c n f c" . consult-denote-find)))
 

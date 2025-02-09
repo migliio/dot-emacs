@@ -52,11 +52,17 @@
   :ensure nil
   :bind (("C-c u k v" . mg-get-kernel-version-from-source)))
 
-(use-package vterm
-  :straight t)
+(when (display-graphic-p)
+  (progn
+    (use-package vterm
+      :straight t)
+    (use-package multi-vterm
+      :straight t
+      :bind (("C-c v" . multi-vterm)))))
 
-(use-package multi-vterm
+(use-package xclip
   :straight t
-  :bind (("C-c v" . multi-vterm)))
+  :config
+  (xclip-mode))
 
 (provide 'mg-emacs-coding)

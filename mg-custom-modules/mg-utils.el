@@ -77,5 +77,10 @@
   "Helper function to get today's timestamp with the abbreviated day name."
   (format-time-string "%Y-%m-%d %a"))
 
+(defun mg-connected-via-ssh-p ()
+  "Return non-nil if connected via `ssh` to a remote machine."
+  (not (string-empty-p
+	(string-trim (shell-command-to-string "echo $SSH_TTY")))))
+
 (provide 'mg-utils)
 ;;; mg-utils.el ends here

@@ -44,6 +44,7 @@
 	auto-save-list-file-prefix emacs-tmp-dir
 	auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
 	backup-directory-alist `((".*" . ,emacs-tmp-dir)))
+  
   (setq-default frame-title-format '("%b")
 		ring-bell-function 'ignore
 		tab-width 8
@@ -93,9 +94,6 @@
   :config
   (add-hook 'prog-mode-hook
 	    #'mg-line-numbers-highlight-line-mode))
-
-(use-package mg-utils
-  :ensure nil)
 
 (use-package which-key
   :straight t

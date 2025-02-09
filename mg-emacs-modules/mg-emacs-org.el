@@ -77,6 +77,8 @@
      ("a" "Agenda")
      ("am" "Meeting entry" entry (file+headline mg-agenda-file "Future")
 	"* Meeting with %? :meeting:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
+     ("as" "Schedule entry" entry (file+headline mg-agenda-file "Schedule")
+	"* TODO %? :schedule:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n- Project :: \n- Description :: \n- Outcome :: \n")
      ("ae" "Event entry" entry (file+headline mg-agenda-file "Future")
 	"* %? :event:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
      ("ac" "Call entry" entry (file+headline mg-agenda-file "Future")

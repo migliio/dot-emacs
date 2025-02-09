@@ -88,24 +88,27 @@ This file deals with the early initialization of the GNU Emacs editor. It is, in
   			 "~/.emacs.d/mg-custom-modules/"))
 
   (require 'mg-emacs-package-managers)
+  (require 'mg-utils)
   (require 'mg-emacs-defaults)
   (require 'mg-emacs-themes)
-  (require 'mg-emacs-layouts)
   (require 'mg-emacs-buffers-completion)
   (require 'mg-emacs-files)
   (require 'mg-emacs-buffers)
+  (when (not (mg-connected-via-ssh-p))
+    (progn
+      (require 'mg-emacs-layouts)
+      (require 'mg-emacs-org)
+      (require 'mg-emacs-denote)
+      (require 'mg-emacs-bib)
+      (require 'mg-emacs-ledger)
+      (require 'mg-emacs-flashcards)
+      (require 'mg-emacs-notmuch)
+      (require 'mg-emacs-browsing)
+      (require 'mg-emacs-ai)))
   (require 'mg-emacs-markup)
-  (require 'mg-emacs-org)
-  (require 'mg-emacs-denote)
-  (require 'mg-emacs-bib)
-  (require 'mg-emacs-ledger)
-  (require 'mg-emacs-flashcards)
-  (require 'mg-emacs-notmuch)
   (require 'mg-emacs-languages)
-  (require 'mg-emacs-browsing)
   (require 'mg-emacs-git)
   (require 'mg-emacs-coding)
-  (require 'mg-emacs-ai)
 #+end_src
 
 * The ~mg-emacs-modules~
@@ -201,6 +204,7 @@ Historically, this module enclosed a bunch of other customizations for variables
   	auto-save-list-file-prefix emacs-tmp-dir
   	auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
   	backup-directory-alist `((".*" . ,emacs-tmp-dir)))
+    
     (setq-default frame-title-format '("%b")
   		ring-bell-function 'ignore
   		tab-width 8
@@ -250,9 +254,6 @@ Historically, this module enclosed a bunch of other customizations for variables
     :config
     (add-hook 'prog-mode-hook
   	    #'mg-line-numbers-highlight-line-mode))
-
-  (use-package mg-utils
-    :ensure nil)
 #+end_src
 
 The ~mg-line-numbers-highlight-line-mode~ minor mode is only used when the ~prog-mode~ major mode is enabled. There is no reason for my specific use cases to have line numbers outside of coding. However, I use this feature quite extensively when programming. In text editors like Emacs, relative line numbers add a 10x speed in the way you insert/remove/modify text.
@@ -282,17 +283,31 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line to keep 
 I typically favor simple and highly legible themes. I often switch between themes, and the process of finding one that truly suits me is ongoing. However, I generally rely on two different configurations, depending on the system I'm using (e.g., Linux vs. Mac). I prefer dark themes over light ones, and I enable a night shift with warmer colors settings across the entire day. I find that warm light is more comfortable for my eyes. The theme I am most attached to is [[https://github.com/bbatsov/zenburn-emacs][Zenburn]], a color scheme with a very low "distance" between its colours, which I find aesthetically pleasing and comfortable for my eyes.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
+  (defun mg-init-macos-theme ()
+    "Enable the theme environment of choice for darwin."
+    (load-theme 'modus-vivendi t)
+    (set-frame-font "Liberation Mono 18" nil t))
+
+  (defun mg-init-cli-theme ()
+    "Enable the theme environment of choice when from CLI."
+    (load-theme 'modus-vivendi)
+    (custom-set-faces '(mode-line ((t (:background "grey75" :foreground "black"
+  						 :box (:line-width -1 :style released-button)))))
+  		    '(mode-line-inactive ((t (:background "grey60" :foreground "black"
+  							  :box (:line-width -1 :style released-button))))))
+    (menu-bar-mode -1))
+
+  (defun mg-init-linux-theme ()
+    "Enable the theme enviroment of choice for linux."
+    (load-theme 'modus-vivendi t)
+    (set-frame-font "Liberation Mono 15" nil t))
+
   (if (display-graphic-p)
-      (progn
-        (if (equal system-type 'darwin)
-  	  (set-frame-font "Liberation Mono 14" nil t)
-  	(set-frame-font "Liberation Mono 18" nil t))
-        (use-package zenburn-theme
-  	:straight (zenburn-theme :type git :host github :repo "bbatsov/zenburn-emacs")
-  	:config
-  	(load-theme 'zenburn t))
-        (set-fringe-mode 0))
-    (set-face-background 'default "undefined"))
+      (if (equal system-type 'darwin)
+    	(mg-init-macos-theme)
+        (mg-init-linux-theme))
+    (mg-init-cli-theme))
+  (set-fringe-mode 0)
 #+end_src
 
 The only other feature that needs some clarification for the above code is the conditional statement on the ~display-graphic-p~. When not on the GUI version of Emacs (i.e., from CLI), I prefer not to select any theme and just stick with the one used in the terminal emulator. I find this way to go way less confusing, and surely lowers cognitive overhead for me.
@@ -503,6 +518,7 @@ There are cases when I need to open a file with an external program (e.g., video
   				("\\.mp4\\'" "mpv" (file))
   				("\\.webm\\'" "mpv" (file))
   				("\\.mkv\\'" "mpv" (file))
+  				("\\.pdf\\'" "sioyek" (file))
   				("\\.m4a\\'" "mpv --force-window" (file))
   				("\\.mov\\'" "mpv" (file))
   				("\\.ppt\\'" "libreoffice" (file))
@@ -692,6 +708,8 @@ Those questions are all answered by just looking at the agenda, fired up with ju
        ("a" "Agenda")
        ("am" "Meeting entry" entry (file+headline mg-agenda-file "Future")
   	"* Meeting with %? :meeting:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
+       ("as" "Schedule entry" entry (file+headline mg-agenda-file "Schedule")
+  	"* TODO %? :schedule:\n:PROPERTIES:\n:CATEGORY: %^{Category}\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n- Project :: \n- Description :: \n- Outcome :: \n")
        ("ae" "Event entry" entry (file+headline mg-agenda-file "Future")
   	"* %? :event:\n:PROPERTIES:\n:LOCATION:\n:CATEGORY:\n:END:\n:LOGBOOK:\n- Entry inserted on %U \\\\\n:END:\n%^T\n")
        ("ac" "Call entry" entry (file+headline mg-agenda-file "Future")
@@ -944,7 +962,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-denote.el"
   (use-package denote
-    :straight (denote :type git :host github :repo "migliio/denote" :branch "master")
+    :straight t
     :bind (("C-c n n" . denote)
   	 ("C-c n x" . denote-region)
   	 ("C-c n N" . denote-type)
@@ -969,6 +987,8 @@ The second fundamental package that I use for (networked) note-taking is ~denote
   	 ("C-c n y s s" . denote-sequence)
   	 ("C-c n y s r" . denote-sequence-reparent)
   	 ("C-c n y s d" . denote-sequence-dired)
+  	 ("C-c n y s f" . denote-sequence-find)
+  	 ("C-c n y s l" . denote-sequence-link)
   	 ("C-c n y s c s" . denote-sequence-new-sibling-of-current)
   	 ("C-c n y s c c" . denote-sequence-new-child-of-current)
   	 ("C-c n r" . denote-rename-file)
@@ -1002,7 +1022,8 @@ The second fundamental package that I use for (networked) note-taking is ~denote
     :config
     (denote-rename-buffer-mode 0)
     ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
-    (require 'denote-org-extras))
+    (require 'denote-org-extras)
+    (require 'denote-sequence))
 
   (use-package mg-denote
     :ensure nil
@@ -1035,7 +1056,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
   	 ("C-c n m f" . denote-menu-filter-by-keyword)))
 
   (use-package consult-denote
-    :straight (consult-denote :type git :host github :repo "protesilaos/consult-denote" :branch "main")
+    :straight t
     :bind (("C-c n f g" . consult-denote-grep)
   	 ("C-c n f c" . consult-denote-find)))
 
@@ -1084,14 +1105,14 @@ This module introduces several packages that I use to manage bibliographic entri
     :init
     (citar-denote-mode)
     :bind (("C-c n c c" . citar-create-note)
-  	 ("C-c n c n" . citar-denote-open-note)
-  	 ("C-c n c d" . citar-denote-dwim)
-  	 ("C-c n c e" . citar-denote-open-reference-entry)
-  	 ("C-c n c a" . citar-denote-add-citekey)
-  	 ("C-c n c k" . citar-denote-remove-citekey)
-  	 ("C-c n c r" . citar-denote-find-reference)
-  	 ("C-c n c f" . citar-denote-find-citation)
-  	 ("C-c n c l" . citar-denote-link-reference)))
+	 ("C-c n c n" . citar-denote-open-note)
+	 ("C-c n c d" . citar-denote-dwim)
+	 ("C-c n c e" . citar-denote-open-reference-entry)
+	 ("C-c n c a" . citar-denote-add-citekey)
+	 ("C-c n c k" . citar-denote-remove-citekey)
+	 ("C-c n c r" . citar-denote-find-reference)
+	 ("C-c n c f" . citar-denote-find-citation)
+	 ("C-c n c l" . citar-denote-link-reference)))
 
   (use-package biblio
     :straight t
@@ -1101,9 +1122,9 @@ This module introduces several packages that I use to manage bibliographic entri
     :ensure nil
     :after (org)
     :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)
-  	 ("C-c p b c" . mg-bib-count-references)
-  	 ("C-c p b n" . mg-bib-denote-goto-notes-interactively)
-  	 ("C-c p b i" . mg-bib-kill-bibtex-from-isbn)))
+	 ("C-c p b c" . mg-bib-count-references)
+	 ("C-c p b n" . mg-bib-denote-goto-notes-interactively)
+	 ("C-c p b i" . mg-bib-kill-bibtex-from-isbn)))
 
   (use-package mg-personal
     :ensure nil)
@@ -1192,6 +1213,7 @@ I started using ~notmuch~ not so long ago. During a conversation with [[https://
     (notmuch-message-headers '("To" "Cc" "Subject" "Date"))
     (notmuch-message-headers-visible t)
     :config
+    (add-to-list 'notmuch-saved-searches '(:name "mm" :query "tag:mm" :key "m"))
     (defun pop-from-message-completion()
       (pop message--old-style-completion-functions))
     (advice-add 'message-completion-function :after #'pop-from-message-completion)
@@ -1306,6 +1328,15 @@ The following is a series of packages to enable LSP and major-modes for some pro
     (add-hook 'haskell-mode-hook 'eglot-ensure)
     (add-hook 'erlang-mode-hook 'eglot-ensure)
     (add-hook 'python-mode-hook 'eglot-ensure))
+
+
+  (when (not (mg-connected-via-ssh-p))
+    (use-package eglot-booster
+      :straight (eglot-booster :type git :host github :repo "jdtsmith/eglot-booster")
+      :after eglot
+      :config
+      (add-to-list 'exec-path "/Users/gli/.cargo/bin/")
+      (eglot-booster-mode)))
 
   (provide 'mg-emacs-languages)
 #+end_src
@@ -1465,12 +1496,18 @@ I mostly write and review code for the [[https://kernel.org/][Linux kernel]]. I 
 The following piece of code introduces ~vterm~ as terminal emulator, with ~multi-vterm~ on top of it. I've been using ~vterm~ since the very beginning, and never felt the need to switch to any other terminal emulator (e.g., ~eshell~). The ~multi-vterm~ package, instead, allows to spawn multiple ~vterm~ buffer, that in conjunction with window splitting and multiple buffer basically creates a "terminal multiplexer" inside of Emacs.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-coding.el"
-  (use-package vterm
-    :straight t)
+  (when (display-graphic-p)
+    (progn
+      (use-package vterm
+        :straight t)
+      (use-package multi-vterm
+        :straight t
+        :bind (("C-c v" . multi-vterm)))))
 
-  (use-package multi-vterm
+  (use-package xclip
     :straight t
-    :bind (("C-c v" . multi-vterm)))
+    :config
+    (xclip-mode))
 
   (provide 'mg-emacs-coding)
 #+end_src
@@ -1487,9 +1524,13 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     (ellama-language "English")
     :config
     (require 'llm-ollama)
-    (setq ellama-provider
-  	(make-llm-ollama
-  	 :chat-model "llama3.2:latest")))
+    (if (eq system-type 'darwin)
+        (setq ellama-provider
+  	    (make-llm-ollama
+  	     :chat-model "llama3.3:70b"))
+      (setq ellama-provider
+  	  (make-llm-ollama
+  	   :chat-model "llama3.2:latest"))))
 
   (provide 'mg-emacs-ai)
 #+end_src
@@ -1576,6 +1617,11 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defun mg-get-today-timestamp ()
     "Helper function to get today's timestamp with the abbreviated day name."
     (format-time-string "%Y-%m-%d %a"))
+
+  (defun mg-connected-via-ssh-p ()
+    "Return non-nil if connected via `ssh` to a remote machine."
+    (not (string-empty-p
+  	(string-trim (shell-command-to-string "echo $SSH_TTY")))))
 
   (provide 'mg-utils)
   ;;; mg-utils.el ends here
@@ -1761,11 +1807,11 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   name.")
 
   (defun mg-modeline--major-mode ()
-    "This is a function used to get the current major mode for the
-  opened buffer. The major mode is obtained by looking at the
-  `major-mode' variable. In case we are under EXWM, the major mode
-  haas also a `exwm--input-mode' further specification (i.e., Char
-  or Line) that is also useful to specify in the modeline."
+    "Get the current major mode for the opened buffer. The major mode
+  is obtained by looking at the `major-mode' variable. In case we
+  are under EXWM, the major mode haas also a `exwm--input-mode'
+  further specification (i.e., Char or Line) that is also useful to
+  specify in the modeline."
     (let* ((mode
   	  (mapconcat 'capitalize
   		     (butlast (split-string (symbol-name major-mode) "-")) " "))
@@ -1809,13 +1855,13 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   		" "
   		mode-line-position
   		"  "
-  		(vc-mode vc-mode)
+  		(:eval (propertize vc-mode 'face 'mode-line-buffer-id))
   		"  "
   		mg-modeline-major-mode
   		"  "
   		(:eval
   		 (when (mode-line-window-selected-p)
-  		   mode-line-end-spaces))))
+  		   (propertize mode-line-end-spaces 'face '(:foreground "black"))))))
 
   (dolist (construct
   	 '(mg-modeline-major-mode
@@ -1874,7 +1920,8 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
       (setq ns-use-proxy-icon nil
   	  mac-option-modifier 'meta
   	  frame-title-format nil
-  	  mac-frame-tabbing nil)))
+  	  mac-frame-tabbing nil)
+      (menu-bar-mode t)))
 
   (provide 'mg-macos)
   ;;; mg-macos.el ends here
@@ -2080,11 +2127,11 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 #+begin_src emacs-lisp :tangle "mg-custom-modules/mg-bib.el"
   ;;; mg-bib.el --- Extensions for bibliographic packages -*- lexical-binding: t -*-
 
-  ;; Copyright (C) 2024  Claudio Migliorelli
+  ;; Copyright (C) 2025  Claudio Migliorelli
 
   ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
   ;; URL: https://crawlingaway.org/emacs/dot-emacs
-  ;; Version: 0.0.7
+  ;; Version: 0.1.0
   ;; Package-Requires: ((emacs "29.4"))
 
   ;; This file is NOT part of GNU Emacs.
@@ -2154,9 +2201,10 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   			    (cdr bibtex-list)))
       (when-let* ((title (mg-bib--bibtex-get-field-content bibtex-list "title"))
       		(heading (format "* %s\n" title)))
-      (concat heading
-      	    (mg-bib--denote-bibtex-org-block
-  	     (mg-bib--bibtex-list-to-string bibtex-list))))))
+        (format "%s%s%s" heading
+      	      (mg-bib--denote-bibtex-org-block
+  	       (mg-bib--bibtex-list-to-string bibtex-list))
+  	      "- Overview :: \n- Findings :: \n- Significance :: \n"))))
 
   (defun mg-bib-denote-org-capture-paper-biblio (&optional isbn)
     "Custom `org-capture' template to add a paper/book reference."
@@ -2174,11 +2222,12 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
       	 (title (mg-bib--bibtex-get-field-content bibtex-list "title"))
       	 (heading (format "* %s\n" title))
   	 (file-path (mg-bib--denote-pull-resource-for-entry key)))
-        (concat heading
+        (format "%s%s%s" heading
       	      (mg-bib--denote-bibtex-org-block
   	       (mg-bib--bibtex-list-to-string
   		(mg-bib--bibtex-append-field bibtex-list "file" (mg-bib--bibtex-format-file-for-field file-path)))
-  	       file-path)))))
+  	       file-path)
+  	      "- Overview :: \n- Findings :: \n- Significance :: \n"))))
 
   (defun mg-bib--denote-identifier-from-attrs (file)
     "Get the creation date of FILE from its attributes.
@@ -2985,4 +3034,3 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (provide 'mg-personal)
   ;;; mg-personal.el ends here
 #+end_src
-

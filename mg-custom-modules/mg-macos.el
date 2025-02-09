@@ -38,7 +38,8 @@
     (setq ns-use-proxy-icon nil
 	  mac-option-modifier 'meta
 	  frame-title-format nil
-	  mac-frame-tabbing nil)))
+	  mac-frame-tabbing nil)
+    (menu-bar-mode t)))
 
 (provide 'mg-macos)
 ;;; mg-macos.el ends here
