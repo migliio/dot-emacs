@@ -51,19 +51,19 @@
 (defun mg-personal-get-research-areas ()
   "Get research areas I worked on, as a list of strings, based on produced artifacts."
   (let* ((raw-keywords
-	 (mg-personal--get-raw-keywords-from-metanote))
-	(formatted-keywords (delete-dups
-			     (flatten-list
-			      (mapcar
-			       (lambda (keywords)
-				 (let ((formatted-keywords
-					(replace-regexp-in-string "_" " " keywords)))
-				   (string-split formatted-keywords ";" t nil)))
-			       raw-keywords)))))
+  	  (mg-personal--get-raw-keywords-from-metanote))
+  	 (formatted-keywords (delete-dups
+  			      (flatten-list
+  			       (mapcar
+  				(lambda (keywords)
+  				  (let ((formatted-keywords
+  					 (replace-regexp-in-string "_" " " keywords)))
+  				    (string-split formatted-keywords ";" t nil)))
+  				raw-keywords)))))
     (sort (mapcar (lambda (keyword)
-	      (capitalize keyword))
-	    formatted-keywords)
-	  #'string<)))
+  		    (capitalize keyword))
+  		  formatted-keywords)
+  	  #'string<)))
 
 (provide 'mg-personal)
 ;;; mg-personal.el ends here

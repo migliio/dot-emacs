@@ -15,6 +15,7 @@
 	 ("C-c u w f" . toggle-frame-fullscreen)
 	 ("C-c u w m" . toggle-frame-maximized)
 	 ("C-x C-n" . next-buffer)
+	 ("C-x a a" . async-shell-command)
 	 ("C-x C-p" . previous-buffer))
   :init
   (global-set-key (kbd "C-x C-n") nil)

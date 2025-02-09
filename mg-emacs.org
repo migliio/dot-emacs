@@ -172,6 +172,7 @@ Historically, this module enclosed a bunch of other customizations for variables
   	 ("C-c u w f" . toggle-frame-fullscreen)
   	 ("C-c u w m" . toggle-frame-maximized)
   	 ("C-x C-n" . next-buffer)
+  	 ("C-x a a" . async-shell-command)
   	 ("C-x C-p" . previous-buffer))
     :init
     (global-set-key (kbd "C-x C-n") nil)
@@ -278,36 +279,23 @@ Starting from [2024-04-14 Sun], I decided to implement my own mode-line to keep 
 
 ** The ~mg-emacs-themes.el~ module
 
-I typically prefer simple and highly legible themes. I continuously change between themes, and the journey to find the one that really fits is still in progress. However, I generally use two different configurations based on the system I'm in (i.e., Linux vs. Mac). I prefer dark themes over light ones, and I use a night shift warmer colors settings across the entire day. I find warm light better for my eyes.
+I typically favor simple and highly legible themes. I often switch between themes, and the process of finding one that truly suits me is ongoing. However, I generally rely on two different configurations, depending on the system I'm using (e.g., Linux vs. Mac). I prefer dark themes over light ones, and I enable a night shift with warmer colors settings across the entire day. I find that warm light is more comfortable for my eyes. The theme I am most attached to is [[https://github.com/bbatsov/zenburn-emacs][Zenburn]], a color scheme with a very low "distance" between its colours, which I find aesthetically pleasing and comfortable for my eyes.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
-  (defun mg-init-macos-theme ()
-    "Enable the theme environment of choice for darwin."
-    (use-package modus-themes
-      :straight (modus-themes :type git :host github :repo "protesilaos/modus-themes")
-      :config
-      (load-theme 'modus-vivendi t))
-    (set-frame-font "Iosevka Comfy 18" nil t))
-
-  (defun mg-init-linux-theme ()
-    "Enable the theme enviroment of choice for linux."
-    (use-package modus-themes
-      :straight (modus-themes :type git :host github :repo "protesilaos/modus-themes")
-      :config
-      (load-theme 'modus-vivendi t))
-    (set-frame-font "Iosevka Comfy 16" nil t))
-
   (if (display-graphic-p)
       (progn
         (if (equal system-type 'darwin)
-    	  (mg-init-macos-theme)
-    	(mg-init-linux-theme))
+  	  (set-frame-font "Liberation Mono 14" nil t)
+  	(set-frame-font "Liberation Mono 18" nil t))
+        (use-package zenburn-theme
+  	:straight (zenburn-theme :type git :host github :repo "bbatsov/zenburn-emacs")
+  	:config
+  	(load-theme 'zenburn t))
         (set-fringe-mode 0))
     (set-face-background 'default "undefined"))
 #+end_src
 
 The only other feature that needs some clarification for the above code is the conditional statement on the ~display-graphic-p~. When not on the GUI version of Emacs (i.e., from CLI), I prefer not to select any theme and just stick with the one used in the terminal emulator. I find this way to go way less confusing, and surely lowers cognitive overhead for me.
-
 The following piece of code introduces ~hide-mode-line~ mode, which is used in a custom function of mine to enable PDF presentation mode (not technically an Emacs mode, rather a custom layout).
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
@@ -1283,10 +1271,10 @@ The following is a series of packages to enable LSP and major-modes for some pro
     :after (edts)
     :mode "\\.erl\\'")
 
-  (use-package nasm-mode
+  (use-package gnuplot
     :straight t)
 
-  (use-package gnuplot
+  (use-package fasm-mode
     :straight t)
 
   (use-package pyvenv
@@ -1431,10 +1419,6 @@ Having multiple cursors is a neat feature that changed the way I look and modify
 The following packages, instead, are mostly for source code analysis and browsing. For sure, ~xcscope~ is the killer package here, and I use it every day multiple times. When it comes to inspecting *huge* codebases (e.g., the Linux kernel), having an efficient way to find definitions, function calling another function, patterns, etc. is fundamental. The ~xcscope~ package is just a ~cscope~ client for Emacs (to make ~cscope~ to work you typically have to build a ~cscope~ "database" - e.g., in the Linux kernel you simply type ~make cscope~).
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-coding.el"
-
-  (use-package ztree
-    :straight t)
-
   (use-package deadgrep
     :straight t
     :bind
@@ -2155,7 +2139,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     "Custom `org-capture' template to add a website reference."
     (let* ((url (read-string "URL: "))
       	 (title (mg-bib--www-get-page-title url))
-      	 (authors (read-string "Insert authors: "))
+      	 (authors (mg-bib--denote-prompt-authors))
       	 (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
   	 (bibtex (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
       			 "0000"
@@ -2169,7 +2153,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   				    (mg-bib--bibtex-generate-key bibtex-list))
   			    (cdr bibtex-list)))
       (when-let* ((title (mg-bib--bibtex-get-field-content bibtex-list "title"))
-      		(heading (format "* %s\n" title (mg-bib--denote-format-tags-as-org))))
+      		(heading (format "* %s\n" title)))
       (concat heading
       	    (mg-bib--denote-bibtex-org-block
   	     (mg-bib--bibtex-list-to-string bibtex-list))))))
@@ -2368,6 +2352,24 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defun mg-bib--bibtex-early-sanitize (bibtex)
     "Perform some early initialization on BIBTEX."
     (replace-regexp-in-string "[ \t]+=" " =" (replace-regexp-in-string "\n[ \t]+" "\n" (replace-regexp-in-string "[ \t]+\n" "\n" bibtex))))
+
+  (defun mg-bib--denote-prompt-authors ()
+    "Get authors from user, possibly using autocomplete."
+    (let ((entries (parsebib-parse mg-bibliography-path :fields (list "author")))
+          authors)
+      (maphash (lambda (key entry)
+                 (let ((author (assoc "author" entry)))
+  		 (when author
+                     (push (string-split (cdr author) " and " t nil) authors))))
+               entries)
+      (if-let ((candidates
+  	   (delq 'nil (mapcar (lambda (entry)
+  				(when (string-match-p "," entry)
+  				  (let ((parsed (string-split entry ", " t nil)))
+  				    (format "%s %s" (car (cdr parsed)) (car parsed)))))
+  			      (flatten-list authors)))))
+  	(completing-read-multiple "Insert authors: " candidates)
+        (user-error "Can't retrieve suggestions for authors"))))
 
   (defun mg-bib--bibtex-parse-entry (bibtex)
     "Parse BIBTEX to make a list.
@@ -2966,19 +2968,19 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   (defun mg-personal-get-research-areas ()
     "Get research areas I worked on, as a list of strings, based on produced artifacts."
     (let* ((raw-keywords
-  	 (mg-personal--get-raw-keywords-from-metanote))
-  	(formatted-keywords (delete-dups
-  			     (flatten-list
-  			      (mapcar
-  			       (lambda (keywords)
-  				 (let ((formatted-keywords
-  					(replace-regexp-in-string "_" " " keywords)))
-  				   (string-split formatted-keywords ";" t nil)))
-  			       raw-keywords)))))
+    	  (mg-personal--get-raw-keywords-from-metanote))
+    	 (formatted-keywords (delete-dups
+    			      (flatten-list
+    			       (mapcar
+    				(lambda (keywords)
+    				  (let ((formatted-keywords
+    					 (replace-regexp-in-string "_" " " keywords)))
+    				    (string-split formatted-keywords ";" t nil)))
+    				raw-keywords)))))
       (sort (mapcar (lambda (keyword)
-  	      (capitalize keyword))
-  	    formatted-keywords)
-  	  #'string<)))
+    		    (capitalize keyword))
+    		  formatted-keywords)
+    	  #'string<)))
 
   (provide 'mg-personal)
   ;;; mg-personal.el ends here

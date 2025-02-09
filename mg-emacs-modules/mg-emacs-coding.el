@@ -18,9 +18,6 @@
   :config
   (multiple-cursors-mode 1))
 
-(use-package ztree
-  :straight t)
-
 (use-package deadgrep
   :straight t
   :bind
