@@ -39,10 +39,10 @@
       (let ((default-directory kernel-directory))
 	(let* ((candidates
 		(split-string
-		 (shell-command-to-string 
+		 (shell-command-to-string
 		  (format "find $1 -name '*.[ch]' | xargs grep -EnH \"%s\"" regexp))
 		 "\n" t nil))
-	       (parsed (split-string 
+	       (parsed (split-string
 			(completing-read "Select OCCUR to visit: " candidates)
 			":" t nil)))
 	  (with-current-buffer (find-file (expand-file-name (nth 0 parsed)))
