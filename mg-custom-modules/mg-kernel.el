@@ -1,6 +1,6 @@
 ;;; mg-kernel.el --- Utilities to use with the Linux kernel -*- lexical-binding: t -*-
 
-;; Copyright (C) 2024  Claudio Migliorelli
+;; Copyright (C) 2025  Claudio Migliorelli
 
 ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
 ;; URL: https://crawlingaway.com/emacs/dot-emacs
@@ -31,6 +31,31 @@
 ;; every day.
 
 ;;; Code:
+
+(defun mg-kernel--do-grep (regexp)
+  "Wrapper for `grep' to find definitions/usage of code
+ snippets/structs in the kernel."
+  (if-let ((kernel-directory (car (find-file-read-args "Select KERNEL SOURCE: " nil))))
+      (let ((default-directory kernel-directory))
+	(let* ((candidates
+		(split-string
+		 (shell-command-to-string 
+		  (format "find $1 -name '*.[ch]' | xargs grep -EnH \"%s\"" regexp))
+		 "\n" t nil))
+	       (parsed (split-string 
+			(completing-read "Select OCCUR to visit: " candidates)
+			":" t nil)))
+	  (with-current-buffer (find-file (expand-file-name (nth 0 parsed)))
+	    (goto-line (string-to-number (nth 1 parsed))))))
+    (user-error "Something went wrong when selecting KERNEL SOURCE")))
+
+(defun mg-kernel-do-grep ()
+  "Prompt a regexp to grep in the kernel source."
+  (interactive)
+  (let ((regexp
+	 (read-string "Provide a REGEXP to search: ")))
+    (mg-kernel--do-grep regexp)))
+
 (defun mg-kernel-coding-style/c-lineup-arglist-tabs-only (ignored)
   "Line up argument lists by tabs, not spaces."
   (let* ((anchor (c-langelem-pos c-syntactic-element))

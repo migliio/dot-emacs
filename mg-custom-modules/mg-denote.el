@@ -123,5 +123,12 @@ The renaming convention is the `denote' one."
       (goto-char (point-max))
       (insert (format "\n- %s :: \n  - References :: " (format-time-string "[%Y-%m-%d %a %H:%M]"))))))
 
+(defun mg-denote-get-index-in-dired ()
+  "Get the zettels index in a `dired' buffer.
+The zettels index is the entry point of networked notes - i.e.,
+all notes with a depth of 1 in their signature."
+  (interactive)
+  (denote-sequence-dired nil 1))
+
 (provide 'mg-denote)
 ;;; mg-denote.el ends here

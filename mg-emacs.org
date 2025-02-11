@@ -1031,6 +1031,7 @@ The second fundamental package that I use for (networked) note-taking is ~denote
     (("C-c n f f" . mg-denote-find-file)
      ("C-c n z f" . mg-denote-find-zettel)
      ("C-c n z g" . mg-denote-grep-on-zettels)
+     ("C-c n y s i" . mg-denote-get-index-in-dired)
      ("C-c n u" . mg-denote-copy-timestamp-to-killring)
      ("C-c n o r" . mg-denote-copy-to-assets-and-rename)
      ("C-c n j e" . mg-denote-add-entry-on-journal)
@@ -1328,15 +1329,6 @@ The following is a series of packages to enable LSP and major-modes for some pro
     (add-hook 'haskell-mode-hook 'eglot-ensure)
     (add-hook 'erlang-mode-hook 'eglot-ensure)
     (add-hook 'python-mode-hook 'eglot-ensure))
-
-
-  (when (not (mg-connected-via-ssh-p))
-    (use-package eglot-booster
-      :straight (eglot-booster :type git :host github :repo "jdtsmith/eglot-booster")
-      :after eglot
-      :config
-      (add-to-list 'exec-path "/Users/gli/.cargo/bin/")
-      (eglot-booster-mode)))
 
   (provide 'mg-emacs-languages)
 #+end_src
@@ -1846,10 +1838,6 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     "This is the variable indicating whether the buffer is in
    read-only mode or not." )
 
-  (setq mode-line-end-spaces
-        '(""
-  	mode-line-misc-info))
-
   (setq-default mode-line-format
   	      '("%e"
   		mg-modeline-buffer-status
@@ -1859,11 +1847,11 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   		" "
   		mode-line-position
   		"  "
-  		(:eval (propertize vc-mode 'face 'mode-line-buffer-id))
+  		'(:eval (propertize vc-mode 'face 'mode-line-buffer-id))
   		"  "
   		mg-modeline-major-mode
   		"  "
-  		(:eval
+  		'(:eval
   		 (when (mode-line-window-selected-p)
   		   (propertize mode-line-end-spaces 'face '(:foreground "black"))))))
 
@@ -2855,6 +2843,13 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
         (goto-char (point-max))
         (insert (format "\n- %s :: \n  - References :: " (format-time-string "[%Y-%m-%d %a %H:%M]"))))))
 
+  (defun mg-denote-get-index-in-dired ()
+    "Get the zettels index in a `dired' buffer.
+  The zettels index is the entry point of networked notes - i.e.,
+  all notes with a depth of 1 in their signature."
+    (interactive)
+    (denote-sequence-dired nil 1))
+
   (provide 'mg-denote)
   ;;; mg-denote.el ends here
 #+end_src
@@ -2864,7 +2859,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 #+begin_src emacs-lisp :tangle "mg-custom-modules/mg-kernel.el"
   ;;; mg-kernel.el --- Utilities to use with the Linux kernel -*- lexical-binding: t -*-
 
-  ;; Copyright (C) 2024  Claudio Migliorelli
+  ;; Copyright (C) 2025  Claudio Migliorelli
 
   ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
   ;; URL: https://crawlingaway.com/emacs/dot-emacs
@@ -2895,6 +2890,31 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   ;; every day.
 
   ;;; Code:
+
+  (defun mg-kernel--do-grep (regexp)
+    "Wrapper for `grep' to find definitions/usage of code
+   snippets/structs in the kernel."
+    (if-let ((kernel-directory (car (find-file-read-args "Select KERNEL SOURCE: " nil))))
+        (let ((default-directory kernel-directory))
+  	(let* ((candidates
+  		(split-string
+  		 (shell-command-to-string
+  		  (format "find $1 -name '*.[ch]' | xargs grep -EnH \"%s\"" regexp))
+  		 "\n" t nil))
+  	       (parsed (split-string
+  			(completing-read "Select OCCUR to visit: " candidates)
+  			":" t nil)))
+  	  (with-current-buffer (find-file (expand-file-name (nth 0 parsed)))
+  	    (goto-line (string-to-number (nth 1 parsed))))))
+      (user-error "Something went wrong when selecting KERNEL SOURCE")))
+
+  (defun mg-kernel-do-grep ()
+    "Prompt a regexp to grep in the kernel source."
+    (interactive)
+    (let ((regexp
+  	 (read-string "Provide a REGEXP to search: ")))
+      (mg-kernel--do-grep regexp)))
+
   (defun mg-kernel-coding-style/c-lineup-arglist-tabs-only (ignored)
     "Line up argument lists by tabs, not spaces."
     (let* ((anchor (c-langelem-pos c-syntactic-element))

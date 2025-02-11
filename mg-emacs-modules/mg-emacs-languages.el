@@ -72,13 +72,4 @@
   (add-hook 'erlang-mode-hook 'eglot-ensure)
   (add-hook 'python-mode-hook 'eglot-ensure))
 
-
-(when (not (mg-connected-via-ssh-p))
-  (use-package eglot-booster
-    :straight (eglot-booster :type git :host github :repo "jdtsmith/eglot-booster")
-    :after eglot
-    :config
-    (add-to-list 'exec-path "/Users/gli/.cargo/bin/")
-    (eglot-booster-mode)))
-
 (provide 'mg-emacs-languages)

@@ -68,6 +68,7 @@
   (("C-c n f f" . mg-denote-find-file)
    ("C-c n z f" . mg-denote-find-zettel)
    ("C-c n z g" . mg-denote-grep-on-zettels)
+   ("C-c n y s i" . mg-denote-get-index-in-dired)
    ("C-c n u" . mg-denote-copy-timestamp-to-killring)
    ("C-c n o r" . mg-denote-copy-to-assets-and-rename)
    ("C-c n j e" . mg-denote-add-entry-on-journal)

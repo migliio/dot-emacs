@@ -83,10 +83,6 @@ specify in the modeline."
   "This is the variable indicating whether the buffer is in
  read-only mode or not." )
 
-(setq mode-line-end-spaces
-      '(""
-	mode-line-misc-info))
-
 (setq-default mode-line-format
 	      '("%e"
 		mg-modeline-buffer-status
@@ -96,11 +92,11 @@ specify in the modeline."
 		" "
 		mode-line-position
 		"  "
-		(:eval (propertize vc-mode 'face 'mode-line-buffer-id))
+		'(:eval (propertize vc-mode 'face 'mode-line-buffer-id))
 		"  "
 		mg-modeline-major-mode
 		"  "
-		(:eval
+		'(:eval
 		 (when (mode-line-window-selected-p)
 		   (propertize mode-line-end-spaces 'face '(:foreground "black"))))))
 
