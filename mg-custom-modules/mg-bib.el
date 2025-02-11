@@ -59,7 +59,7 @@
   "Custom `org-capture' template to add a website reference."
   (let* ((url (read-string "URL: "))
     	 (title (mg-bib--www-get-page-title url))
-    	 (authors (read-string "Insert authors: "))
+    	 (authors (mg-bib--denote-prompt-authors))
     	 (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
 	 (bibtex (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
     			 "0000"
@@ -274,6 +274,24 @@ in the bibtex key."
 (defun mg-bib--bibtex-early-sanitize (bibtex)
   "Perform some early initialization on BIBTEX."
   (replace-regexp-in-string "[ \t]+=" " =" (replace-regexp-in-string "\n[ \t]+" "\n" (replace-regexp-in-string "[ \t]+\n" "\n" bibtex))))
+
+(defun mg-bib--denote-prompt-authors ()
+  "Get authors from user, possibly using autocomplete."
+  (let ((entries (parsebib-parse mg-bibliography-path :fields (list "author")))
+        authors)
+    (maphash (lambda (key entry)
+               (let ((author (assoc "author" entry)))
+		 (when author
+                   (push (string-split (cdr author) " and " t nil) authors))))
+             entries)
+    (if-let ((candidates
+	   (delq 'nil (mapcar (lambda (entry)
+				(when (string-match-p "," entry)
+				  (let ((parsed (string-split entry ", " t nil)))
+				    (format "%s %s" (car (cdr parsed)) (car parsed)))))
+			      (flatten-list authors)))))
+	(completing-read-multiple "Insert authors: " candidates)
+      (user-error "Can't retrieve suggestions for authors"))))
 
 (defun mg-bib--bibtex-parse-entry (bibtex)
   "Parse BIBTEX to make a list.

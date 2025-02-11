@@ -36,10 +36,10 @@
   :after (edts)
   :mode "\\.erl\\'")
 
-(use-package nasm-mode
+(use-package gnuplot
   :straight t)
 
-(use-package gnuplot
+(use-package fasm-mode
   :straight t)
 
 (use-package pyvenv
