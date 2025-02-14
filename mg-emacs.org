@@ -1303,33 +1303,6 @@ The following is a series of packages to enable LSP and major-modes for some pro
   (use-package pyvenv
     :straight t)
 
-  (use-package eglot
-    :ensure nil
-    :config
-    (add-to-list 'eglot-server-programs
-  	       '((c-mode)
-  		 . ("clangd"
-                      "-j=8"
-                      "--log=error"
-                      "--malloc-trim"
-                      "--background-index"
-                      "--clang-tidy"
-                      "--completion-style=detailed"
-                      "--pch-storage=memory"
-                      "--header-insertion=never"
-                      "--header-insertion-decorators=0")))
-    (if (eq system-type 'darwin)
-        (add-to-list 'eglot-server-programs
-  		   '((python-mode)
-  		     . ("/usr/bin/pylsp")))
-      (add-to-list 'eglot-server-programs
-  		 '((python-mode)
-  		   . ("~/.local/bin/pylsp"))))
-    (add-hook 'c-mode-hook 'eglot-ensure)
-    (add-hook 'haskell-mode-hook 'eglot-ensure)
-    (add-hook 'erlang-mode-hook 'eglot-ensure)
-    (add-hook 'python-mode-hook 'eglot-ensure))
-
   (provide 'mg-emacs-languages)
 #+end_src
 
