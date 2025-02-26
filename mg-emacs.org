@@ -1453,8 +1453,10 @@ I mostly write and review code for the [[https://kernel.org/][Linux kernel]]. I 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-coding.el"
   (use-package mg-kernel
     :ensure nil
-    :bind (("C-c u k v" . mg-get-kernel-version-from-source)
-  	 ("C-c u k g" . mg-kernel-do-grep)))
+    :bind
+    (:map c-mode-map
+  	("C-c v" . mg-get-kernel-version-from-source)
+  	("C-c ." . mg-kernel-do-grep)))
 #+end_src
 
 The following piece of code introduces ~vterm~ as terminal emulator, with ~multi-vterm~ on top of it. I've been using ~vterm~ since the very beginning, and never felt the need to switch to any other terminal emulator (e.g., ~eshell~). The ~multi-vterm~ package, instead, allows to spawn multiple ~vterm~ buffer, that in conjunction with window splitting and multiple buffer basically creates a "terminal multiplexer" inside of Emacs.
@@ -3097,7 +3099,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   better, but for now it just proved to work."
     (interactive
      (list
-      (read-file-name "Kernel SOURCE: ")))
+      (mg-kernel--get-source-directory)))
     (let* ((command (format "cd %s && make kernelversion" source))
   	 (kernel-version
   	  (shell-command-to-string command)))
