@@ -3083,7 +3083,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     "Prompt a regexp to grep in the kernel source."
     (interactive)
     (let ((regexp
-  	 mg-kernel--infer-regexp-to-search))
+  	 (mg-kernel--infer-regexp-to-search)))
       (mg-kernel--do-grep regexp)))
 
   (defun mg-get-kernel-version-from-source (source)

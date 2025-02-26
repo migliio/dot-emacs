@@ -210,10 +210,16 @@ empty."
 ;; Then, the following code is brought by myself. Custom stuff I use
 ;; all the time.
 
+(defun mg-kernel--get-source-directory ()
+  "Get the kernel source based on the current file."
+  (if-let ((root (vc-git-root (buffer-file-name))))
+      root
+    (car (find-file-read-args "Select KERNEL SOURCE: " nil))))
+
 (defun mg-kernel--do-grep (regexp)
   "Wrapper for `grep' to find definitions/usage of code
  snippets/structs in the kernel."
-  (if-let ((kernel-directory (car (find-file-read-args "Select KERNEL SOURCE: " nil))))
+  (if-let ((kernel-directory (mg-kernel--get-source-directory)))
       (let ((default-directory kernel-directory))
 	(let* ((candidates
 		(split-string
@@ -227,11 +233,21 @@ empty."
 	    (goto-line (string-to-number (nth 1 parsed))))))
     (user-error "Something went wrong when selecting KERNEL SOURCE")))
 
+(defun mg-kernel--infer-regexp-to-search ()
+  "Infer the regexp to search based on `point'.
+When we search for usage of a certain C expression inside the
+kernel source we do it because we are interested in what it's
+under our cursor. Therefore, use the current symbol as a prompt
+suggestion."
+  (let* ((suggestion (symbol-at-point))
+	(prompt (format "Provide a REGEXP to search [%s]: " suggestion)))
+    (read-string prompt nil nil suggestion nil)))
+
 (defun mg-kernel-do-grep ()
   "Prompt a regexp to grep in the kernel source."
   (interactive)
   (let ((regexp
-	 (read-string "Provide a REGEXP to search: ")))
+	 (mg-kernel--infer-regexp-to-search)))
     (mg-kernel--do-grep regexp)))
 
 (defun mg-get-kernel-version-from-source (source)
