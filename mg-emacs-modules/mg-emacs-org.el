@@ -12,6 +12,7 @@
   :bind (("C-c a" . org-agenda)
 	 ("C-c C-;" . org-insert-structure-template)
 	 ("C-c c" . org-capture)
+	 ("C-c t" . org-agenda-todo)
 	 ("C-c C-z" . org-add-note)
 	 ("C-c o p" . org-do-promote)
 	 ("C-c o d" . org-do-demote)

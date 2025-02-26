@@ -18,6 +18,10 @@
   :config
   (multiple-cursors-mode 1))
 
+(use-package clipetty
+  :straight t
+  :hook (after-init . global-clipetty-mode))
+
 (use-package deadgrep
   :straight t
   :bind
