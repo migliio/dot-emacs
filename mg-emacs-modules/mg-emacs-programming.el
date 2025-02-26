@@ -68,4 +68,4 @@
   :config
   (xclip-mode))
 
-(provide 'mg-emacs-coding)
+(provide 'mg-emacs-programming)

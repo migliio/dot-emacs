@@ -108,7 +108,7 @@ This file deals with the early initialization of the GNU Emacs editor. It is, in
   (require 'mg-emacs-markup)
   (require 'mg-emacs-languages)
   (require 'mg-emacs-git)
-  (require 'mg-emacs-coding)
+  (require 'mg-emacs-programming)
 #+end_src
 
 * The ~mg-emacs-modules~
@@ -1379,7 +1379,7 @@ I use ~magit~ as git client for Emacs. I think it is, along with ~org-mode~, the
   (provide 'mg-emacs-git)
 #+end_src
 
-** The ~mg-emacs-coding.el~ module
+** The ~mg-emacs-programming.el~ module
 :PROPERTIES:
 :ID:       603EA351-F695-447C-A2EB-AD7FB7C61E5E
 :END:
@@ -1388,7 +1388,7 @@ In this module, I pull and enable several coding-related packages, regardless of
 
 Having multiple cursors is a neat feature that changed the way I look and modify source code. I started to realize how many times we have common patterns that we repeatedly modify, wasting time and energy. Whenever you realize this fact, having multiple cursors and edit different parts of the text at the same time is a valuable feature that could hardly be ignored. The ~multiple-cursor~ package does the job wonderfully.
 
-#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-coding.el"
+#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-programming.el"
   (use-package multiple-cursors
     :after (org)
     :straight t
@@ -1412,7 +1412,7 @@ Having multiple cursors is a neat feature that changed the way I look and modify
 
 The following packages, instead, are mostly for source code analysis and browsing. For sure, ~xcscope~ is the killer package here, and I use it every day multiple times. When it comes to inspecting *huge* codebases (e.g., the Linux kernel), having an efficient way to find definitions, function calling another function, patterns, etc. is fundamental. The ~xcscope~ package is just a ~cscope~ client for Emacs (to make ~cscope~ to work you typically have to build a ~cscope~ "database" - e.g., in the Linux kernel you simply type ~make cscope~).
 
-#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-coding.el"
+#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-programming.el"
   (use-package deadgrep
     :straight t
     :bind
@@ -1437,7 +1437,7 @@ The following packages, instead, are mostly for source code analysis and browsin
 
 Although I do not use it just for coding (but for templates in general, even in org files), ~yasnippet~ is another great tool that I leverage upon.
 
-#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-coding.el"
+#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-programming.el"
   (use-package yasnippet
     :straight t
     :init
@@ -1450,7 +1450,7 @@ Although I do not use it just for coding (but for templates in general, even in 
 
 I mostly write and review code for the [[https://kernel.org/][Linux kernel]]. I have a custom library with some useful functions I use on my daily work. They are not ground-breaking, rather they just speed-up some repeated operations.
 
-#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-coding.el"
+#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-programming.el"
   (use-package mg-kernel
     :ensure nil
     :bind
@@ -1461,7 +1461,7 @@ I mostly write and review code for the [[https://kernel.org/][Linux kernel]]. I 
 
 The following piece of code introduces ~vterm~ as terminal emulator, with ~multi-vterm~ on top of it. I've been using ~vterm~ since the very beginning, and never felt the need to switch to any other terminal emulator (e.g., ~eshell~). The ~multi-vterm~ package, instead, allows to spawn multiple ~vterm~ buffer, that in conjunction with window splitting and multiple buffer basically creates a "terminal multiplexer" inside of Emacs.
 
-#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-coding.el"
+#+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-programming.el"
   (when (display-graphic-p)
     (progn
       (use-package vterm
@@ -1475,7 +1475,7 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
     :config
     (xclip-mode))
 
-  (provide 'mg-emacs-coding)
+  (provide 'mg-emacs-programming)
 #+end_src
 
 ** The ~mg-emacs-ai.el~ module
