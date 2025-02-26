@@ -3104,7 +3104,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   	 (kernel-version
   	  (shell-command-to-string command)))
       (if (string-match-p "\\<[0-9]+\\." kernel-version)
-  	(message "Kernel version for specificed SOURCE is %s" kernel-version)
+  	(message "Kernel version for specificed SOURCE is %s" (string-trim kernel-version))
         (user-error "Can't identify a kernel version for the specified SOURCE %s" source))))
 
   ;;; mg-kernel.el ends here

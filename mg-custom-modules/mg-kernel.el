@@ -261,12 +261,12 @@ wrong directory as SOURCE. The check could've been performed
 better, but for now it just proved to work."
   (interactive
    (list
-    (read-file-name "Kernel SOURCE: ")))
+    (mg-kernel--get-source-directory)))
   (let* ((command (format "cd %s && make kernelversion" source))
 	 (kernel-version
 	  (shell-command-to-string command)))
     (if (string-match-p "\\<[0-9]+\\." kernel-version)
-	(message "Kernel version for specificed SOURCE is %s" kernel-version)
+	(message "Kernel version for specificed SOURCE is %s" (string-trim kernel-version))
       (user-error "Can't identify a kernel version for the specified SOURCE %s" source))))
 
 ;;; mg-kernel.el ends here

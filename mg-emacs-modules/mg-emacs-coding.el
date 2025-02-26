@@ -50,8 +50,10 @@
 
 (use-package mg-kernel
   :ensure nil
-  :bind (("C-c u k v" . mg-get-kernel-version-from-source)
-	 ("C-c u k g" . mg-kernel-do-grep)))
+  :bind
+  (:map c-mode-map
+	("C-c v" . mg-get-kernel-version-from-source)
+	("C-c ." . mg-kernel-do-grep)))
 
 (when (display-graphic-p)
   (progn
