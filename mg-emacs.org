@@ -1470,11 +1470,6 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
         :straight t
         :bind (("C-c v" . multi-vterm)))))
 
-  (use-package xclip
-    :straight t
-    :config
-    (xclip-mode))
-
   (provide 'mg-emacs-programming)
 #+end_src
 
