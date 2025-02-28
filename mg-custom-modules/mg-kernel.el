@@ -240,7 +240,9 @@ kernel source we do it because we are interested in what it's
 under our cursor. Therefore, use the current symbol as a prompt
 suggestion."
   (let* ((suggestion (symbol-at-point))
-	(prompt (format "Provide a REGEXP to search [%s]: " suggestion)))
+	 (prompt (if suggestion
+		     (format "Provide a REGEXP to search [%s]: " suggestion)
+		   "Provide a REGEXP to search: ")))
     (read-string prompt nil nil suggestion nil)))
 
 (defun mg-kernel-do-grep ()
