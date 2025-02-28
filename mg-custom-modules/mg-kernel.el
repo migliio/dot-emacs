@@ -212,7 +212,8 @@ empty."
 
 (defun mg-kernel--get-source-directory ()
   "Get the kernel source based on the current file."
-  (if-let ((root (vc-git-root (buffer-file-name))))
+  (if-let* ((file-name (buffer-file-name))
+	    (root (vc-git-root file-name)))
       root
     (car (find-file-read-args "Select KERNEL SOURCE: " nil))))
 
