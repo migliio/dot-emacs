@@ -1358,7 +1358,10 @@ In this module, I enable some of the packages I use for browsing the web. The pr
 
   (use-package eww
     :ensure nil
-    :custom (shr-use-fonts nil))
+    :config
+    (setq shr-use-fonts nil)
+    (setq shr-color-visible-luminance-min 80)
+    (setq shr-use-colors nil))
 
   (provide 'mg-emacs-browsing)
 #+end_src
@@ -1453,6 +1456,7 @@ I mostly write and review code for the [[https://kernel.org/][Linux kernel]]. I 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-coding.el"
   (use-package mg-kernel
     :ensure nil
+    :after (cc-mode)
     :bind
     (:map c-mode-map
   	("C-c v" . mg-get-kernel-version-from-source)

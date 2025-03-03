@@ -50,6 +50,7 @@
 
 (use-package mg-kernel
   :ensure nil
+  :after (cc-mode)
   :bind
   (:map c-mode-map
 	("C-c v" . mg-get-kernel-version-from-source)
