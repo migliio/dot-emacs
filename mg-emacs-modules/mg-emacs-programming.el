@@ -50,6 +50,7 @@
 
 (use-package mg-kernel
   :ensure nil
+  :after (cc-mode)
   :bind
   (:map c-mode-map
 	("C-c v" . mg-get-kernel-version-from-source)
@@ -62,10 +63,5 @@
     (use-package multi-vterm
       :straight t
       :bind (("C-c v" . multi-vterm)))))
-
-(use-package xclip
-  :straight t
-  :config
-  (xclip-mode))
 
 (provide 'mg-emacs-programming)
