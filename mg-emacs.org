@@ -1194,6 +1194,7 @@ I started using ~notmuch~ not so long ago. During a conversation with [[https://
   	 ("R" . notmuch-show-reply-sender))
     :custom
     (notmuch-show-logo nil)
+    (notmuch-search-oldest-first nil)
     (notmuch-archive-tags nil
   			notmuch-message-replied-tags '("+replied")
   			notmuch-message-forwarded-tags '("+forwarded")
@@ -1229,6 +1230,7 @@ I started using ~notmuch~ not so long ago. During a conversation with [[https://
     :after notmuch
     :bind (("C-x m u" . mg-notmuch-update-mail))
     :config
+
     (setq notmuch-hello-refresh-hook #'mg-notmuch-update-mail))
 
   (provide 'mg-emacs-notmuch)
