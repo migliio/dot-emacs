@@ -42,7 +42,6 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | ├──                | mg-emacs-browsing.el           |       |
 | │   | ├──                | mg-emacs-buffers-completion.el |       |
 | │   | ├──                | mg-emacs-buffers.el            |       |
-| │   | ├──                | mg-emacs-coding.el             |       |
 | │   | ├──                | mg-emacs-defaults.el           |       |
 | │   | ├──                | mg-emacs-denote.el             |       |
 | │   | ├──                | mg-emacs-files.el              |       |
@@ -55,6 +54,7 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 | │   | ├──                | mg-emacs-notmuch.el            |       |
 | │   | ├──                | mg-emacs-org.el                |       |
 | │   | ├──                | mg-emacs-package-managers.el   |       |
+| │   | ├──                | mg-emacs-programming.el        |       |
 | │   | └──                | mg-emacs-themes.el             |       |
 | └── | mg-emacs.org       |                                |       |
 |     |                    |                                |       |

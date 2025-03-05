@@ -47,6 +47,9 @@
 
 (use-package eww
   :ensure nil
-  :custom (shr-use-fonts nil))
+  :config
+  (setq shr-use-fonts nil)
+  (setq shr-color-visible-luminance-min 80)
+  (setq shr-use-colors nil))
 
 (provide 'mg-emacs-browsing)
