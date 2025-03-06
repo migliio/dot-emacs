@@ -17,6 +17,7 @@
 	 ("R" . notmuch-show-reply-sender))
   :custom
   (notmuch-show-logo nil)
+  (notmuch-search-oldest-first nil)
   (notmuch-archive-tags nil
 			notmuch-message-replied-tags '("+replied")
 			notmuch-message-forwarded-tags '("+forwarded")

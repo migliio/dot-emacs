@@ -59,7 +59,12 @@
 (when (display-graphic-p)
   (progn
     (use-package vterm
-      :straight t)
+      :straight t
+      :bind
+      (:map vterm-mode-map
+	    ("C-c ." . vterm-copy-mode))
+      (:map vterm-copy-mode-map
+	    ("C-c ." . vterm-copy-mode)))
     (use-package multi-vterm
       :straight t
       :bind (("C-c v" . multi-vterm)))))
