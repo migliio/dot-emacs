@@ -17,6 +17,7 @@
 	 ("R" . notmuch-show-reply-sender))
   :custom
   (notmuch-show-logo nil)
+  (notmuch-search-oldest-first nil)
   (notmuch-archive-tags nil
 			notmuch-message-replied-tags '("+replied")
 			notmuch-message-forwarded-tags '("+forwarded")
@@ -52,6 +53,7 @@
   :after notmuch
   :bind (("C-x m u" . mg-notmuch-update-mail))
   :config
+
   (setq notmuch-hello-refresh-hook #'mg-notmuch-update-mail))
 
 (provide 'mg-emacs-notmuch)

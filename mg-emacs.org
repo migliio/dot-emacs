@@ -983,13 +983,6 @@ The second fundamental package that I use for (networked) note-taking is ~denote
   	 ("C-c n h" . denote-org-extras-backlinks-for-heading)
   	 ("C-c n g f" . denote-find-link)
   	 ("C-c n g b" . denote-find-backlink)
-  	 ("C-c n y s s" . denote-sequence)
-  	 ("C-c n y s r" . denote-sequence-reparent)
-  	 ("C-c n y s d" . denote-sequence-dired)
-  	 ("C-c n y s f" . denote-sequence-find)
-  	 ("C-c n y s l" . denote-sequence-link)
-  	 ("C-c n y s c s" . denote-sequence-new-sibling-of-current)
-  	 ("C-c n y s c c" . denote-sequence-new-child-of-current)
   	 ("C-c n r" . denote-rename-file)
   	 ("C-c n R" . denote-rename-file-using-front-matter))
     :init
@@ -1021,8 +1014,17 @@ The second fundamental package that I use for (networked) note-taking is ~denote
     :config
     (denote-rename-buffer-mode 0)
     ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
-    (require 'denote-org-extras)
-    (require 'denote-sequence))
+    (require 'denote-org-extras))
+
+  (use-package denote-sequence
+    :straight (denote-sequence :host github :type git :repo "protesilaos/denote-sequence" :branch "main")
+    :bind (("C-c n y s s" . denote-sequence)
+  	 ("C-c n y s r" . denote-sequence-reparent)
+  	 ("C-c n y s d" . denote-sequence-dired)
+  	 ("C-c n y s f" . denote-sequence-find)
+  	 ("C-c n y s l" . denote-sequence-link)
+  	 ("C-c n y s c s" . denote-sequence-new-sibling-of-current)
+  	 ("C-c n y s c c" . denote-sequence-new-child-of-current)))
 
   (use-package mg-denote
     :ensure nil
@@ -1471,7 +1473,12 @@ The following piece of code introduces ~vterm~ as terminal emulator, with ~multi
   (when (display-graphic-p)
     (progn
       (use-package vterm
-        :straight t)
+        :straight t
+        :bind
+        (:map vterm-mode-map
+  	    ("C-c ." . vterm-copy-mode))
+        (:map vterm-copy-mode-map
+  	    ("C-c ." . vterm-copy-mode)))
       (use-package multi-vterm
         :straight t
         :bind (("C-c v" . multi-vterm)))))
@@ -2094,7 +2101,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
   ;; URL: https://crawlingaway.org/emacs/dot-emacs
-  ;; Version: 0.1.0
+  ;; Version: 0.1.1
   ;; Package-Requires: ((emacs "29.4"))
 
   ;; This file is NOT part of GNU Emacs.
@@ -2375,12 +2382,14 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
                      (push (string-split (cdr author) " and " t nil) authors))))
                entries)
       (if-let ((candidates
-  	   (delq 'nil (mapcar (lambda (entry)
-  				(when (string-match-p "," entry)
+  	      (delq 'nil
+  		    (mapcar (lambda (entry)
+  			      (if (string-match-p "," entry)
   				  (let ((parsed (string-split entry ", " t nil)))
-  				    (format "%s %s" (car (cdr parsed)) (car parsed)))))
-  			      (flatten-list authors)))))
-  	(completing-read-multiple "Insert authors: " candidates)
+  				    (format "%s %s" (cadr parsed) (car parsed)))
+  				entry))
+  			    (flatten-list authors)))))
+  	(car (completing-read-multiple "Insert authors: " candidates))
         (user-error "Can't retrieve suggestions for authors"))))
 
   (defun mg-bib--bibtex-parse-entry (bibtex)

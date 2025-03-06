@@ -21,13 +21,6 @@
 	 ("C-c n h" . denote-org-extras-backlinks-for-heading)
 	 ("C-c n g f" . denote-find-link)
 	 ("C-c n g b" . denote-find-backlink)
-	 ("C-c n y s s" . denote-sequence)
-	 ("C-c n y s r" . denote-sequence-reparent)
-	 ("C-c n y s d" . denote-sequence-dired)
-	 ("C-c n y s f" . denote-sequence-find)
-	 ("C-c n y s l" . denote-sequence-link)
-	 ("C-c n y s c s" . denote-sequence-new-sibling-of-current)
-	 ("C-c n y s c c" . denote-sequence-new-child-of-current)
 	 ("C-c n r" . denote-rename-file)
 	 ("C-c n R" . denote-rename-file-using-front-matter))
   :init
@@ -59,8 +52,17 @@
   :config
   (denote-rename-buffer-mode 0)
   ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
-  (require 'denote-org-extras)
-  (require 'denote-sequence))
+  (require 'denote-org-extras))
+
+(use-package denote-sequence
+  :straight (denote-sequence :host github :type git :repo "protesilaos/denote-sequence" :branch "main")
+  :bind (("C-c n y s s" . denote-sequence)
+	 ("C-c n y s r" . denote-sequence-reparent)
+	 ("C-c n y s d" . denote-sequence-dired)
+	 ("C-c n y s f" . denote-sequence-find)
+	 ("C-c n y s l" . denote-sequence-link)
+	 ("C-c n y s c s" . denote-sequence-new-sibling-of-current)
+	 ("C-c n y s c c" . denote-sequence-new-child-of-current)))
 
 (use-package mg-denote
   :ensure nil

@@ -4,7 +4,7 @@
 
 ;; Author: Claudio Migliorelli <claudio.migliorelli@mail.polimi.it>
 ;; URL: https://crawlingaway.org/emacs/dot-emacs
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Package-Requires: ((emacs "29.4"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -285,12 +285,14 @@ in the bibtex key."
                    (push (string-split (cdr author) " and " t nil) authors))))
              entries)
     (if-let ((candidates
-	   (delq 'nil (mapcar (lambda (entry)
-				(when (string-match-p "," entry)
+	      (delq 'nil
+		    (mapcar (lambda (entry)
+			      (if (string-match-p "," entry)
 				  (let ((parsed (string-split entry ", " t nil)))
-				    (format "%s %s" (car (cdr parsed)) (car parsed)))))
-			      (flatten-list authors)))))
-	(completing-read-multiple "Insert authors: " candidates)
+				    (format "%s %s" (cadr parsed) (car parsed)))
+				entry))
+			    (flatten-list authors)))))
+	(car (completing-read-multiple "Insert authors: " candidates))
       (user-error "Can't retrieve suggestions for authors"))))
 
 (defun mg-bib--bibtex-parse-entry (bibtex)
