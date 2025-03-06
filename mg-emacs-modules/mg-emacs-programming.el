@@ -60,7 +60,7 @@
   (progn
     (use-package vterm
       :straight t
-      :bind 
+      :bind
       (:map vterm-mode-map
 	    ("C-c ." . vterm-copy-mode))
       (:map vterm-copy-mode-map
