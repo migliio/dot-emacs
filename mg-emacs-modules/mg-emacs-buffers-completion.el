@@ -105,13 +105,4 @@
 		     :preview-key "M-.")
   (setq consult-narrow-key ">"))
 
-(use-package corfu
-  :straight (corfu :type git :host github :repo "minad/corfu" :commit "24dccafeea114b1aec7118f2a8405b46aa0051e0")
-  :custom
-  (corfu-cycle t)
-  (corfu-auto t)
-  :config
-  (global-corfu-mode)
-  (corfu-popupinfo-mode))
-
 (provide 'mg-emacs-buffers-completion)

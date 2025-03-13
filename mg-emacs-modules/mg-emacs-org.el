@@ -121,6 +121,7 @@
 	"** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")))
   (org-refile-targets '((mg-work-projects-file :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
 			(mg-personal-projects-file :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
+			(mg-research-file :regexp . "\\(?:Past research projects\\|Active research projects\\)")
 			(mg-books-file :regexp . "\\(?:\\(?:2023\\|2024\\)s\\)")
 			(mg-agenda-file :regexp . "\\(?:Past\\)")))
   (org-agenda-block-separator "==============================================================================")

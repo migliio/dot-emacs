@@ -471,15 +471,6 @@ For completion in both standard buffers and minibuffers, I employ a popular stac
   		     :preview-key "M-.")
     (setq consult-narrow-key ">"))
 
-  (use-package corfu
-    :straight (corfu :type git :host github :repo "minad/corfu" :commit "24dccafeea114b1aec7118f2a8405b46aa0051e0")
-    :custom
-    (corfu-cycle t)
-    (corfu-auto t)
-    :config
-    (global-corfu-mode)
-    (corfu-popupinfo-mode))
-
   (provide 'mg-emacs-buffers-completion)
 #+end_src
 
@@ -751,6 +742,7 @@ Those questions are all answered by just looking at the agenda, fired up with ju
   	"** %? [/]\n:PROPERTIES:\n:VISIBILITY: hide\n:COOKIE_DATA: recursive todo\n:END:\n*** Details\n*** Tasks\n*** Resources\n*** Artifacts\n*** Logs\n")))
     (org-refile-targets '((mg-work-projects-file :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
   			(mg-personal-projects-file :regexp . "\\(?:\\(?:Log\\|Task\\)s\\)")
+  			(mg-research-file :regexp . "\\(?:Past research projects\\|Active research projects\\)")
   			(mg-books-file :regexp . "\\(?:\\(?:2023\\|2024\\)s\\)")
   			(mg-agenda-file :regexp . "\\(?:Past\\)")))
     (org-agenda-block-separator "==============================================================================")
@@ -1255,8 +1247,11 @@ I very rarely use Markdown, mostly when formatting text to send it later on Slac
 Since natural language is still a language, let's enable spellchecking in this module.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-languages.el"
-  (dolist (hook '(text-mode-hook))
-    (add-hook hook (lambda () (flyspell-mode 1))))
+  (use-package jinx
+    :straight t
+    :hook (emacs-startup . global-jinx-mode)
+    :bind (("M-$" . jinx-correct)
+           ("C-M-$" . jinx-languages)))
 #+end_src
 
 Since I work with the Linux kernel every single day, I want Emacs to format C code as stated by the kernel community's directives. The code below sets the C style to be compliant to those directives.
@@ -1498,13 +1493,19 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     (ellama-language "English")
     :config
     (require 'llm-ollama)
-    (if (eq system-type 'darwin)
-        (setq ellama-provider
-  	    (make-llm-ollama
-  	     :chat-model "llama3.3:70b"))
+    (cond
+     ((eq system-type 'darwin)
       (setq ellama-provider
   	  (make-llm-ollama
-  	   :chat-model "llama3.2:latest"))))
+  	   :chat-model "llama3.3:70b")))
+     ((equal (system-name) "think")
+      (setq ellama-provider
+  	  (make-llm-ollama
+  	   :chat-model "phi4:latest")))
+     (t
+      (setq ellama-provider
+  	  (make-llm-ollama
+  	   :chat-model "llama3.3:latest")))))
 
   (provide 'mg-emacs-ai)
 #+end_src
@@ -2411,7 +2412,8 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
 
   (defun mg-bib--bibtex-get-field (bibtex-list field)
     (seq-find (lambda (string)
-  	      (string-match-p (format "%s.*?=" field) string)) bibtex-list))
+  	      (string-match-p (format "%s.*?=" field) string))
+  	    bibtex-list))
 
   (defun mg-bib--bibtex-get-field-content (bibtex-list field)
     "Get the content for FIELD in parsed BibTeX entry BIBTEX-LIST.

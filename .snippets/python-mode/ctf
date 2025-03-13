@@ -10,7 +10,7 @@ REMOTE="FILLME"
 PORT=0000
 
 # context.log_level = 'error'
-context.terminal = ['tmux', 'splitw', '-v']
+context.terminal = ['tmux', 'splitw', '-h']
 
 if "REMOTE" not in args:
     r = process(BINARY)

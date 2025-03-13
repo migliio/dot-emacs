@@ -314,7 +314,8 @@ Each entry is a bibtex field with a value."
 
 (defun mg-bib--bibtex-get-field (bibtex-list field)
   (seq-find (lambda (string)
-	      (string-match-p (format "%s.*?=" field) string)) bibtex-list))
+	      (string-match-p (format "%s.*?=" field) string))
+	    bibtex-list))
 
 (defun mg-bib--bibtex-get-field-content (bibtex-list field)
   "Get the content for FIELD in parsed BibTeX entry BIBTEX-LIST.
