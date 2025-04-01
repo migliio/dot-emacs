@@ -1,7 +1,7 @@
 (defun mg-init-macos-theme ()
   "Enable the theme environment of choice for darwin."
-  (load-theme 'modus-vivendi t)
-  (set-frame-font "DejaVu Sans Mono 18" nil t))
+  (load-theme 'modus-operandi t)
+  (set-frame-font "DejaVu Sans Mono 17" nil t))
 
 (defun mg-init-cli-theme ()
   "Enable the theme environment of choice when from CLI."
