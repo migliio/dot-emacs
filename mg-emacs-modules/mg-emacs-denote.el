@@ -1,5 +1,5 @@
 (use-package denote
-  :straight t
+  :straight (denote :type git :host github :repo "protesilaos/denote" :branch "main")
   :bind (("C-c n n" . denote)
 	 ("C-c n x" . denote-region)
 	 ("C-c n N" . denote-type)
@@ -18,6 +18,8 @@
 	 ("C-c n j n" . denote-journal-extras-new-entry)
 	 ("C-c n j l" . denote-journal-extras-link-or-create-entry)
 	 ("C-c n j j" . denote-journal-extras-new-or-existing-entry)
+	 ("C-c n y q c" . denote-query-contents-link)
+	 ("C-c n y q f" . denote-query-filenames-link)
 	 ("C-c n h" . denote-org-extras-backlinks-for-heading)
 	 ("C-c n g f" . denote-find-link)
 	 ("C-c n g b" . denote-find-backlink)
@@ -50,9 +52,7 @@
   (denote-date-prompt-use-org-read-date t)
   (denote-sequence-scheme 'alphanumeric)
   :config
-  (denote-rename-buffer-mode 0)
-  ;; Due to an org-mode bug, some ~dblock~ functions are not loaded automatically
-  (require 'denote-org-extras))
+  (denote-rename-buffer-mode 0))
 
 (use-package denote-sequence
   :straight (denote-sequence :host github :type git :repo "protesilaos/denote-sequence" :branch "main")

@@ -31,6 +31,8 @@
 
 (require 'mg-org)
 (require 'mg-denote)
+(require 'org-element)
+(require 'xref)
 
 (defun mg-bib-search-add-to-reading-list ()
   "Search for a bibliography entry in the minibuffer, and add it to `mg-reading-list-file'."
@@ -61,12 +63,16 @@
     	 (title (mg-bib--www-get-page-title url))
     	 (authors (mg-bib--denote-prompt-authors))
     	 (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
-	 (bibtex (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nnote = {[Accessed %s]},\n}"
+	 (year (if (string-match "^\\([0-9]\\{4\\}\\)-[0-9]\\{2\\}-[0-9]\\{2\\}$" date)
+		   (match-string 1 date)
+		 (error "Invalid date format when parsing year")))
+	 (bibtex (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nyear = {%s},\nnote = {[Accessed %s]},\n}"
     			 "0000"
     			 authors
     			 title
     			 url
     			 date
+			 year
     			 (format-time-string "%Y-%m-%d")))
 	 (bibtex-list (mg-bib--bibtex-parse-entry bibtex)))
     (setq bibtex-list (push (format "@misc{%s"
@@ -224,7 +230,7 @@ Removes common punctuation marks and special characters."
       (setq sanitized (replace-regexp-in-string (regexp-quote char) " " sanitized)))
     sanitized))
 
-(defconst mg-bib--title-keys-to-rule-out '("a" "the" "an" "for")
+(defconst mg-bib--title-keys-to-rule-out '("a" "the" "an" "for" "on")
   "List of some title keys I'd prefer not to use.")
 
 (defun mg-bib--bibtex-get-title-for-key (bibtex-list)
@@ -292,7 +298,7 @@ in the bibtex key."
 				    (format "%s %s" (cadr parsed) (car parsed)))
 				entry))
 			    (flatten-list authors)))))
-	(car (completing-read-multiple "Insert authors: " candidates))
+	(car (completing-read-multiple "Select authors: " candidates))
       (user-error "Can't retrieve suggestions for authors"))))
 
 (defun mg-bib--bibtex-parse-entry (bibtex)
@@ -484,6 +490,65 @@ Tags are returned as a single string, where each tag is separated
   (string-join (mapcar (lambda (keyword)
 			 (replace-regexp-in-string " " "_" (downcase keyword)))
 		       keywords) ";"))
+
+(defun mg-bib--org-bibtex-xref-item (heading-title pos author-match)
+  "Create an xref item for a heading.
+HEADING-TITLE is the heading’s title. POS is the beginning position of
+the heading. AUTHOR-MATCH is a snippet from the author field."
+  (let* ((line-num (line-number-at-pos pos))
+         (location (xref-make-file-location
+                    (or (buffer-file-name) (buffer-name))
+                    line-num 0))
+	 (author-label (format "(authors: %s)" author-match))
+	 (display (format "%s  %s" heading-title (propertize author-label 'face 'shadow))))
+    (xref-make display location)))
+
+(defun mg-bib-org-bibtex-find-author-definitions (identifier)
+  "Search Org headings that contain BibTeX babel blocks for an author matching IDENTIFIER.
+For every heading that has a Babel block in which an `author` field contains IDENTIFIER,
+return an xref item whose display text includes the heading title.
+Assumes that the heading text is the reference title."
+  (let ((results nil))
+    (org-element-map (org-element-parse-buffer) 'headline
+      (lambda (hl)
+        (let* ((heading-title (org-element-property :raw-value hl))
+               (begin (org-element-property :begin hl))
+               (bibtex-blocks (org-element-map hl 'src-block
+                                  (lambda (src)
+                                    (when (string-equal (org-element-property :language src) "bibtex")
+                                      (org-element-property :value src)))
+                                  nil nil)))  ;; Note: using nil instead of t to ensure a list is returned.
+          (when bibtex-blocks
+            (dolist (code bibtex-blocks)
+              (when (string-match
+                     (concat "author[ \t]*=[ \t]*[{\\\"]\\([^}\"]*"
+                             (regexp-quote identifier)
+                             "[^}\"]*\\)[}\\\"]")
+                     code)
+                (let ((author-match (match-string 1 code)))
+                  (push (mg-bib--org-bibtex-xref-item heading-title begin author-match)
+                        results)))))))
+      nil t)
+    (nreverse results)))
+
+(defun mg-bib-xref-bibtex-backend ()
+  "A simple xref backend for author definitions in Org-Babel BibTeX blocks."
+  'bibtex-authors)
+
+(cl-defmethod xref-backend-definitions ((_backend (eql bibtex-authors)) identifier)
+  "Return xref locations for the given IDENTIFIER.
+Identifies the author field in a BibTeX block which matches IDENTIFIER."
+  (mg-bib-org-bibtex-find-author-definitions identifier))
+
+(add-hook 'xref-backend-functions #'mg-bib-xref-bibtex-backend)
+
+(defun mg-bib-find-references-for-author (author)
+  "Find authors occurrences in `mg-references-file' through `xref'."
+  (interactive
+   (list
+    (read-string "Author: ")))
+  (with-current-buffer (find-file-noselect mg-references-file)
+    (mg-bib-xref-show-org-bibtex-author-matches author)))
 
 (provide 'mg-bib)
 ;;; mg-bib.el ends here

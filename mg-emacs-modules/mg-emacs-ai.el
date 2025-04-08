@@ -17,6 +17,6 @@
    (t
     (setq ellama-provider
 	  (make-llm-ollama
-	   :chat-model "llama3.3:latest")))))
+	   :chat-model "llama3.2:latest")))))
 
 (provide 'mg-emacs-ai)
