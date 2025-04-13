@@ -387,7 +387,7 @@ Buffer management and buffer/minibuffer completion are unified in this configura
   	      )))
 #+end_src
 
-For completion in both standard buffers and minibuffers, I employ a popular stack of packages: Vertico, Orderless, Marginalia, Consult, and Corfu. I particularly appreciate the modular nature of this setup. For instance, if a user doesn't favor Consult, they can easily retain the default completion system while still benefiting from the other packages. Personally, I find these packages highly effective in their default configurations, so I've rarely felt the need to customize them extensively.
+For completion in both standard buffers and minibuffers, I employ a popular stack of packages: Vertico, Orderless, Marginalia and Consult. I particularly appreciate the modular nature of this setup. For instance, if a user doesn't favor Consult, they can easily retain the default completion system while still benefiting from the other packages. Personally, I find these packages highly effective in their default configurations, so I've rarely felt the need to customize them extensively.
 
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-buffers-completion.el"
 
