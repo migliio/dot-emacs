@@ -70,7 +70,7 @@ Therefore, the structure of this configuration file can be summarized as follows
 - The ~mg-emacs-modules~ :: These are modules that loads Emacs packages, without introducing any custom functionalities. The only tweaking activity done by those source files is simple package configuration. Those source files may load custom libraries (see next entry);
 - The ~mg-custom-modules~ :: These are custom modules written by me. Their goal is to introduce new functionalities, extend packages and tweak the Emacs editor. In other words, while ~mg-emacs-modules~ only "load" the packages and tweak their variables and options, ~mg-custom-modules~ modify and extend the behavior of both Emacs and its loaded packages.
 
-The structure of this file goes as follows. Section 1) ([[*The ~init.el~ source file][The ~init.el~ source file]]) describes the startup activities performed by my Emacs configuration. Section 2) ([[*The ~mg-emacs-modules~][The ~mg-emacs-modules~]]) analyzes the packages I use and how those packages are set up. Finally, Section 3) ([[*The ~mg-custom-modules~ libraries][The ~mg-custom-modules~ libraries]]) goes into details for the custom code I developed to extend the Emacs editor and its packages.
+The structure of this file goes as follows. Section 1) describes the startup activities performed by my Emacs configuration. Section 2) analyzes the packages I use and how those packages are set up. Finally, Section 3) goes into details for the custom code I developed to extend the Emacs editor and its packages.
 
 
 #+toc: headlines 5
