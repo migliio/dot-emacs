@@ -285,7 +285,10 @@ I typically favor simple and highly legible themes. I often switch between theme
 #+begin_src emacs-lisp :tangle "mg-emacs-modules/mg-emacs-themes.el"
   (defun mg-init-macos-theme ()
     "Enable the theme environment of choice for darwin."
-    (load-theme 'modus-operandi t)
+    (use-package standard-themes
+      :straight t
+      :config
+      (load-theme 'standard-dark t))
     (set-frame-font "DejaVu Sans Mono 17" nil t))
 
   (defun mg-init-cli-theme ()
@@ -299,7 +302,10 @@ I typically favor simple and highly legible themes. I often switch between theme
 
   (defun mg-init-linux-theme ()
     "Enable the theme enviroment of choice for linux."
-    (load-theme 'modus-vivendi t)
+    (use-package standard-themes
+      :straight t
+      :config
+      (load-theme 'standard-dark t))
     (set-frame-font "DejaVu Sans Mono 14" nil t))
 
   (if (display-graphic-p)
