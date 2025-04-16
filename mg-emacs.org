@@ -10,7 +10,7 @@
 #+options: toc:nil
 *This file was revised and exported on {{{latest-export-date}}}, with a word count of {{{word-count}}} and a line count of {{{lines-count}}}.*
 
-This is a literate GNU Emacs configuration file. It doesn't serve as an actual configuration file, but as a commentary on the configuration itself and generates all the source files used to modify and tweak the Emacs text editor. This file is therefore verbose, with prose describing each and every piece of code listed in it. This serves as a future reference for me to have a clue on why some design choices have been preferred with respect to others.
+This is a literate GNU Emacs configuration file. It doesn't serve as an actual configuration file, but as a commentary on the configuration itself and generates all the source files used to modify and tweak the Emacs text editor. This file is therefore verbose, with prose describing each and every piece of code listed in it. I see this a future reference for me to have a clue on why some design choices have been preferred with respect to others.
 As of {{{latest-export-date}}}, the structure of this directory is organized as follows:
 #+begin_src bash :wrap example :exports results
   tree -aF -L 2 -I 'straight|edts|elpa|.git|eln-cache|.headers|.gitignore|.gitmodules|.snippets|.locks|auto-save-list|url'
@@ -63,12 +63,14 @@ As of {{{latest-export-date}}}, the structure of this directory is organized as 
 
 In general, this configuration is organized using modules, each designed to introduce a set of packages for a specific purpose. The objective is to minimize the number of packages introduced within a single module to ensure a clear separation of concerns. Introducing too many packages at once reduces clarity.
 
-I started using GNU Emacs at ~ [2020-04-30 Thu], and I've been tweaking and extensively using it since then. This will become quite evident when you go through this configuration file. Since I even used it as a window manager for X (until I switched to Wayland), it's not an exaggeration to say that I've been heavily working with Emacs in the last ~ 5 years. Each section of this document serves as introduction to a single module, and subsections focus on different core packages/configurations inside that module. Hope this becomes pretty self-explanatory throughout this artifact.
+I started using GNU Emacs at ~ [2020-04-30 Thu], and I've been tweaking and extensively using it since then. This will become quite evident when you go through this configuration file. Since I even used it as a window manager for X - until I switched to Wayland -, it's not an exaggeration to say that I've been heavily working with Emacs in the last ~ 5 years. Each section of this document serves as introduction to a single module, and subsections focus on different core packages/configurations inside that module. Hope this becomes pretty self explanatory throughout this artifact.
 
 Therefore, the structure of this configuration file can be summarized as follows:
 - The ~init.el~ source file :: This is the main point of entry for the entire configuration, and it is the source file read when Emacs is starting up. This file then loads the Emacs modules, which enable packages and functionalities for the editor;
 - The ~mg-emacs-modules~ :: These are modules that loads Emacs packages, without introducing any custom functionalities. The only tweaking activity done by those source files is simple package configuration. Those source files may load custom libraries (see next entry);
 - The ~mg-custom-modules~ :: These are custom modules written by me. Their goal is to introduce new functionalities, extend packages and tweak the Emacs editor. In other words, while ~mg-emacs-modules~ only "load" the packages and tweak their variables and options, ~mg-custom-modules~ modify and extend the behavior of both Emacs and its loaded packages.
+
+The structure of this file goes as follows. Section 1) ([[*The ~init.el~ source file][The ~init.el~ source file]]) describes the startup activities performed by my Emacs configuration. Section 2) ([[*The ~mg-emacs-modules~][The ~mg-emacs-modules~]]) analyzes the packages I use and how those packages are set up. Finally, Section 3) ([[*The ~mg-custom-modules~ libraries][The ~mg-custom-modules~ libraries]]) goes into details for the custom code I developed to extend the Emacs editor and its packages.
 
 
 #+toc: headlines 5
