@@ -21,7 +21,7 @@
     :straight t
     :config
     (load-theme 'standard-dark t))
-  (set-frame-font "DejaVu Sans Mono 14" nil t))
+  (set-frame-font "DejaVu Sans Mono 11" nil t))
 
 (if (display-graphic-p)
     (if (equal system-type 'darwin)

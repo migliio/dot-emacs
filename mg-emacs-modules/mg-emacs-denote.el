@@ -4,23 +4,13 @@
 	 ("C-c n x" . denote-region)
 	 ("C-c n N" . denote-type)
 	 ("C-c n d" . denote-date)
-	 ("C-c n y f" . denote-org-extras-dblock-insert-files)
-	 ("C-c n y l" . denote-org-extras-dblock-insert-links)
-	 ("C-c n y b" . denote-org-extras-dblock-insert-backlinks)
-	 ("C-c n y h" . denote-org-extras-link-to-heading)
 	 ("C-c n s" . denote-sort-dired)
-	 ("C-c n e n" . denote-silo-extras-create-note)
-	 ("C-c n e f" . denote-silo-extras-open-or-create)
 	 ("C-c n t" . denote-template)
 	 ("C-c n i" . denote-link)
 	 ("C-c n I" . denote-add-links)
 	 ("C-c n b" . denote-backlinks)
-	 ("C-c n j n" . denote-journal-extras-new-entry)
-	 ("C-c n j l" . denote-journal-extras-link-or-create-entry)
-	 ("C-c n j j" . denote-journal-extras-new-or-existing-entry)
 	 ("C-c n y q c" . denote-query-contents-link)
 	 ("C-c n y q f" . denote-query-filenames-link)
-	 ("C-c n h" . denote-org-extras-backlinks-for-heading)
 	 ("C-c n g f" . denote-find-link)
 	 ("C-c n g b" . denote-find-backlink)
 	 ("C-c n r" . denote-rename-file)
@@ -46,13 +36,25 @@
   (denote-templates
    '((plain . "")
      (course . "#+include: \"~/.emacs.d/headers/header_notes_document_small.org\"\n* Course details\n- Lecturer ::\n- University ::\n- Academic year ::\n- Resources ::\n- Description ::\n* Lecture notes\n")
-     (zettel . "#+references: \n\n\n-----\n")
      (place . "* Details\n- Link ::\n- Visited ::\n- Description ::\n* Notes\n")
      (contact . "* Contact details\n- E-mail ::\n- Company ::\n- Phone number ::\n- Website ::\n- Twitter ::\n- Additional information ::\n* Notes")))
   (denote-date-prompt-use-org-read-date t)
-  (denote-sequence-scheme 'alphanumeric)
   :config
   (denote-rename-buffer-mode 0))
+
+(use-package denote-journal
+  :straight t
+  :bind (("C-c n j n" . denote-journal-new-entry)
+	 ("C-c n j l" . denote-journal-link-or-create-entry)
+	 ("C-c n j j" . denote-journal-new-or-existing-entry)))
+
+(use-package denote-org
+  :straight t
+  :bind (("C-c n h" . denote-org-backlinks-for-heading)
+	 ("C-c n y f" . denote-org-extras-dblock-insert-files)
+	 ("C-c n y l" . denote-org-extras-dblock-insert-links)
+	 ("C-c n y b" . denote-org-extras-dblock-insert-backlinks)
+	 ("C-c n y h" . denote-org-extras-link-to-heading)))
 
 (use-package denote-sequence
   :straight (denote-sequence :host github :type git :repo "protesilaos/denote-sequence" :branch "main")
@@ -62,7 +64,9 @@
 	 ("C-c n y s f" . denote-sequence-find)
 	 ("C-c n y s l" . denote-sequence-link)
 	 ("C-c n y s c s" . denote-sequence-new-sibling-of-current)
-	 ("C-c n y s c c" . denote-sequence-new-child-of-current)))
+	 ("C-c n y s c c" . denote-sequence-new-child-of-current))
+  :custom
+  (denote-sequence-scheme 'alphanumeric))
 
 (use-package mg-denote
   :ensure nil
