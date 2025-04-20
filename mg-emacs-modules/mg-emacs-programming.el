@@ -18,11 +18,6 @@
   :config
   (multiple-cursors-mode 1))
 
-(use-package deadgrep
-  :straight t
-  :bind
-  (("M-g r" . deadgrep)))
-
 (use-package xcscope
   :straight t
   :bind
