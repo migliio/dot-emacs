@@ -20,7 +20,7 @@
   (use-package standard-themes
     :straight t
     :config
-    (load-theme 'standard-dark t))
+    (load-theme 'standard-light t))
   (set-frame-font "DejaVu Sans Mono 11" nil t))
 
 (if (display-graphic-p)

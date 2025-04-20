@@ -62,10 +62,17 @@
   (let* ((url (read-string "URL: "))
     	 (title (mg-bib--www-get-page-title url))
     	 (authors (mg-bib--denote-prompt-authors))
-    	 (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
-	 (year (if (string-match "^\\([0-9]\\{4\\}\\)-[0-9]\\{2\\}-[0-9]\\{2\\}$" date)
-		   (match-string 1 date)
-		 (error "Invalid date format when parsing year")))
+    	 (date (if (yes-or-no-p "Do you want to insert a date?")
+		   (org-read-date
+		    nil nil nil "Insert the article date: " nil nil nil)
+		 "~"))
+	 (year (if (not (eq date "~"))
+		   (if
+		       (string-match
+			"^\\([0-9]\\{4\\}\\)-[0-9]\\{2\\}-[0-9]\\{2\\}$" date)
+		       (match-string 1 date)
+		     (error "Invalid date format when parsing year"))
+		 "~"))
 	 (bibtex (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nyear = {%s},\nnote = {[Accessed %s]},\n}"
     			 "0000"
     			 authors

@@ -307,7 +307,7 @@ I typically favor simple and highly legible themes. I often switch between theme
     (use-package standard-themes
       :straight t
       :config
-      (load-theme 'standard-dark t))
+      (load-theme 'standard-light t))
     (set-frame-font "DejaVu Sans Mono 11" nil t))
 
   (if (display-graphic-p)
@@ -1018,10 +1018,12 @@ The second fundamental package that I use for (networked) note-taking is ~denote
     (denote-rename-buffer-mode 0))
 
   (use-package denote-journal
-    :straight t
+    :straight (denote-journal :host github :type git :repo "protesilaos/denote-journal" :branch "main")
     :bind (("C-c n j n" . denote-journal-new-entry)
   	 ("C-c n j l" . denote-journal-link-or-create-entry)
-  	 ("C-c n j j" . denote-journal-new-or-existing-entry)))
+  	 ("C-c n j j" . denote-journal-new-or-existing-entry))
+    :config
+    (add-hook 'calendar-mode-hook #'denote-journal-calendar-mode))
 
   (use-package denote-org
     :straight t
@@ -1119,18 +1121,18 @@ This module introduces several packages that I use to manage bibliographic entri
     (citar-denote-title-format "title")
     (citar-denote-title-format-authors 1)
     (citar-denote-title-format-andstr "and")
-    (citar-denote-template "- Research question ::\n- Sketch solution ::\n")
+    (citar-denote-template "- Summary ::\n- Related ::\n")
     :init
     (citar-denote-mode)
     :bind (("C-c n c c" . citar-create-note)
-	 ("C-c n c n" . citar-denote-open-note)
-	 ("C-c n c d" . citar-denote-dwim)
-	 ("C-c n c e" . citar-denote-open-reference-entry)
-	 ("C-c n c a" . citar-denote-add-citekey)
-	 ("C-c n c k" . citar-denote-remove-citekey)
-	 ("C-c n c r" . citar-denote-find-reference)
-	 ("C-c n c f" . citar-denote-find-citation)
-	 ("C-c n c l" . citar-denote-link-reference)))
+  	 ("C-c n c n" . citar-denote-open-note)
+  	 ("C-c n c d" . citar-denote-dwim)
+  	 ("C-c n c e" . citar-denote-open-reference-entry)
+  	 ("C-c n c a" . citar-denote-add-citekey)
+  	 ("C-c n c k" . citar-denote-remove-citekey)
+  	 ("C-c n c r" . citar-denote-find-reference)
+  	 ("C-c n c f" . citar-denote-find-citation)
+  	 ("C-c n c l" . citar-denote-link-reference)))
 
   (use-package biblio
     :straight t
@@ -1140,9 +1142,9 @@ This module introduces several packages that I use to manage bibliographic entri
     :ensure nil
     :after (org)
     :bind (("C-c p b r" . mg-bib-search-add-to-reading-list)
-	 ("C-c p b c" . mg-bib-count-references)
-	 ("C-c p b n" . mg-bib-denote-goto-notes-interactively)
-	 ("C-c p b i" . mg-bib-kill-bibtex-from-isbn)))
+  	 ("C-c p b c" . mg-bib-count-references)
+  	 ("C-c p b n" . mg-bib-denote-goto-notes-interactively)
+  	 ("C-c p b i" . mg-bib-kill-bibtex-from-isbn)))
 
   (use-package mg-personal
     :ensure nil)
@@ -2180,10 +2182,17 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
     (let* ((url (read-string "URL: "))
       	 (title (mg-bib--www-get-page-title url))
       	 (authors (mg-bib--denote-prompt-authors))
-      	 (date (org-read-date nil nil nil "Insert the article date: " nil nil nil))
-  	 (year (if (string-match "^\\([0-9]\\{4\\}\\)-[0-9]\\{2\\}-[0-9]\\{2\\}$" date)
-  		   (match-string 1 date)
-  		 (error "Invalid date format when parsing year")))
+      	 (date (if (yes-or-no-p "Do you want to insert a date?")
+  		   (org-read-date
+  		    nil nil nil "Insert the article date: " nil nil nil)
+  		 "~"))
+  	 (year (if (not (eq date "~"))
+  		   (if
+  		       (string-match
+  			"^\\([0-9]\\{4\\}\\)-[0-9]\\{2\\}-[0-9]\\{2\\}$" date)
+  		       (match-string 1 date)
+  		     (error "Invalid date format when parsing year"))
+  		 "~"))
   	 (bibtex (format "@misc{%s,\nauthor = {%s},\ntitle = {%s},\nurl = {%s},\ndate = {%s},\nyear = {%s},\nnote = {[Accessed %s]},\n}"
       			 "0000"
       			 authors
@@ -2578,7 +2587,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
   	      (error "No source block found in the selected heading"))))))))
 
   (defun mg-bib-denote-goto-notes-interactively ()
-    "Prompt the user for headings in `mg-references-file' and go to the notes section of the selected heading. The subtree is then narrowed for convenience."
+    "Prompt the user for headings in `mg-references-file' and go to the notes section of the selected heading - the subtree is then narrowed for convenience."
     (interactive)
     (let ((point (mg-bib--denote-prompt-and-return-point)))
       (with-current-buffer (find-file mg-references-file)
@@ -2587,11 +2596,9 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
         (org-narrow-to-subtree))))
 
   (defun mg-bib--get-keywords-from-file (file-path)
-    "Return a list with all keywords in the KEYWORDS field of the
-   properties drawer found in FILE-PATH.
-
-  Tags are returned as a single string, where each tag is separated
-   by a ';' sign from the other tag."
+    "Return a list with all keywords in the KEYWORDS field of the properties drawer found in FILE-PATH.
+  Tags are returned as a single string, where each tag is separated by a
+  ';' sign from the other tag."
       (with-current-buffer (find-file-noselect file-path)
         (org-element-map (org-element-parse-buffer) 'headline
   	(lambda (headline)
@@ -2633,9 +2640,10 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
                  (begin (org-element-property :begin hl))
                  (bibtex-blocks (org-element-map hl 'src-block
                                     (lambda (src)
-                                      (when (string-equal (org-element-property :language src) "bibtex")
+                                      (when (string-equal
+  					   (org-element-property :language src) "bibtex")
                                         (org-element-property :value src)))
-                                    nil nil)))  ;; Note: using nil instead of t to ensure a list is returned.
+                                    nil nil)))
             (when bibtex-blocks
               (dolist (code bibtex-blocks)
                 (when (string-match

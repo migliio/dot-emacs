@@ -43,10 +43,12 @@
   (denote-rename-buffer-mode 0))
 
 (use-package denote-journal
-  :straight t
+  :straight (denote-journal :host github :type git :repo "protesilaos/denote-journal" :branch "main")
   :bind (("C-c n j n" . denote-journal-new-entry)
 	 ("C-c n j l" . denote-journal-link-or-create-entry)
-	 ("C-c n j j" . denote-journal-new-or-existing-entry)))
+	 ("C-c n j j" . denote-journal-new-or-existing-entry))
+  :config
+  (add-hook 'calendar-mode-hook #'denote-journal-calendar-mode))
 
 (use-package denote-org
   :straight t
