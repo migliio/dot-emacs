@@ -2267,7 +2267,7 @@ Starting from [2024-10-15 Tue], I plan to use open-source LLMs to help in my res
        ((not is-pdf)
         (user-error "Error: Selected file is not a PDF.")))
       (setq key (mg-bib--denote-remove-identifier-from-key key))
-      (let* ((keywords (denote-keywords-prompt))
+      (let* ((keywords (sort (denote-keywords-prompt)))
         	   (identifier (mg-bib--denote-identifier-from-attrs file-path))
         	   (new-file-name (format "%s--%s__%s" identifier key
         				  (mapconcat #'identity 

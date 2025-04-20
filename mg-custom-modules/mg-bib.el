@@ -147,7 +147,7 @@ author, title and year only to rename the resource file."
      ((not is-pdf)
       (user-error "Error: Selected file is not a PDF.")))
     (setq key (mg-bib--denote-remove-identifier-from-key key))
-    (let* ((keywords (denote-keywords-prompt))
+    (let* ((keywords (sort (denote-keywords-prompt)))
       	   (identifier (mg-bib--denote-identifier-from-attrs file-path))
       	   (new-file-name (format "%s--%s__%s" identifier key
       				  (mapconcat #'identity 
@@ -467,7 +467,7 @@ This code is adapted from the one developed by John Kitchin for org-ref."
 	      (error "No source block found in the selected heading"))))))))
 
 (defun mg-bib-denote-goto-notes-interactively ()
-  "Prompt the user for headings in `mg-references-file' and go to the notes section of the selected heading. The subtree is then narrowed for convenience."
+  "Prompt the user for headings in `mg-references-file' and go to the notes section of the selected heading - the subtree is then narrowed for convenience."
   (interactive)
   (let ((point (mg-bib--denote-prompt-and-return-point)))
     (with-current-buffer (find-file mg-references-file)
@@ -476,11 +476,9 @@ This code is adapted from the one developed by John Kitchin for org-ref."
       (org-narrow-to-subtree))))
 
 (defun mg-bib--get-keywords-from-file (file-path)
-  "Return a list with all keywords in the KEYWORDS field of the
- properties drawer found in FILE-PATH.
-
-Tags are returned as a single string, where each tag is separated
- by a ';' sign from the other tag."
+  "Return a list with all keywords in the KEYWORDS field of the properties drawer found in FILE-PATH.
+Tags are returned as a single string, where each tag is separated by a
+';' sign from the other tag."
     (with-current-buffer (find-file-noselect file-path)
       (org-element-map (org-element-parse-buffer) 'headline
 	(lambda (headline)
@@ -522,9 +520,10 @@ Assumes that the heading text is the reference title."
                (begin (org-element-property :begin hl))
                (bibtex-blocks (org-element-map hl 'src-block
                                   (lambda (src)
-                                    (when (string-equal (org-element-property :language src) "bibtex")
+                                    (when (string-equal
+					   (org-element-property :language src) "bibtex")
                                       (org-element-property :value src)))
-                                  nil nil)))  ;; Note: using nil instead of t to ensure a list is returned.
+                                  nil nil)))
           (when bibtex-blocks
             (dolist (code bibtex-blocks)
               (when (string-match
